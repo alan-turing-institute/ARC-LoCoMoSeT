@@ -1,50 +1,10 @@
-# ARC-project-template
+# LoCoMoSeT: Low-Cost Model Selection for Transformers
 
-**TODO** A description of the project
-
-## Using this template
-
-### What this does
-
-This repo has a blank directory structure for an ARC Python project, including setting up:
-
-- `poetry` - for dependencies (including development dependencies) and creating a Python package from your source code
-- `pre-commit` - to automatically run linters (`flake8`, `black`, and `isort`) for style checks and auto-formatting
-- A GitHub actions workflow to automatically run linters and tests on pushes or pull requests to the `main` and `develop` branches (by default)
-
-### Pre-requisites
-
-- `poetry`
-  - See https://python-poetry.org/docs/#installation for installation instructions
-
-### Setup
-
-1. Create a new repo from this template (green button "Use this template" top right -> create new repository), with a name in the format `ARC-<project-name>`, and clone it locally
-
-2. Edit the lines with `TODO` comments in `pyproject.toml` and `.github/workflows/actions.yml`, including changing the name of the `src/todo_packagename` directory.
-
-3. Update and install Poetry dependencies
-
-   ```bash
-   poetry update
-   poetry install
-   ```
-
-4. Update and install pre-commit hooks:
-
-   ```bash
-   poetry run pre-commit autoupdate
-   poetry run pre-commit install --install-hooks
-   ```
-
-5. Update the README with a description of the project and fill the other sections marked as TODO
-
-6. Delete the "Using this template" section of this readme, and optionally the file `.github/workflows/update_template.yml`
-
+This project aims to contrast and compare multiple low-cost metrics for selecting pre-trained models for fine-tuning on a downstream task. In particular, we intend to suggest which of the current metrics gives the most accurate prediction - prior to fine-tuning - of how well a transformer-architecture based pre-trained model for image classification will perform once fine tuned for a new data set.
 
 ## Links
 
-- e.g. to report and statement of work (if these can be shared)
+**TODO**
 
 ## Installation
 
@@ -85,7 +45,6 @@ This repo has a blank directory structure for an ARC Python project, including s
    ```
 
   See [the poetry documentation](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) for more details on specifying dependencies.
-
 
 - To run commands in the poetry virtual environment (in a terminal), either:
   - Prefix the command you want to run with `poetry run`

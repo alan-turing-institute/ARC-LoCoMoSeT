@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "todo_packagename"  # TODO - rename src/todo_packagename and change here to reflect
+name = "locomoset"
 version = "0.1.0"
-description = ""  # TODO
-authors = ["Applied Research Centre, The Alan Turing Institute <arc@turing.ac.uk>"]  # TODO
+description = "Low-Cost Model Selection for Transformers"
+authors = ["Applied Research Centre, The Alan Turing Institute <arc@turing.ac.uk>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"  # TODO
+python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
