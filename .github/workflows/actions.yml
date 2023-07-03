@@ -32,6 +32,9 @@ jobs:
           poetry run black --check .
           poetry run isort --check-only .
           poetry run flake8
+          poetry run nbqa black --check .
+          poetry run nbqa isort --check-only .
+          poetry run nbqa flake8 .
 
       - name: Run tests
         if: github.repository != 'alan-turing-institute/ARC-project-template'
