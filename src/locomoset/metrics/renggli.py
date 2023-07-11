@@ -21,6 +21,11 @@ def renggli_score(
     the features are from a classifier with its head removed, and the trained classifier
     is a LogisticRegression model.
 
+    Paper:
+    Renggli, Cedric, et al. "Which model to transfer? finding the needle in the growing
+    haystack." Proceedings of the IEEE/CVF Conference on Computer Vision and
+    Pattern Recognition. 2022.
+
     Parameters
     ----------
     features : ArrayLike
