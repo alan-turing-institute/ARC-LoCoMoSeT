@@ -7,6 +7,7 @@
 """
 
 import numpy as np
+import pytest
 
 from locomoset.metrics.parc import parc
 
@@ -38,4 +39,4 @@ def test_parc_random_features():
     for itr, itm in enumerate(np.random.randint(0, n_classes, n_samples)):
         labels[itr][itm] = 1.0
     features = np.random.normal(size=(n_samples, n_features))
-    assert np.around(parc(features, labels)) == 0.0
+    assert parc(features, labels) == pytest.approx(0.0, abs=0.3)
