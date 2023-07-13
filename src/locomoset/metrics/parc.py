@@ -35,7 +35,7 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
     ).fit_transform(features)
 
 
-def PARC(features: np.ndarray, labels: np.ndaarray, feat_red_dim: int = None) -> float:
+def parc(features: np.ndarray, labels: np.ndaarray, feat_red_dim: int = None) -> float:
     """Takes computed features from model for each image in a probe data subset (with
     features as rows), and associated array of 1-hot vectors of labels, returning the
     PARC metric for transferability.
