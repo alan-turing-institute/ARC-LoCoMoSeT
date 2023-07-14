@@ -10,6 +10,7 @@
 """
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
 from sklearn.decomposition import PCA
 
@@ -35,13 +36,10 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
     ).fit_transform(features)
 
 
-def parc(features: np.ndarray, labels: np.ndaarray, feat_red_dim: int = None) -> float:
+def parc(features: ArrayLike, labels: ArrayLike, feat_red_dim: int = None) -> float:
     """Takes computed features from model for each image in a probe data subset (with
     features as rows), and associated array of 1-hot vectors of labels, returning the
     PARC metric for transferability.
-
-    TODO: refactor to transform non-numpy arrays and streamed manipulated data into
-          compatible data format.
 
     Args:
         features (np.ndarray): features from model for each image in probe dataset.
@@ -51,6 +49,11 @@ def parc(features: np.ndarray, labels: np.ndaarray, feat_red_dim: int = None) ->
     Returns:
         float: PARC score for transferability
     """
+    if not isinstance(features, np.ndarray):
+        features = np.asarray(features)
+    if not isinstance(labels, np.ndarray):
+        labels = np.asaarray(labels)
+
     dist_imgs = 1 - np.corrcoef(feature_reduce(features, feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 
