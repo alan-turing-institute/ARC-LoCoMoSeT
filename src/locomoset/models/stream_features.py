@@ -19,10 +19,6 @@ def get_features_labels(
     removed to generate features and extract one hot vectors, returning a numpy array
     for the purposes of PARC
 
-    TODO: refactor PARC to transfer to numpy rather than here, then generalise this
-          function so it can be used as a streaming method for the other metrics.
-    TODO: work out smarter way to compute one hot vectors to allow for batching
-
     Parameters
     ----------
     process_data : (streamed) Dataset
@@ -42,7 +38,10 @@ def get_features_labels(
 
     def pull_feats(data_iter):
         # Function for pulling the features out of the model
-        return model_head(data_iter["pixel_values"][None, :, :, :]).logits
+        data_iter["features"] = model_head(
+            data_iter["pixel_values"][None, :, :, :]
+        ).logits
+        return data_iter
 
     def one_hot_label(data_iter):
         # Function for converting labels to one hot vectors
@@ -50,10 +49,14 @@ def get_features_labels(
         vec[data_iter["label"]] = 1.0
         return vec
 
+    feat_data = processed_data.map(
+        pull_feats, batched=True, batch_size=16, remove_columns=["pixel_values"]
+    )
+
     feats = []
     one_hots = []
-    for data in processed_data:
-        feats.append(pull_feats(data).detach().numpy()[0])
+    for data in feat_data:
+        feats.append(data["features"].detach().numpy()[0])
         one_hots.append(one_hot_label(data))
 
     return np.asarray(feats), np.asarray(one_hots)
