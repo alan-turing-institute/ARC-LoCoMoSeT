@@ -25,7 +25,7 @@ def test_parc_perfect_features():
     labs = np.zeros((n_samples, n_classes))
     for iter, item in enumerate(labels):
         labs[iter][item] = 1.0
-    assert parc(labs, labs) == 100
+    assert parc(labs, labs) == pytest.approx(100)
 
 
 def test_parc_random_features():
