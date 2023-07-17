@@ -45,14 +45,20 @@ def run_renggli(config: dict):
 
     model_head, processor = get_model_and_processor(config["model_name"], num_labels=0)
     dataset = load_dataset(config["dataset_name"], split=config["dataset_split"])
+
+    print("Preprocessing...")
     process_start = time()
     dataset = preprocess(dataset, processor)
     results["time"]["preprocess"] = time() - process_start
+
+    print("Extracting features...")
     features_start = time()
-    features = get_features(dataset, model_head, batched=True, batch_size=16)
+    features = get_features(dataset, model_head, batched=True, batch_size=4)
     results["time"]["features"] = time() - features_start
+
     labels = dataset["label"]
 
+    print("Starting Renggli computation loop...")
     for samples in tqdm(config["n_samples"]):
         for state in tqdm(config["random_states"]):
             if samples < len(labels):
