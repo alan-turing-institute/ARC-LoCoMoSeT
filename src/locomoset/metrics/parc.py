@@ -60,6 +60,6 @@ def parc(features: ArrayLike, labels: ArrayLike, feat_red_dim: int = None) -> fl
     def lower_tri_arr(arr):
         # Returns the lower triangle values (offset from the diag) of a 2D square array.
         n = arr.shape[0]
-        return arr[np.triu_indice(n, 1)]
+        return arr[np.triu_indices(n, 1)]
 
     return spearmanr(lower_tri_arr(dist_imgs), lower_tri_arr(dist_labs))[0] * 100
