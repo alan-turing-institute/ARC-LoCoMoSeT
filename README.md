@@ -1,5 +1,7 @@
 # LoCoMoSeT: Low-Cost Model Selection for Transformers
 
+**Status:** Work in progress (one out of four work packages completed)
+
 This project aims to contrast and compare multiple low-cost metrics for selecting pre-trained models for fine-tuning on a downstream task. In particular, we intend to suggest which of the current metrics gives the most accurate prediction - prior to fine-tuning - of how well a transformer-architecture based pre-trained model for image classification will perform once fine tuned for a new data set.
 
 ## Links
@@ -57,7 +59,7 @@ This project aims to contrast and compare multiple low-cost metrics for selectin
   ```bash
   poetry run pytest
   ```
-  
+
 - To run linters:
   - If you have setup pre-commit `flake8`, `black`, and `isort` will run automatically before making commits
   - Or you can run them manually:
