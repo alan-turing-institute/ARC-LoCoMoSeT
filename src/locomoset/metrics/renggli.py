@@ -6,12 +6,16 @@ from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 def renggli_score(
     features: ArrayLike,
     labels: ArrayLike,
-    clf: BaseEstimator = LogisticRegression(),
+    clf: BaseEstimator = Pipeline(
+        [("scaler", StandardScaler()), ("logistic", LogisticRegression())]
+    ),
     metric: Callable = accuracy_score,
     test_size: float = 0.25,
     random_state: float = None,
