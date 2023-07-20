@@ -1,3 +1,6 @@
+"""
+Helper functions for preprocessing datasets.
+"""
 from datasets import Dataset
 from transformers.image_processing_utils import BaseImageProcessor
 
@@ -6,17 +9,12 @@ def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
     """Convert an image dataset to RGB and run it through a pre-processor for
     compatibility with a model.
 
-    Parameters
-    ----------
-    dataset : Dataset
-        HuggingFace image dataset to process
-    processor : BaseImageProcessor
-        HuggingFace trained pre-processor to use
+    Args:
+        dataset: HuggingFace image dataset to process.
+        processor: HuggingFace trained pre-processor to use.
 
-    Returns
-    -------
-    Dataset
-        Processed dataset with feature 'pixel_values' instead of 'image'
+    Returns:
+        Processed dataset with feature 'pixel_values' instead of 'image'.
     """
 
     def proc_sample(sample):

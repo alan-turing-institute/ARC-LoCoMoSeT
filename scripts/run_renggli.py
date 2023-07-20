@@ -17,20 +17,19 @@ from locomoset.models.load import get_model_and_processor
 
 def run_renggli(config: dict):
     """Compute Renggli et al metric for a single dataset and model, but for a number
-    of different data subset sizes and random seeds. Results saved to file path of form
-    results/results_20230711-143025.json by default.
+    of different data subset sizes and random seeds.
 
-    Parameters
-    ----------
-    config : dict
-        Loaded configuration dictionary including the following keys:
-        - model_name: Name of HuggingFace model to use
-        - dataset_name: Name of HuggingFace dataset to use
-        - dataset_split: Dataset split to use
-        - n_samples: List of how many samples (images) to compute the metric with
-        - random_states: List of random seeds to compute the metric with (used for
-          subsetting the data)
-        - (Optional) save_dir: Directory to save results, "results" if not set
+    Results saved to file path of form results/results_20230711-143025.json by default.
+
+    Args:
+        config: Loaded configuration dictionary including the following keys:
+            - model_name: Name of HuggingFace model to use
+            - dataset_name: Name of HuggingFace dataset to use
+            - dataset_split: Dataset split to use
+            - n_samples: List of how many samples (images) to compute the metric with
+            - random_states: List of random seeds to compute the metric with (used for
+                subsetting the data)
+            - (Optional) save_dir: Directory to save results, "results" if not set
     """
     save_dir = config.get("save_dir", "results")
     os.makedirs(save_dir, exist_ok=True)
