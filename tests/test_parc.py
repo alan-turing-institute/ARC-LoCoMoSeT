@@ -1,11 +1,6 @@
-# Collected PARC tests
-# Author: Edmund Dable-Heath
 """
-    Collected tests for the PARC metric:
-        - Testing perfect PARC response by basing features on labels.
-        - Test random PARC response with uniform random features.
+Test functions for the PARC score (src/locomoset/metrics/parc.py).
 """
-
 import numpy as np
 import pytest
 
