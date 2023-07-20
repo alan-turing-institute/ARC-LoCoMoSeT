@@ -6,6 +6,8 @@ Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selec
 for accessible transfer learning." Advances in Neural Information Processing Systems
 34 (2021): 19301-19312.
 """
+import warnings
+
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
@@ -26,8 +28,12 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
     if f is None:
         return features
 
-    if f > features.shape[0]:
-        f = features.shape[0]
+    if f > min(features.shape):
+        warnings.warn(
+            f"{f} is too many dimensions with features of shape {features.shape}. "
+            f"Reducing to {min(features.shape)} dimensions."
+        )
+        f = min(features.shape)
 
     return PCA(n_components=f).fit_transform(features)
 
