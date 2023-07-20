@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import OneHotEncoder
 
 
 def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
@@ -31,24 +32,34 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
     return PCA(n_components=f).fit_transform(features)
 
 
-def parc(features: ArrayLike, labels: ArrayLike, feat_red_dim: int = None) -> float:
+def parc(
+    features: ArrayLike,
+    labels: ArrayLike,
+    feat_red_dim: int = None,
+    random_state: int = None,
+) -> float:
     """Takes computed features from model for each image in a probe data subset (with
     features as rows), and associated array of 1-hot vectors of labels, returning the
     PARC metric for transferability.
 
     Args:
-        features: Features from model for each image in probe dataset.
-        labels: Image in probe dataset.
-        feat_red_dim: Feature reduction dimension. Defaults to None.
+        features: Features from model for each image in probe dataset of
+            shape (num_samples, num_features).
+        labels: Input labels of shape (num_samples, 1).
+        feat_red_dim: If set, feature reduction dimension.
+        random_state: Random state for dimensionality reduction.
 
     Returns:
         PARC score for transferability.
     """
+    np.random.seed(random_state)
     if not isinstance(features, np.ndarray):
         features = np.asarray(features)
     if not isinstance(labels, np.ndarray):
-        labels = np.asaarray(labels)
-
+        labels = np.asarray(labels)
+    labels = OneHotEncoder(sparse_output=False).fit_transform(
+        labels.reshape((len(labels), 1))
+    )
     dist_imgs = 1 - np.corrcoef(feature_reduce(features, feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 
