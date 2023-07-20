@@ -1,3 +1,6 @@
+"""
+Test functions for the Renggli score (src/locomoset/metrics/renggli.py).
+"""
 import numpy as np
 import pytest
 from sklearn.preprocessing import OneHotEncoder

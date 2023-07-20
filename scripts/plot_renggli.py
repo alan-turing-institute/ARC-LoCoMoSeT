@@ -17,17 +17,12 @@ def plot_result(result: dict, ax: Axes, **scatter_args) -> Axes:
     """Make a no. of images vs. Renggli score plot for a result file saved from the
     run_renggli.py script.
 
-    Parameters
-    ----------
-    result : dict
-       Loaded results JSON file
-    ax : Axes
-        Axes to plot to
+    Args:
+        result: Loaded results JSON file.
+        ax: Axes to plot to.
 
-    Returns
-    -------
-    Axes
-        Updated axes
+    Returns:
+        Updated axes.
     """
     samples = [r["n_samples"] for r in result["results"]]
     scores = [r["score"] for r in result["results"]]
