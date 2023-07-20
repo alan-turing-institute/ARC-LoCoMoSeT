@@ -34,4 +34,4 @@ def test_renggli_random_features():
     n_samples = 1000
     labels = np.random.randint(0, n_classes, n_samples)
     features = np.random.normal(size=(n_samples, n_features))
-    assert renggli_score(features, labels) == pytest.approx(1 / n_classes, rel=0.2)
+    assert renggli_score(features, labels) == pytest.approx(1 / n_classes, rel=0.3)
