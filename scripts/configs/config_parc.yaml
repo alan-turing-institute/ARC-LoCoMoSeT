@@ -1,4 +1,4 @@
-model_name:  "google/vit-base-patch16-384"
+model_name:  "facebook/deit-tiny-patch16-224"
 dataset_name:  "imagenet-1k"
 dataset_split: "validation"
 n_samples:  [250, 500, 1000, 2500, 5000, 10000, 25000]
