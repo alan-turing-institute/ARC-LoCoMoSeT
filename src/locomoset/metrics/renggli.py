@@ -23,7 +23,7 @@ def renggli_score(
     ),
     metric: Callable = accuracy_score,
     test_size: float = 0.25,
-    random_state: float = None,
+    random_state: int = None,
 ) -> float:
     """Trains and evaluates a classifier on input features and labels.
 
