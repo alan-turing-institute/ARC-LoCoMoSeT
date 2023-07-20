@@ -3,4 +3,4 @@ dataset_name:  "imagenet-1k"
 dataset_split: "validation"
 n_samples:  [250, 500, 1000, 2500, 5000, 10000, 25000]
 random_states:  [42, 43, 45]
-feat_red_dim:  [16, 32, 64, 127, 256, 512]
+feat_red_dims:  [16, 32, 64, 127, 256, 512]
