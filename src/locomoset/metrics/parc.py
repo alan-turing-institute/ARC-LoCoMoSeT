@@ -1,14 +1,11 @@
-# PARC metric implementation
-# Author: Edmund Dable-Heath
 """
-    Implementation of the Pairwise Annotation Representation Comparison (PARC) metric
-    for transferability:
+Functions for calculating the Pairwise Annotation Representation Comparison (PARC)
+metric for transferability:
 
-    Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selection
-    for accessible transfer learning." Advances in Neural Information Processing Systems
-    34 (2021): 19301-19312.
+Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selection
+for accessible transfer learning." Advances in Neural Information Processing Systems
+34 (2021): 19301-19312.
 """
-
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
@@ -16,14 +13,14 @@ from sklearn.decomposition import PCA
 
 
 def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
-    """Use PCA to reduce the dimensionality of features
+    """Use PCA to reduce the dimensionality of features.
 
     Args:
-        features (np.ndarray): features on which to reduce.
-        f (int, optional): dimension to reduce down to.
+        features: features on which to reduce.
+        f: dimension to reduce down to.
 
     Returns:
-        np.ndarray: reduced features array.
+        Reduced features array.
     """
     if f is None:
         return features
@@ -42,12 +39,12 @@ def parc(features: ArrayLike, labels: ArrayLike, feat_red_dim: int = None) -> fl
     PARC metric for transferability.
 
     Args:
-        features (np.ndarray): features from model for each image in probe dataset.
-        labels (np.ndaarray): image in probe dataset
-        feat_red_dim (int, optional): Feature reduction dimension. Defaults to None.
+        features: Features from model for each image in probe dataset.
+        labels: Image in probe dataset.
+        feat_red_dim: Feature reduction dimension. Defaults to None.
 
     Returns:
-        float: PARC score for transferability
+        PARC score for transferability.
     """
     if not isinstance(features, np.ndarray):
         features = np.asarray(features)
