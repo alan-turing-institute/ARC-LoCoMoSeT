@@ -28,9 +28,7 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
     if f > features.shape[0]:
         f = features.shape[0]
 
-    return PCA(
-        n_components=f, svd_solver="randomized", random_state=1919, iterated_power=1
-    ).fit_transform(features)
+    return PCA(n_components=f).fit_transform(features)
 
 
 def parc(features: ArrayLike, labels: ArrayLike, feat_red_dim: int = None) -> float:
