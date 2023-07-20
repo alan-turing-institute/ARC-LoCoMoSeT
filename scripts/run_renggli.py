@@ -1,3 +1,6 @@
+"""
+Script for running experiments with the Renglli metric.
+"""
 import argparse
 import json
 import os

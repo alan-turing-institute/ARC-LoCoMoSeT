@@ -1,11 +1,6 @@
-# Run a PARC experiment
-# Author: Edmund Dable-Heath
 """
-    Run a comparative experiment for a given pair (dataset, model) for a number of
-    different proce set sizes, random seeds and feature reduction levels. Results saved
-    to file path of form results/results_YYYYMMDD-HHMMSS.json by default.
+Script for running experiments with the PARC metric.
 """
-
 import argparse
 
 import yaml
