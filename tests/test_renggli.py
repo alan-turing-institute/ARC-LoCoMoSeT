@@ -18,7 +18,9 @@ def test_renggli_perfect_features():
     labels = np.random.randint(0, n_classes, n_samples)
     # use one hot encoded labels as the input features (giving the classifier perfect
     # information to distinguish between classes)
-    features = OneHotEncoder().fit_transform(labels.reshape((n_samples, 1)))
+    features = OneHotEncoder(sparse_output=False).fit_transform(
+        labels.reshape((n_samples, 1))
+    )
     assert renggli_score(features, labels) == 1
 
 
