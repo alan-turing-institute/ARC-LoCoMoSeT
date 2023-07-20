@@ -19,7 +19,7 @@ def renggli_score(
     features: ArrayLike,
     labels: ArrayLike,
     clf: BaseEstimator = Pipeline(
-        [("scaler", StandardScaler()), ("logistic", LogisticRegression())]
+        (("scaler", StandardScaler()), ("logistic", LogisticRegression()))
     ),
     metric: Callable = accuracy_score,
     test_size: float = 0.25,
