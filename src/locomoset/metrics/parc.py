@@ -47,6 +47,9 @@ def lower_tri_arr(arr: ArrayLike):
     """Returns the lower triangular values (offset from the diagonal by 1) from a 2
     dimensional square array as a 1 dimensional array.
 
+    NB: this actually pulls out the upper triangular values but applies to a symmetric
+    matrix by definition.
+
     Args:
         arr : 2 dimension square array
 
