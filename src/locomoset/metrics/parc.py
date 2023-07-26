@@ -5,9 +5,7 @@ metric for transferability:
 Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selection
 for accessible transfer learning." Advances in Neural Information Processing Systems
 34 (2021): 19301-19312.
-"""
-import warnings
-
+ls"""
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
@@ -15,7 +13,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import OneHotEncoder
 
 
-def feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.ndarray:
+def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.ndarray:
     """Use PCA to reduce the dimensionality of features.
 
     Args:
@@ -29,11 +27,9 @@ def feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.n
         return features
 
     if f > min(features.shape):
-        warnings.warn(
-            f"{f} is too many dimensions with features of shape {features.shape}. "
-            f"Reducing to {min(features.shape)} dimensions."
+        raise ValueError(
+            "Reduced dimension should not be less than minimum features dimension."
         )
-        f = min(features.shape)
 
     return PCA(
         n_components=f,
@@ -43,7 +39,7 @@ def feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.n
     ).fit_transform(features)
 
 
-def lower_tri_arr(arr: ArrayLike):
+def _lower_tri_arr(arr: ArrayLike) -> ArrayLike:
     """Returns the lower triangular values (offset from the diagonal by 1) from a 2
     dimensional square array as a 1 dimensional array.
 
@@ -88,7 +84,7 @@ def parc(
     labels = OneHotEncoder(sparse_output=False).fit_transform(
         labels.reshape((len(labels), 1))
     )
-    dist_imgs = 1 - np.corrcoef(feature_reduce(features, random_state, f=feat_red_dim))
+    dist_imgs = 1 - np.corrcoef(_feature_reduce(features, random_state, f=feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 
-    return spearmanr(lower_tri_arr(dist_imgs), lower_tri_arr(dist_labs))[0] * 100
+    return spearmanr(_lower_tri_arr(dist_imgs), _lower_tri_arr(dist_labs))[0] * 100
