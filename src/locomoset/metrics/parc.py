@@ -15,7 +15,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import OneHotEncoder
 
 
-def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
+def feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.ndarray:
     """Use PCA to reduce the dimensionality of features.
 
     Args:
@@ -35,7 +35,12 @@ def feature_reduce(features: np.ndarray, f: int = None) -> np.ndarray:
         )
         f = min(features.shape)
 
-    return PCA(n_components=f).fit_transform(features)
+    return PCA(
+        n_components=f,
+        svd_solver="randomized",
+        iterated_power=1,
+        random_state=random_state,
+    ).fit_transform(features)
 
 
 def parc(
@@ -66,7 +71,7 @@ def parc(
     labels = OneHotEncoder(sparse_output=False).fit_transform(
         labels.reshape((len(labels), 1))
     )
-    dist_imgs = 1 - np.corrcoef(feature_reduce(features, feat_red_dim))
+    dist_imgs = 1 - np.corrcoef(feature_reduce(features, random_state, f=feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 
     def lower_tri_arr(arr):
