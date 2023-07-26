@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from sklearn.preprocessing import OneHotEncoder
 
-from locomoset.metrics.parc import parc
+from locomoset.metrics.parc import lower_tri_arr, parc
 
 
 def test_parc_perfect_features():
@@ -36,3 +36,26 @@ def test_parc_random_features():
     labels = np.random.randint(0, n_classes, n_samples)
     features = np.random.normal(size=(n_samples, n_features))
     assert parc(features, labels) == pytest.approx(0.0, abs=0.3)
+
+
+def test_lower_tri():
+    """
+    Test that the lower triangular values (offset from diag by one) values of a square
+    matrix are being correctly pulled out.
+
+    NB: This actually pulls out the upper triangular values but applies to a symmetric
+    matrix by definition.
+    """
+
+    # randomly pick number from 2 -> 10
+    n = np.random.randint(low=2, high=11)
+
+    # create n^2 array of numbers from 1 -> n^2
+    arr = np.array([i + 1 for i in range(n**2)]).reshape((n, n))
+
+    # analytical sum of upper triangular values
+    s = (n**2 * (n**2 + 1)) / 2 - sum(
+        [(k * (k * (2 * n + 1) - 2 * n + 1)) / 2 for k in range(1, n + 1)]
+    )
+
+    assert s == lower_tri_arr(arr)
