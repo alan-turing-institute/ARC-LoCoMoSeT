@@ -46,7 +46,7 @@ def feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.n
 def parc(
     features: ArrayLike,
     labels: ArrayLike,
-    feat_red_dim: int = None,
+    feat_red_dim: int = 32,
     random_state: int = None,
 ) -> float:
     """Takes computed features from model for each image in a probe data subset (with
