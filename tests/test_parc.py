@@ -36,7 +36,7 @@ def test_parc_random_features():
     rng = np.random.default_rng(42)
     labels = rng.integers(0, n_classes, n_samples)
     features = rng.normal(size=(n_samples, n_features))
-    assert parc(features, labels) == pytest.approx(0.0, abs=0.3)
+    assert parc(features, labels, None) == pytest.approx(0.0, abs=0.3)
 
 
 def test_lower_tri():

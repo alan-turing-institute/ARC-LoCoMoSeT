@@ -28,7 +28,7 @@ def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.
 
     if f > min(features.shape):
         raise ValueError(
-            "Reduced dimension should not be less than minimum features dimension."
+            "Reduced dimension should not be more than minimum features dimension."
         )
 
     return PCA(
