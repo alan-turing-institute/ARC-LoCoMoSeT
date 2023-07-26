@@ -39,18 +39,15 @@ def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.
     ).fit_transform(features)
 
 
-def _lower_tri_arr(arr: ArrayLike) -> ArrayLike:
-    """Returns the lower triangular values (offset from the diagonal by 1) from a 2
-    dimensional square array as a 1 dimensional array.
-
-    NB: this actually pulls out the upper triangular values but applies to a symmetric
-    matrix by definition.
+def lower_tri_arr(arr: ArrayLike):
+    """Takes a square 2 dimensional array and returns the lower triangular values as a
+    1 dimensional array (offset from the diagonal by 1 (i.e. no diagonal values))
 
     Args:
-        arr : 2 dimension square array
+        arr : 2 dimensional square array for value extraction.
 
     Returns:
-        1 dimensional array of offset lower triangular values from input array
+        1 dimensional array of offset lower diagonal values from input array.
     """
     n = arr.shape[0]
     return arr[np.triu_indices(n, 1)]
@@ -87,4 +84,4 @@ def parc(
     dist_imgs = 1 - np.corrcoef(_feature_reduce(features, random_state, f=feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 
-    return spearmanr(_lower_tri_arr(dist_imgs), _lower_tri_arr(dist_labs))[0] * 100
+    return spearmanr(lower_tri_arr(dist_imgs), lower_tri_arr(dist_labs))[0] * 100
