@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from sklearn.preprocessing import OneHotEncoder
 
-from locomoset.metrics.parc import lower_tri_arr, parc
+from locomoset.metrics.parc import _feature_reduce, _lower_tri_arr, parc
 
 
 def test_parc_perfect_features():
@@ -23,7 +23,7 @@ def test_parc_perfect_features():
     features = OneHotEncoder(sparse_output=False).fit_transform(
         labels.reshape((n_samples, 1))
     )
-    assert parc(features, labels) == pytest.approx(100)
+    assert parc(features, labels, feat_red_dim=None) == pytest.approx(100)
 
 
 def test_parc_random_features():
@@ -33,8 +33,9 @@ def test_parc_random_features():
     n_classes = 3
     n_features = 5
     n_samples = 1000
-    labels = np.random.randint(0, n_classes, n_samples)
-    features = np.random.normal(size=(n_samples, n_features))
+    rng = np.random.default_rng(42)
+    labels = rng.integers(0, n_classes, n_samples)
+    features = rng.normal(size=(n_samples, n_features))
     assert parc(features, labels) == pytest.approx(0.0, abs=0.3)
 
 
@@ -46,16 +47,30 @@ def test_lower_tri():
     NB: This actually pulls out the upper triangular values but applies to a symmetric
     matrix by definition.
     """
+    n = 5
 
-    # randomly pick number from 2 -> 10
-    n = np.random.randint(low=2, high=11)
-
-    # create n^2 array of numbers from 1 -> n^2
+    # create n^2 array of numbers from 1 -> 25
     arr = np.array([i + 1 for i in range(n**2)]).reshape((n, n))
 
-    # analytical sum of upper triangular values
+    # analytical sum of upper triangular values for above matrix
     s = (n**2 * (n**2 + 1)) / 2 - sum(
         [(k * (k * (2 * n + 1) - 2 * n + 1)) / 2 for k in range(1, n + 1)]
     )
 
-    assert s == lower_tri_arr(arr)
+    assert s == sum(_lower_tri_arr(arr))
+
+
+def test_feature_reduce():
+    """
+    Test that the feature reduction method returns the features if f = None is given and
+    raises an exception if f > min(features.shape)
+    """
+    n_features = 5
+    n_samples = 1000
+    rng = np.random.default_rng(42)
+    features = rng.normal(size=(n_samples, n_features))
+
+    assert np.all(_feature_reduce(features, 42, None)) == np.all(features)
+
+    with pytest.raises(ValueError):
+        _feature_reduce(features, 42, 10000)
