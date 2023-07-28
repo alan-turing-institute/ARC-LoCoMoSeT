@@ -2,7 +2,7 @@
     Script to generate config files based on pre-config yaml files containing the
     models, datasets and parameters.
 """
-import itertools as it
+from itertools import product
 
 import yaml
 
@@ -21,12 +21,25 @@ def make_config(config_dict: dict):
         yaml.safe_dump(config_dict, file)
 
 
+def nest_string_in_list(string):
+    """Nest an element of a list in a list if it is a string, to convert it to an
+    element of an iterable rather than an iterable itself
+
+    Args:
+        string: string to be converted
+    """
+    return [string] if isinstance(string, str) else string
+
+
 def main():
     with open("config/pre_config_lists.yaml", "r") as file:
         pre_config_lists = yaml.safe_load(file)
 
     keys, values = zip(*pre_config_lists.items())
-    _ = [make_config(dict(zip(keys, v))) for v in it.product(*values)]
+    _ = [
+        make_config(dict(zip(keys, v)))
+        for v in product(*list(map(nest_string_in_list, values)))
+    ]
 
 
 if __name__ == "__main__":
