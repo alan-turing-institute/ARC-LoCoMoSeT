@@ -6,21 +6,16 @@ import argparse
 import json
 import os
 from datetime import datetime
-from itertools import product
 from time import time
 
 import yaml
 from datasets import load_dataset
-from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 from locomoset.datasets.preprocess import preprocess
-from locomoset.metrics.parc import parc
-from locomoset.metrics.renggli import renggli_score
+from locomoset.metrics.run_metric_func import compute_metric, parameter_sweep_dicts
 from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
-
-metric_funcs = {"parc": parc, "renggli": renggli_score}
 
 
 def run_metric(config: dict):
@@ -50,8 +45,7 @@ def run_metric(config: dict):
     del config["feat_red_dims"]
 
     # creates all experiment variants
-    config_keys, config_vals = zip(*config.items())
-    config_variants = [dict(config_keys, v) for v in product(*config_vals)]
+    config_variants = parameter_sweep_dicts(config)
 
     results = config
     results["results"] = []
@@ -72,27 +66,15 @@ def run_metric(config: dict):
 
     labels = dataset["label"]
 
+    print(f"Starting metric ({config['metric']}) computation loop...")
     for config_var in tqdm(config_variants):
-        if config_var["num_samples"] < len(labels):
-            run_features, _, run_labels, _ = train_test_split(
-                features,
-                labels,
-                train_size=config_var["num_samples"],
-                random_state=config_var["random_state"],
-            )
-        else:
-            run_features = features
-            run_labels = labels
-        metric_start = time()
-        result = metric_funcs[config_var["metric"]](
-            run_features, run_labels, random_state=config_var["random_state"]
-        )
+        result, metric_time = compute_metric(config_var, features, labels)
         results["result"].append(
             {
                 "score": result,
                 "random_state": config_var["random_state"],
                 "n_samples": config_var["n_samples"],
-                "metric_time": time() - metric_start,
+                "metric_time": metric_time,
             }
         )
         with open(save_path, "w") as f:
