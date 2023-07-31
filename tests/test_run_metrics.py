@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from sklearn.preprocessing import OneHotEncoder
 
-from locomoset.metrics.run_metric_func import (
+from locomoset.metrics.run import (
     compute_metric,
     nest_string_in_list,
     parameter_sweep_dicts,

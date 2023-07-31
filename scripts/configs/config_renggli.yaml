@@ -1,5 +1,0 @@
-model_name: "microsoft/swin-large-patch4-window12-384"
-dataset_name: "imagenet-1k"
-dataset_split: "validation"
-n_samples: [2000, 4000, 6000, 8000, 10000, 15000, 20000, 30000, 40000, 50000]
-random_states: [42, 43, 44]
