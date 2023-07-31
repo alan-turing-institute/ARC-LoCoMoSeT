@@ -20,7 +20,17 @@ This project aims to contrast and compare multiple low-cost metrics for selectin
 
 ## Usage
 
-**TODO**
+### Run a metric scan
+
+With the environment activated (`poetry shell`):
+
+```bash
+locomoset_run_metrics <config_file_path>
+```
+
+For an example config file see [configs/config_example.yaml](configs/config_example.yaml).
+
+This script will compute metrics scores for all permutations of the model names, no. images, random seeds, and metric names specified.
 
 ## Development
 

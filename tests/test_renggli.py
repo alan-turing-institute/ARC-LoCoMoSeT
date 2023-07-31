@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from sklearn.preprocessing import OneHotEncoder
 
-from locomoset.metrics.renggli import renggli_score
+from locomoset.metrics.renggli import renggli
 
 
 def test_renggli_perfect_features():
@@ -21,7 +21,7 @@ def test_renggli_perfect_features():
     features = OneHotEncoder(sparse_output=False).fit_transform(
         labels.reshape((n_samples, 1))
     )
-    assert renggli_score(features, labels) == 1
+    assert renggli(features, labels) == 1
 
 
 def test_renggli_random_features():
@@ -34,4 +34,4 @@ def test_renggli_random_features():
     n_samples = 1000
     labels = np.random.randint(0, n_classes, n_samples)
     features = np.random.normal(size=(n_samples, n_features))
-    assert renggli_score(features, labels) == pytest.approx(1 / n_classes, rel=0.3)
+    assert renggli(features, labels) == pytest.approx(1 / n_classes, rel=0.3)

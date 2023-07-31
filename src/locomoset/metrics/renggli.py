@@ -15,7 +15,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 
-def renggli_score(
+def renggli(
     features: ArrayLike,
     labels: ArrayLike,
     clf: BaseEstimator = Pipeline(
