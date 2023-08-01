@@ -94,6 +94,5 @@ def test_compute_metric():
     ] == pytest.approx(1 / n_classes, rel=0.3)
 
 
-def test_load_dataset(patch_load_dataset):
-    d = load_dataset("dummy_dataset", split="dummy_split")
-    print(d)
+def test_load_dataset(dummy_dataset_name, dummy_split):
+    load_dataset(dummy_dataset_name, split=dummy_split)

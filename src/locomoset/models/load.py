@@ -21,8 +21,12 @@ def get_model_and_processor(
     Returns:
         Model and preprocessor.
     """
-    model = AutoModelForImageClassification.from_pretrained(
-        model_name, num_labels=num_labels
-    )
+    if num_labels is not None:
+        model = AutoModelForImageClassification.from_pretrained(
+            model_name, num_labels=num_labels
+        )
+    else:
+        model = AutoModelForImageClassification.from_pretrained(model_name)
+
     processor = AutoImageProcessor.from_pretrained(model_name)
     return model, processor
