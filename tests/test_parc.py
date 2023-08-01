@@ -3,40 +3,29 @@ Test functions for the PARC score (src/locomoset/metrics/parc.py).
 """
 import numpy as np
 import pytest
-from sklearn.preprocessing import OneHotEncoder
 
 from locomoset.metrics.parc import _feature_reduce, _lower_tri_arr, parc
 
 
-def test_parc_perfect_features():
+def test_parc_perfect_features(dummy_features_perfect, dummy_labels):
     """
     Test that the PARC score is 100 if the features give perfect information about
     the labels.
 
     NB: This is without applying feature reduction to PARC.
     """
-    n_classes = 3
-    n_samples = 100
-    labels = np.random.randint(0, n_classes, n_samples)
-    # use one hot encoded labels as the input features (giving the classifier perfect
-    # information to distinguish between classes)
-    features = OneHotEncoder(sparse_output=False).fit_transform(
-        labels.reshape((n_samples, 1))
-    )
-    assert parc(features, labels, feat_red_dim=None) == pytest.approx(100)
+    assert parc(
+        dummy_features_perfect, dummy_labels, feat_red_dim=None
+    ) == pytest.approx(100)
 
 
-def test_parc_random_features():
+def test_parc_random_features(dummy_features_random, dummy_labels):
     """
     Test that the PARC score is 0 if the features are random noise.
     """
-    n_classes = 3
-    n_features = 5
-    n_samples = 1000
-    rng = np.random.default_rng(42)
-    labels = rng.integers(0, n_classes, n_samples)
-    features = rng.normal(size=(n_samples, n_features))
-    assert parc(features, labels, None) == pytest.approx(0.0, abs=0.3)
+    assert parc(dummy_features_random, dummy_labels, None) == pytest.approx(
+        0.0, abs=0.3
+    )
 
 
 def test_lower_tri():
@@ -60,17 +49,22 @@ def test_lower_tri():
     assert s == sum(_lower_tri_arr(arr))
 
 
-def test_feature_reduce():
+def test_feature_reduce(dummy_features_random, test_seed, rng, test_n_samples):
     """
-    Test that the feature reduction method returns the features if f = None is given and
-    raises an exception if f > min(features.shape)
+    Test that the feature reduction method:
+        - returns the features if f = None is given
+        - raises an exception if f > min(features.shape)
+        - returns the features with the correct shape if f < min(features.shape)
     """
-    n_features = 5
-    n_samples = 1000
-    rng = np.random.default_rng(42)
-    features = rng.normal(size=(n_samples, n_features))
-
-    assert np.all(_feature_reduce(features, 42, None)) == np.all(features)
+    assert np.all(_feature_reduce(dummy_features_random, test_seed, None)) == np.all(
+        dummy_features_random
+    )
 
     with pytest.raises(ValueError):
-        _feature_reduce(features, 42, 10000)
+        _feature_reduce(dummy_features_random, test_seed, 10000)
+
+    large_n_features = 100
+    features = rng.normal(size=(test_n_samples, large_n_features))
+    red_dim = 32
+    red_features = _feature_reduce(features, test_seed, f=red_dim)
+    assert red_features.shape == (test_n_samples, red_dim)
