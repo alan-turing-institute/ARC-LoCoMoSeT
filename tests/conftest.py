@@ -1,4 +1,5 @@
-import datasets
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 from datasets import Dataset
@@ -100,8 +101,5 @@ def patch_load_dataset(monkeypatch, dummy_dataset, dummy_split, dummy_dataset_na
 
         return dummy_dataset
 
-    """
     with patch("datasets.load_dataset", new=mock_load_dataset):
         yield None
-    """
-    monkeypatch.setattr(datasets, "load_dataset", mock_load_dataset)

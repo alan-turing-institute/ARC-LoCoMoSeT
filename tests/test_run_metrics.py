@@ -4,6 +4,7 @@
 
 import numpy as np
 import pytest
+from datasets import load_dataset
 from sklearn.preprocessing import OneHotEncoder
 
 from locomoset.metrics.run import (
@@ -91,3 +92,8 @@ def test_compute_metric():
     assert compute_metric(renggli_test_config, rand_features, labels)[
         0
     ] == pytest.approx(1 / n_classes, rel=0.3)
+
+
+def test_load_dataset(patch_load_dataset):
+    d = load_dataset("dummy_dataset", split="dummy_split")
+    print(d)
