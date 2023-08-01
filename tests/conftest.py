@@ -44,6 +44,10 @@ def dummy_features_random(rng, test_n_samples, test_n_features):
 
 @pytest.fixture
 def dummy_features_perfect(dummy_labels, test_n_samples):
+    """
+    Returns features perfectly correlated with the dummy_labels (one-hot encoded
+    labels).
+    """
     return OneHotEncoder(sparse_output=False).fit_transform(
         dummy_labels.reshape((test_n_samples, 1))
     )
