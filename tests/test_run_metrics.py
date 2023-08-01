@@ -1,11 +1,6 @@
 """
-    Tests for the run metrics script
+Tests for the run metrics script
 """
-
-import numpy as np
-import pytest
-from datasets import load_dataset
-from sklearn.preprocessing import OneHotEncoder
 
 from locomoset.metrics.run import (
     compute_metric,
@@ -60,39 +55,10 @@ def test_nest_string_in_list():
     assert type(nest_string_in_list(4)) == int
 
 
-def test_compute_metric():
+def test_compute_metric(dummy_config):
     """
-    Test the metric computation function.
+    Test the metric computation function runs.
     """
-    n_classes = 3
-    n_features = 5
-    n_samples = 1000
-    rng = np.random.default_rng(42)
-    labels = rng.integers(0, n_classes, n_samples)
-    perf_features = OneHotEncoder(sparse_output=False).fit_transform(
-        labels.reshape((n_samples, 1))
-    )
-    rand_features = rng.normal(size=(n_samples, n_features))
-
-    parc_test_config = {
-        "num_samples": 500,
-        "random_state": 42,
-        "metric": "parc",
-        "parc_test": True,
-    }
-    renggli_test_config = {"num_samples": 500, "random_state": 42, "metric": "renggli"}
-
-    assert compute_metric(parc_test_config, perf_features, labels)[0] == pytest.approx(
-        100
-    )
-    assert compute_metric(parc_test_config, rand_features, labels)[0] == pytest.approx(
-        0.0, abs=0.3
-    )
-    assert compute_metric(renggli_test_config, perf_features, labels)[0] == 1
-    assert compute_metric(renggli_test_config, rand_features, labels)[
-        0
-    ] == pytest.approx(1 / n_classes, rel=0.3)
-
-
-def test_load_dataset(dummy_dataset_name, dummy_split):
-    load_dataset(dummy_dataset_name, split=dummy_split)
+    result = compute_metric(dummy_config)
+    assert isinstance(result["result"]["score"], float)
+    assert isinstance(result["result"]["time"], float)

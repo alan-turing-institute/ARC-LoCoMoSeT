@@ -73,7 +73,7 @@ def compute_metric(config: dict) -> dict:
 
     print("Extracting features...")
     features_start = time()
-    features = get_features(dataset, model_head, batched=True, batch_size=4)
+    features = get_features(dataset, model_head)
     results["time"]["features"] = time() - features_start
 
     labels = dataset["label"]
