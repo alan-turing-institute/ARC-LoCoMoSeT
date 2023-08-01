@@ -2,7 +2,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from datasets import load_dataset
 from sklearn.preprocessing import OneHotEncoder
+from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 
 @pytest.fixture
@@ -63,14 +65,29 @@ def dummy_model_name():
 
 
 @pytest.fixture
-def dummy_config(
-    test_n_samples, test_seed, dummy_split, dummy_dataset_name, dummy_model_name
-):
+def dummy_dataset(dummy_dataset_name, dummy_split):
+    return load_dataset(dummy_dataset_name, split=dummy_split)
+
+
+@pytest.fixture
+def dummy_processor(dummy_model_name):
+    return AutoImageProcessor.from_pretrained(dummy_model_name)
+
+
+@pytest.fixture
+def dummy_model_head(dummy_model_name):
+    return AutoModelForImageClassification.from_pretrained(
+        dummy_model_name, num_labels=0
+    )
+
+
+@pytest.fixture
+def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
     return {
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
         "dataset_split": dummy_split,
-        "metric": "dummy_metric",
-        "n_samples": test_n_samples,
+        "metric": "renggli",
+        "n_samples": 50,
         "random_state": test_seed,
     }

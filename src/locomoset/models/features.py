@@ -7,7 +7,7 @@ from transformers.modeling_utils import PreTrainedModel
 
 
 def get_features(
-    processed_data: Dataset, model_head: PreTrainedModel, **map_kwargs
+    processed_data: Dataset, model_head: PreTrainedModel, batch_size: int = 4
 ) -> torch.tensor:
     """Takes preprocessed image data and calls a model with its classification head
     removed to generate features.
@@ -17,11 +17,13 @@ def get_features(
             'pixel_values' as a key.
         model_head: A model with its classification head removed. Takes pixel_values as
             input and outputs logits.
+        batch_size: No. of images passed to model_head at once.
 
     Returns:
         Extracted model features.
     """
     return processed_data.map(
         lambda image: model_head(image["pixel_values"]),
-        **map_kwargs,
+        batched=True,
+        batch_size=batch_size,
     )["logits"]
