@@ -1,11 +1,22 @@
 import argparse
 import json
+import os
+from glob import glob
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
 
 def load_results(file_paths: list[str]) -> list[dict]:
+    """Load results files from metric scans.
+
+    Args:
+        file_paths: Paths to results JSON files.
+        n_samples: If set, only load results for this many samples.
+
+    Returns:
+        Loaded results JSON files.
+    """
     results = []
     for rf in file_paths:
         with open(rf, "r") as f:
@@ -14,6 +25,15 @@ def load_results(file_paths: list[str]) -> list[dict]:
 
 
 def get_scores_samples(results: list[dict]) -> dict[str, dict]:
+    """Parse results into a dict containing metric scores and the no. of images
+    (samples) used to compute them for each metric present in the input results list.
+
+    Args:
+        results: Loaded results JSON files.
+
+    Returns:
+        Dict of extracted results for plotting.
+    """
     parsed_results = {}
 
     for r in results:
@@ -62,19 +82,32 @@ def main():
     parser = argparse.ArgumentParser(
         description="Make a plot of metric scores vs. no. images"
     )
-    parser.add_argument("results_files", nargs="+", help="Path(s) to results file(s)")
+    parser.add_argument(
+        "results_files",
+        nargs="+",
+        help="Paths to results files or a single directory containing results files.",
+    )
     args = parser.parse_args()
+    # If the user passes a directory, glob for all JSON files in that directory.
+    if len(args.results_files) == 1 and os.path.isdir(args.results_files[0]):
+        save_dir = args.results_files[0]
+        args.results_files = glob(os.path.join(args.results_files[0], "*.json"))
+    else:
+        save_dir = "."
+
     results = load_results(args.results_files)
     parsed_results = get_scores_samples(results)
     for metric in parsed_results:
-        _, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1)
         _ = plot_results(
             parsed_results[metric]["scores"],
             parsed_results[metric]["n_samples"],
             metric,
             ax,
         )
-        plt.show()
+        fig.tight_layout()
+        fig.savefig(f"{save_dir}/{metric}_vs_samples.png")
+        print("Saved figure to", f"{save_dir}/{metric}_vs_samples.png")
 
 
 if __name__ == "__main__":

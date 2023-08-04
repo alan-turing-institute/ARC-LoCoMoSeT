@@ -129,13 +129,12 @@ def run(config: dict):
 
     for config_var in tqdm(config_variants):
         print(f"Starting computation for {config_var}...")
-        date_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+        date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         save_path = f"{save_dir}/results_{date_str}.json"
         results = compute_metric(config_var)
         with open(save_path, "w") as f:
             json.dump(results, f, default=float)
-
-    print(f"DONE! Results saved to {save_path}")
+        print(f"Results saved to {save_path}")
 
 
 def main():

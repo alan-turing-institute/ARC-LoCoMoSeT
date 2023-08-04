@@ -5,7 +5,7 @@ metric for transferability:
 Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selection
 for accessible transfer learning." Advances in Neural Information Processing Systems
 34 (2021): 19301-19312.
-ls"""
+"""
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr

@@ -1,14 +1,12 @@
 import argparse
 import json
+import os
+from glob import glob
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
-
-def load_actual_scores() -> dict[str, float]:
-    with open("results/model_scores_imagenet1k.json", "r") as f:
-        actuals = json.load(f)
-    return actuals
+from locomoset.models.scores import imagenet1k_scores
 
 
 def load_results(file_paths: list[str], n_samples=None) -> list[dict]:
@@ -19,7 +17,7 @@ def load_results(file_paths: list[str], n_samples=None) -> list[dict]:
         n_samples: If set, only load results for this many samples.
 
     Returns:
-        list[dict]: _description_
+        Loaded results JSON files.
     """
     results = []
     for rf in file_paths:
@@ -31,9 +29,16 @@ def load_results(file_paths: list[str], n_samples=None) -> list[dict]:
     return results
 
 
-def get_scores_actuals(
-    results: list[dict], actuals: dict[str, float]
-) -> dict[str, dict]:
+def get_scores_actuals(results: list[dict]) -> dict[str, dict]:
+    """Parse results into a dict containing metric scores and actual fine-tuned
+    performance for each metric present in the input results list.
+
+    Args:
+        results: Loaded results JSON files.
+
+    Returns:
+        Dict of extracted results for plotting.
+    """
     parsed_results = {}
 
     for r in results:
@@ -48,7 +53,7 @@ def get_scores_actuals(
             parsed_results[metric]["actuals"][model] = []
 
         parsed_results[metric]["scores"][model].append(r["result"]["score"])
-        parsed_results[metric]["actuals"][model].append(actuals[model])
+        parsed_results[metric]["actuals"][model].append(imagenet1k_scores[model])
 
     return parsed_results
 
@@ -90,9 +95,13 @@ def plot_results(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Make a plot of metric scores vs. no. images"
+        description="Make a plot of metric scores vs. actual fine-tuned performance"
     )
-    parser.add_argument("results_files", nargs="+", help="Path(s) to results file(s)")
+    parser.add_argument(
+        "results_files",
+        nargs="+",
+        help="Paths to results files or a single directory containing results files.",
+    )
     parser.add_argument(
         "--n_samples",
         required=False,
@@ -101,11 +110,17 @@ def main():
         help="If set, only plot results with this many samples.",
     )
     args = parser.parse_args()
+    # If the user passes a directory, glob for all JSON files in that directory.
+    if len(args.results_files) == 1 and os.path.isdir(args.results_files[0]):
+        save_dir = args.results_files[0]
+        args.results_files = glob(os.path.join(args.results_files[0], "*.json"))
+    else:
+        save_dir = "."
+
     results = load_results(args.results_files, args.n_samples)
-    actuals = load_actual_scores()
-    parsed_results = get_scores_actuals(results, actuals)
+    parsed_results = get_scores_actuals(results)
     for metric in parsed_results:
-        _, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1)
         _ = plot_results(
             parsed_results[metric]["scores"],
             parsed_results[metric]["actuals"],
@@ -113,7 +128,9 @@ def main():
             args.n_samples,
             ax,
         )
-        plt.show()
+        fig.tight_layout()
+        fig.savefig(f"{save_dir}/actual_vs_{metric}.png")
+        print("Saved figure to", f"{save_dir}/actual_vs_{metric}.png")
 
 
 if __name__ == "__main__":
