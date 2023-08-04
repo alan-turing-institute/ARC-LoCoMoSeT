@@ -12,13 +12,24 @@ This project aims to contrast and compare multiple low-cost metrics for selectin
 
 1. Clone this repository
 
-2. Install with `pip`:
+2. Install with `pip` (or see the developer setup below for using a poetry environment instead):
 
    ```bash
    pip install .
    ```
 
 ## Usage
+
+### Download ImageNet
+
+ImageNet-1k is gated so you need to login with a HuggingFace token to download it (they're under <https://huggingface.co/settings/tokens> in your account settings). Once you have a token:
+
+```bash
+huggingface-cli login
+python -c "import datasets; datasets.load_dataset('imagenet-1k')"
+```
+
+But note this will take a long time (hours).
 
 ### Run a metric scan
 
@@ -28,9 +39,23 @@ With the environment activated (`poetry shell`):
 locomoset_run_metrics <config_file_path>
 ```
 
-For an example config file see [configs/config_example.yaml](configs/config_example.yaml).
+For an example config file see [configs/config_wp1.yaml](configs/config_example.yaml).
 
 This script will compute metrics scores for all permutations of the model names, no. images, random seeds, and metric names specified.
+
+### Save plots
+
+Currently implemented as separate scripts only, not in the main locomoset package.
+
+To make a plot of metric scores vs. no of images and actual performance vs. metric scores:
+
+```bash
+cd scripts
+python plot_vs_actual.py <PATH_TO_RESULTS_DIR>
+python plot_vs_samples.py <PATH_TO_RESULTS_DIR>
+```
+
+Where `<PATH_TO_RESULTS_DIR>` is the patch to a directory containing JSON files produced by a metric scan.
 
 ## Development
 
@@ -49,14 +74,6 @@ This script will compute metrics scores for all permutations of the model names,
    ```
 
 ### Common Commands/Tasks
-
-- To add dependencies to the poetry environment:
-
-   ```bash
-   poetry add <PACKAGE_NAME>
-   ```
-
-  See [the poetry documentation](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) for more details on specifying dependencies.
 
 - To run commands in the poetry virtual environment (in a terminal), either:
   - Prefix the command you want to run with `poetry run`
@@ -79,7 +96,3 @@ This script will compute metrics scores for all permutations of the model names,
     poetry run isort .
     poetry run flake8
     ```
-
-- Your source code files should go in the `src/todo_packagename` directory (with `todo_packagename` replaced with the name of your package). These will be available as a python package, i.e. you can do `from todo_mypackagename.myfile import myfunction` etc.
-
-- Add tests (in files with names like `test_*.py` and with functions with names starting `test_*`) the `tests/` directory.
