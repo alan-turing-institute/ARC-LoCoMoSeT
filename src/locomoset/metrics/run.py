@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 from itertools import product
 from time import time
+from typing import Any, Iterable
 
 import yaml
 from datasets import load_dataset
@@ -20,17 +21,16 @@ from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
 
 
-def nest_string_in_list(string: list | str) -> list:
-    """Nest an element of a list in a list if it is a string, to convert it to an
-    element of an iterable rather than an iterable itself
+def nest_var_in_list(var: Any) -> list[Any]:
+    """Nest a variable in a list if it is not an iterable, or is a string.
 
     Args:
-        string: string to be converted
+        var: variable to be converted
 
     Returns:
-        list containing the string
+        list containing the variable
     """
-    return [string] if isinstance(string, str) else string
+    return [var] if not isinstance(var, Iterable) or isinstance(var, str) else var
 
 
 def parameter_sweep_dicts(config: dict) -> list[dict]:
@@ -46,7 +46,7 @@ def parameter_sweep_dicts(config: dict) -> list[dict]:
     config_keys, config_vals = zip(*config.items())
     return [
         dict(zip(config_keys, v))
-        for v in product(*list(map(nest_string_in_list, config_vals)))
+        for v in product(*list(map(nest_var_in_list, config_vals)))
     ]
 
 
