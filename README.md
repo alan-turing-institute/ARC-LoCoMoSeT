@@ -55,7 +55,7 @@ python plot_vs_actual.py <PATH_TO_RESULTS_DIR>
 python plot_vs_samples.py <PATH_TO_RESULTS_DIR>
 ```
 
-Where `<PATH_TO_RESULTS_DIR>` is the patch to a directory containing JSON files produced by a metric scan.
+Where `<PATH_TO_RESULTS_DIR>` is the path to a directory containing JSON files produced by a metric scan.
 
 ## Development
 
