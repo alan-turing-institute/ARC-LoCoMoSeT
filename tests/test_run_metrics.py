@@ -53,7 +53,9 @@ def test_nest_var_in_list():
     Test the function that nests a string in a list to avoid iterable confounding.
     """
     assert type(nest_var_in_list("test")) == list
-    assert type(nest_var_in_list(4)) == int
+    assert type(nest_var_in_list(["test"])) == list
+    assert type(nest_var_in_list(4)) == list
+    assert type(nest_var_in_list([4])) == list
 
 
 def test_compute_metric(dummy_config):
