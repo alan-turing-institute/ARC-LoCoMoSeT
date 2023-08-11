@@ -12,7 +12,8 @@ def test_parc_perfect_features(dummy_features_perfect, dummy_labels):
     Test that the PARC score is 100 if the features give perfect information about
     the labels.
 
-    NB: This is without applying feature reduction to PARC.
+    NB: This is without applying feature reduction to PARC. If feature reduction is
+    included this no longer returns perfect results.
     """
     assert parc(
         dummy_features_perfect, dummy_labels, feat_red_dim=None
