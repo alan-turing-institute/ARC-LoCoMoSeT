@@ -41,21 +41,41 @@ locomoset_run_metrics <config_file_path>
 
 For an example config file see [configs/config_wp1.yaml](configs/config_example.yaml).
 
-This script will compute metrics scores for all permutations of the model names, no. images, random seeds, and metric names specified.
+This script will compute metrics scores for all permutations of the model names, no. images, random seeds, and metric names specified. Results will be saved to the directory specified in the config file.
 
 ### Save plots
 
-Currently implemented as separate scripts only, not in the main locomoset package.
+#### Metric Scores vs. No. of Images
 
-To make a plot of metric scores vs. no of images and actual performance vs. metric scores:
+This plot shows how the metric values (y-axis) change with the number of images (samples) used to compute them (x-axis). Ideally the metric should converge to some fixed value which does not change much after the number of images is increased. The number of images it takes to get a reliable performance prediction determines how long it takes to compute the metric, so metrics that converge after seeing fewer images are preferable.
+
+To make a plot of metric scores vs. actual fine-tuned performance performance:
 
 ```bash
-cd scripts
-python plot_vs_actual.py <PATH_TO_RESULTS_DIR> --scores_file <path_to_scores_file> --n_samples <n_samples>
-python plot_vs_samples.py <PATH_TO_RESULTS_DIR>
+locomoset_plot_vs_samples <PATH_TO_RESULTS_DIR>
 ```
 
-Where `<PATH_TO_RESULTS_DIR>` is the path to a directory containing JSON files produced by a metric scan.
+Where  `<PATH_TO_RESULTS_DIR>` is the path to a directory containing JSON files produced by a metric scan (see above).
+
+You can also run `locomoset_plot_vs_samples --help` to see the arguments.
+
+#### Metric Scores vs. Fine-Tuned Performance
+
+This plot shows the predicted performance score for each model from one of the low-cost metrics on the x-axis, and the actual fine-tuned performance of the models on that dataset on the y-axis. A high quality metric should have high correlation between its score (which is meant to reflect the transferability of the model to the new dataset) and the actual fine-tuned model performance.
+
+To make this plot:
+
+```bash
+locomoset_plot_vs_actual <PATH_TO_RESULTS_DIR> --scores_file <path_to_scores_file> --n_samples <n_samples>
+```
+
+Where:
+
+- `<PATH_TO_RESULTS_DIR>` is the path to a directory containing JSON files produced by a metric scan (see above).
+- `<path_to_scores_file>` is a mapping between model names and fine-tuned performance on ImageNet-1k, such as the file [configs/scores_imagenet1k.yaml](configs/scores_imagenet1k.yaml) in this repo.
+- `<n_samples>` sets the no. of samples (images) the metric was computed with to plot. Usually a metrics scan includes results with different numbers of images, but for this plot the different metrics should be compared using a fixed no. of images only.
+
+You can also run `locomoset_plot_vs_actual --help` to see the arguments.
 
 ## Development
 

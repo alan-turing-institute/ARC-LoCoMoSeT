@@ -35,6 +35,8 @@ jupyterlab = "^4.0.2"
 
 [tool.poetry.scripts]
 locomoset_run_metrics = 'locomoset.metrics.run:main'
+locomoset_plot_vs_actual = 'locomoset.plots.plot_vs_actual:main'
+locomoset_plot_vs_samples = 'locomoset.plots.plot_vs_samples:main'
 
 [tool.black]
 line-length = 88
