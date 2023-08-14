@@ -25,7 +25,7 @@ def test_parc_random_features(dummy_features_random, dummy_labels):
     Test that the PARC score is 0 if the features are random noise.
     """
     assert parc(dummy_features_random, dummy_labels, None) == pytest.approx(
-        0.0, abs=0.3
+        0.0, abs=0.2
     )
 
 
