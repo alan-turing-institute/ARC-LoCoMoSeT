@@ -18,9 +18,7 @@ from sklearn.preprocessing import StandardScaler
 def renggli(
     features: ArrayLike,
     labels: ArrayLike,
-    clf: BaseEstimator = Pipeline(
-        (("scaler", StandardScaler()), ("logistic", LogisticRegression()))
-    ),
+    clf: BaseEstimator | None = None,
     metric: Callable = accuracy_score,
     test_size: float = 0.25,
     random_state: int = None,
@@ -37,7 +35,7 @@ def renggli(
     Args:
         features: Input features of shape (num_samples, num_features).
         labels: Input labels of shape (num_samples, 1).
-        clf: Type of classifier to fit.
+        clf: Type of classifier to fit. If None defaults to a LogisticRegression model.
         metric: Metric used to evaluate the classifier on the test set.
         test_size: Size of test set (fraction of features and labels to exclude from
             training for evaluation).
@@ -46,8 +44,11 @@ def renggli(
     Returns:
         Metric score of the trained classifier on the test set.
     """
-
     np.random.seed(random_state)
+    if clf is None:
+        clf = Pipeline(
+            (("scaler", StandardScaler()), ("logistic", LogisticRegression()))
+        )
     feats_train, feats_test, labels_train, labels_test = train_test_split(
         features,
         labels,
