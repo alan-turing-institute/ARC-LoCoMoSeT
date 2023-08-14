@@ -4,9 +4,8 @@ import os
 from glob import glob
 
 import matplotlib.pyplot as plt
+import yaml
 from matplotlib.axes import Axes
-
-from locomoset.models.scores import imagenet1k_scores
 
 
 def load_results(file_paths: list[str], n_samples=None) -> list[dict]:
@@ -29,12 +28,28 @@ def load_results(file_paths: list[str], n_samples=None) -> list[dict]:
     return results
 
 
-def get_scores_actuals(results: list[dict]) -> dict[str, dict]:
+def load_actuals(path: str) -> dict[str, float]:
+    """Load actual model scores from a YAML file.
+
+    Args:
+        path (str): Path to a YAML file with mappings from model names to fine-tuned
+            performance scores, e.g. one line of the file could be:
+            microsoft/cvt-13: 81.6
+
+    Returns:
+        dict[str, float]: Loaded dictionary of model names to scores.
+    """
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+def get_scores_actuals(results: list[dict], actuals: dict) -> dict[str, dict]:
     """Parse results into a dict containing metric scores and actual fine-tuned
     performance for each metric present in the input results list.
 
     Args:
         results: Loaded results JSON files.
+        actuals: Loaded mapping from model names to fine-tuned performance scores.
 
     Returns:
         Dict of extracted results for plotting.
@@ -53,7 +68,7 @@ def get_scores_actuals(results: list[dict]) -> dict[str, dict]:
             parsed_results[metric]["actuals"][model] = []
 
         parsed_results[metric]["scores"][model].append(r["result"]["score"])
-        parsed_results[metric]["actuals"][model].append(imagenet1k_scores[model])
+        parsed_results[metric]["actuals"][model].append(actuals[model])
 
     return parsed_results
 
@@ -103,6 +118,14 @@ def main():
         help="Paths to results files or a single directory containing results files.",
     )
     parser.add_argument(
+        "--scores_file",
+        type=str,
+        help=(
+            "Path to YAML file containing mapping from model names to fine-tuned model "
+            "scores."
+        ),
+    )
+    parser.add_argument(
         "--n_samples",
         required=False,
         default=None,
@@ -118,7 +141,8 @@ def main():
         save_dir = "."
 
     results = load_results(args.results_files, args.n_samples)
-    parsed_results = get_scores_actuals(results)
+    actuals = load_actuals(args.scores_file)
+    parsed_results = get_scores_actuals(results, actuals)
     for metric in parsed_results:
         fig, ax = plt.subplots(1, 1)
         _ = plot_results(
