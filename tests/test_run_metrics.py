@@ -65,7 +65,3 @@ def test_compute_metric(dummy_config):
     result = compute_metric(dummy_config)
     assert isinstance(result["result"]["score"], float)
     assert isinstance(result["result"]["time"], float)
-
-
-if __name__ == "__main__":
-    test_parameter_sweep()
