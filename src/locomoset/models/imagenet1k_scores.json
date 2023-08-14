@@ -1,7 +1,0 @@
-{
-    "facebook/deit-tiny-patch16-224": 72.2,
-    "facebook/deit-small-patch16-224": 79.9,
-    "facebook/deit-base-patch16-224": 81.8,
-    "google/vit-base-patch16-384": 85.49,
-    "microsoft/cvt-13": 81.6
-}

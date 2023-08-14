@@ -51,7 +51,7 @@ To make a plot of metric scores vs. no of images and actual performance vs. metr
 
 ```bash
 cd scripts
-python plot_vs_actual.py <PATH_TO_RESULTS_DIR>
+python plot_vs_actual.py <PATH_TO_RESULTS_DIR> --scores_file <path_to_scores_file> --n_samples <n_samples>
 python plot_vs_samples.py <PATH_TO_RESULTS_DIR>
 ```
 
