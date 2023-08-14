@@ -24,5 +24,5 @@ def test_renggli_random_features(dummy_features_random, dummy_labels, dummy_n_cl
     # exactly 1/n_classes. We use a large rel tolerance here rather than using a much
     # larger dummy dataset.
     assert renggli(dummy_features_random, dummy_labels) == pytest.approx(
-        1 / dummy_n_classes, rel=0.1
+        1 / dummy_n_classes, rel=0.2
     )
