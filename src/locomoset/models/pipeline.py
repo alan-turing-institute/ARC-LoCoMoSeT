@@ -1,4 +1,5 @@
 import torch
+from PIL.Image import Image
 from transformers import Pipeline
 from transformers.modeling_outputs import ImageClassifierOutput
 
@@ -23,19 +24,25 @@ class ImageFeaturesPipeline(Pipeline):
         return {}, {}, {}
 
     def preprocess(
-        self, input_: dict, **preprocess_parameters: dict
+        self, input_: dict[str, Image], **preprocess_parameters: dict
     ) -> dict[str, torch.tensor]:
-        """Preprocess a single image.
+        """Preprocess a batch of images (or a single image in streaming mode).
 
         Args:
-            input_: Single sample from an image dataset, a dict with the key 'image'
-                containing a PIL image.
+            input_: Batch from an image dataset, a dict with the key 'image'
+                containing a single PIL image or a list of PIL images.
             preprocess_parameters: Unused here but required for compatibility with the
                 base Pipeline class.
 
         Returns:
-            Processed sample, a dict with the key 'pixel_values' containing a tensor.
+            Processed batch/image, a dict with the key 'pixel_values' containing a
+                tensor.
         """
+        if isinstance(input_["image"], list):
+            return self.image_processor(
+                [i.convert("RGB") for i in input_["image"]], return_tensors="pt"
+            )
+
         return self.image_processor(input_["image"].convert("RGB"), return_tensors="pt")
 
     def _forward(
@@ -62,12 +69,12 @@ class ImageFeaturesPipeline(Pipeline):
         """Extract features from the model output.
 
         Args:
-            model_outputs: Output of the model, in this including the key `logits` which
-                contains the features for one image.
+            model_outputs: Output of the model including the key `logits` which
+                contains the features for one image (or multiple images).
             postprocess_parameters: Unused here but required for compatibility with the
                 base Pipeline class.
 
         Returns:
-            Tensor containing features for one image.
+            Tensor containing features for one image (or multiple images).
         """
         return model_outputs["logits"]
