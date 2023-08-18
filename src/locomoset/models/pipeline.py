@@ -11,6 +11,10 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
     """
     A custom pipeline for returning the features of an image from a model with its
     classification head removed.
+
+    The input to the pipeline is expected to be a PIL image, list of PIL images, a path
+    to an image, or a list of paths. See the parent class
+    (ImageClassificationPipeline.__call__) for details.
     """
 
     def __init__(
@@ -23,19 +27,19 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
         # Check the model has its classification head removed
         err_prefix = (
             "model must have its classification head removed to use "
-            "ImageFeaturesPipeline"
+            "ImageFeaturesPipeline - set num_labels=0 when loading the model. Error:"
         )
         if hasattr(model, "classifier"):
             if not isinstance(model.classifier, torch.nn.Identity):
                 raise ValueError(
-                    f"{err_prefix} (model.classifier should be torch.nn.Identity "
-                    f"but it was {type(model.classifier)})"
+                    f"{err_prefix} model.classifier should be torch.nn.Identity "
+                    f"but it was {type(model.classifier)}"
                 )
         elif hasattr(model, "config") and hasattr(model.config, "num_labels"):
             if model.config.num_labels != 0:
                 raise ValueError(
-                    f"{err_prefix} (model.config.num_labels should be 0 but it was "
-                    f"{model.config.num_labels})"
+                    f"{err_prefix} model.config.num_labels should be 0 but it was "
+                    f"{model.config.num_labels}"
                 )
         else:
             warnings.warn(
