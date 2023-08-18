@@ -1,67 +1,54 @@
+import warnings
+
 import torch
-from PIL.Image import Image
-from transformers import Pipeline
+from transformers.image_processing_utils import BaseImageProcessor
 from transformers.modeling_outputs import ImageClassifierOutput
+from transformers.modeling_utils import PreTrainedModel
+from transformers.pipelines import ImageClassificationPipeline
 
 
-class ImageFeaturesPipeline(Pipeline):
+class ImageFeaturesPipeline(ImageClassificationPipeline):
     """
     A custom pipeline for returning the features of an image from a model with its
     classification head removed.
     """
 
-    def __init__(self, *args, **kwargs):
-        for expected_arg in ["model", "image_processor"]:
-            if expected_arg not in kwargs:
+    def __init__(
+        self,
+        *args,
+        model: PreTrainedModel,
+        image_processor: BaseImageProcessor,
+        **kwargs,
+    ):
+        # Check the model has its classification head removed
+        err_prefix = (
+            "model must have its classification head removed to use "
+            "ImageFeaturesPipeline"
+        )
+        if hasattr(model, "classifier"):
+            if not isinstance(model.classifier, torch.nn.Identity):
                 raise ValueError(
-                    f"{expected_arg} must be passed to ImageFeaturesPipeline"
+                    f"{err_prefix} (model.classifier should be torch.nn.Identity "
+                    f"but it was {type(model.classifier)})"
                 )
-        super().__init__(*args, **kwargs)
+        elif hasattr(model, "config") and hasattr(model.config, "num_labels"):
+            if model.config.num_labels != 0:
+                raise ValueError(
+                    f"{err_prefix} (model.config.num_labels should be 0 but it was "
+                    f"{model.config.num_labels})"
+                )
+        else:
+            warnings.warn(
+                "Unable to check model has classification head removed (model does not "
+                "have a classifier attribute or a config.num_labels attribute)"
+            )
+
+        super().__init__(*args, model=model, image_processor=image_processor, **kwargs)
 
     def _sanitize_parameters(self, **pipeline_parameters: dict) -> (dict, dict, dict):
         """Not used here but required for inheriting from the Pipeline class. Returns
         parameters to pass to the `preprocess`, `forward` and `postprocess` methods"""
         return {}, {}, {}
-
-    def preprocess(
-        self, input_: dict[str, Image], **preprocess_parameters: dict
-    ) -> dict[str, torch.tensor]:
-        """Preprocess a batch of images (or a single image in streaming mode).
-
-        Args:
-            input_: Batch from an image dataset, a dict with the key 'image'
-                containing a single PIL image or a list of PIL images.
-            preprocess_parameters: Unused here but required for compatibility with the
-                base Pipeline class.
-
-        Returns:
-            Processed batch/image, a dict with the key 'pixel_values' containing a
-                tensor.
-        """
-        if isinstance(input_["image"], list):
-            return self.image_processor(
-                [i.convert("RGB") for i in input_["image"]], return_tensors="pt"
-            )
-
-        return self.image_processor(input_["image"].convert("RGB"), return_tensors="pt")
-
-    def _forward(
-        self, model_inputs: dict[str, torch.tensor], **forward_parameters: dict
-    ) -> ImageClassifierOutput:
-        """Pass a batch of processed images to the headless model.
-
-        Args:
-            model_inputs: A batch of processed images, a dict with the key
-                'pixel_values' containing a tensor with shape
-                (batch_size, n_channels, image_size, image_size).
-            forward_parameters: Unused here but required for compatibility with the
-                base Pipeline class.
-
-        Returns:
-            Output of the model, in this including the key `logits` which contains the
-                features of each image in the batch.
-        """
-        return self.model(model_inputs["pixel_values"])
 
     def postprocess(
         self, model_outputs: ImageClassifierOutput, **postprocess_parameters: dict
