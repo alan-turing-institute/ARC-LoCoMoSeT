@@ -6,6 +6,7 @@ from datasets import Dataset, IterableDataset, load_dataset
 from tqdm import tqdm
 from transformers.image_processing_utils import BaseImageProcessor
 from transformers.modeling_utils import PreTrainedModel
+from transformers.pipelines.pt_utils import KeyDataset
 
 from locomoset.models.load import get_model_and_processor
 from locomoset.models.pipeline import ImageFeaturesPipeline
@@ -34,10 +35,19 @@ def get_features(
     Returns:
         Extracted model features.
     """
-    pipeline = ImageFeaturesPipeline(model=model_head, image_processor=processor)
+    # Note the conversion to a KeyDataset is important here:
+    #  - KeyDataset inherits from torch.utils.data.Dataset. The HuggingFace
+    #    datasets.Dataset class does not.
+    #  - Pipelines expect a torch.utils.data.Dataset as input to enable batched
+    #    processing.
+    #  - Pipelines generally expect only to be given the relevant input (image in this
+    #    case), not the whole sample with labels, metadata etc. This is what a
+    #    KeyDataset provides when iterated over.
     if isinstance(dataset, Dataset):
-        n_images = n_images or len(dataset)
-        dataset = dataset.to_iterable_dataset()
+        n_images = n_images or len(dataset)  # used for progress bar
+    dataset = KeyDataset(dataset, "image")
+
+    pipeline = ImageFeaturesPipeline(model=model_head, image_processor=processor)
     pipe_iter = pipeline(dataset, batch_size=batch_size)
 
     features = []
