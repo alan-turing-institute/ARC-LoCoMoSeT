@@ -2,13 +2,12 @@
 Helper functions for extracting model features on a dataset.
 """
 import torch
-from datasets import Dataset, IterableDataset, load_dataset
+from datasets import Dataset, IterableDataset
 from tqdm import tqdm
 from transformers.image_processing_utils import BaseImageProcessor
 from transformers.modeling_utils import PreTrainedModel
 from transformers.pipelines.pt_utils import KeyDataset
 
-from locomoset.models.load import get_model_and_processor
 from locomoset.models.pipeline import ImageFeaturesPipeline
 
 
@@ -18,6 +17,7 @@ def get_features(
     model_head: PreTrainedModel,
     batch_size: int = 4,
     n_images: int | None = None,
+    device: int | torch.device = None,
 ) -> torch.tensor:
     """Takes preprocessed image data and calls a model with its classification head
     removed to generate features.
@@ -31,6 +31,7 @@ def get_features(
         batch_size: No. of images passed to model_head at once.
         n_images: If set, only extract features for the first n_images images. Otherwise
             get features for all the images.
+        device: Device to run model_head on.
 
     Returns:
         Extracted model features.
@@ -40,14 +41,18 @@ def get_features(
     #    datasets.Dataset class does not.
     #  - Pipelines expect a torch.utils.data.Dataset as input to enable batched
     #    processing.
-    #  - Pipelines generally expect only to be given the relevant input (image in this
-    #    case), not the whole sample with labels, metadata etc. This is what a
+    #  - Pipelines generally expect only to be given the relevant input only (image in
+    #    this case), not the whole sample with labels, metadata etc. This is what the
     #    KeyDataset provides when iterated over.
     if isinstance(dataset, Dataset):
         n_images = n_images or len(dataset)  # used for progress bar
     dataset = KeyDataset(dataset, "image")
 
-    pipeline = ImageFeaturesPipeline(model=model_head, image_processor=processor)
+    pipeline = ImageFeaturesPipeline(
+        model=model_head,
+        image_processor=processor,
+        device=device,
+    )
     pipe_iter = pipeline(dataset, batch_size=batch_size)
 
     features = []
@@ -56,15 +61,6 @@ def get_features(
             break
         features.append(img_features)
 
-    features = torch.concatenate(features)
+    features = torch.cat(features)
 
     return features
-
-
-if __name__ == "__main__":
-    dataset = load_dataset("pcuenq/oxford-pets", split="train")
-    model, processor = get_model_and_processor(
-        "facebook/deit-tiny-patch16-224", num_labels=0
-    )
-    feats = get_features(dataset, processor, model, n_images=100)
-    print(feats.shape)
