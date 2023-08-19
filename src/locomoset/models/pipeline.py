@@ -13,8 +13,10 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
     classification head removed.
 
     The input to the pipeline is expected to be a PIL image, list of PIL images, a path
-    to an image, or a list of paths. See the parent class
-    (ImageClassificationPipeline.__call__) for details.
+    to an image, or a list of paths. The only difference to ImageClassificationPipeline
+    is that the output is the features of the image(s), the additional postprocessing to
+    extract the class labels is not needed. See the parent ImageClassificationPipeline
+    class for more details.
     """
 
     def __init__(
@@ -24,6 +26,14 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
         image_processor: BaseImageProcessor,
         **kwargs,
     ):
+        """Initialise an ImageFeaturesPipeline.
+
+        Args:
+            model: A model with its classification head removed. Takes pixel_values as
+                input and outputs logits.
+            processor: Image preprocessor compatible with model_head.
+        """
+
         # Check the model has its classification head removed
         err_prefix = (
             "model must have its classification head removed to use "
@@ -48,11 +58,6 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
             )
 
         super().__init__(*args, model=model, image_processor=image_processor, **kwargs)
-
-    def _sanitize_parameters(self, **pipeline_parameters: dict) -> (dict, dict, dict):
-        """Not used here but required for inheriting from the Pipeline class. Returns
-        parameters to pass to the `preprocess`, `forward` and `postprocess` methods"""
-        return {}, {}, {}
 
     def postprocess(
         self, model_outputs: ImageClassifierOutput, **postprocess_parameters: dict

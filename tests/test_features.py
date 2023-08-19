@@ -1,8 +1,6 @@
 import pytest
 import torch
 from transformers import AutoModelForImageClassification
-from transformers.image_processing_utils import BaseImageProcessor
-from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.models.features import get_features
 from locomoset.models.pipeline import ImageFeaturesPipeline
@@ -25,21 +23,19 @@ def dummy_processed_image(dummy_image, dummy_processor):
     return dummy_processor(dummy_image.convert("RGB"), return_tensors="pt")
 
 
-def test_pipe_create(dummy_pipeline):
+def test_pipe_create(dummy_pipeline, dummy_model_head, dummy_processor):
     """
     Test an ImageFeaturesPipeline can be instantiated.
     """
     assert isinstance(dummy_pipeline, ImageFeaturesPipeline)
-    assert isinstance(dummy_pipeline.model, PreTrainedModel)
-    assert isinstance(dummy_pipeline.image_processor, BaseImageProcessor)
+    assert dummy_pipeline.model is dummy_model_head
+    assert dummy_pipeline.image_processor is dummy_processor
 
 
 def test_pipe_fails_with_head(dummy_model_name, dummy_processor):
-    """_summary_
-
-    Args:
-        dummy_model_name (_type_): _description_
-        dummy_processor (_type_): _description_
+    """
+    Test an ImageFeaturesPipeline cannot be instantiated with a model that still has its
+    classification head.
     """
     model = AutoModelForImageClassification.from_pretrained(dummy_model_name)
     with pytest.raises(ValueError):
@@ -76,5 +72,13 @@ def test_get_features(dummy_dataset, dummy_processor, dummy_model_head):
     """
     Test running the pipeline on a whole dataset to extract features.
     """
+    # whole dataset
     features = get_features(dummy_dataset, dummy_processor, dummy_model_head)
     assert features.shape == (len(dummy_dataset), dummy_model_head.config.hidden_size)
+
+    # data subset
+    n_images = 3
+    features = get_features(
+        dummy_dataset, dummy_processor, dummy_model_head, n_images=n_images
+    )
+    assert features.shape == (n_images, dummy_model_head.config.hidden_size)
