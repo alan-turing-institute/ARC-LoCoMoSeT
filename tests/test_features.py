@@ -41,6 +41,12 @@ def test_pipe_fails_with_head(dummy_model_name, dummy_processor):
     with pytest.raises(ValueError):
         ImageFeaturesPipeline(model=model, image_processor=dummy_processor)
 
+    # if the model doesn't have a 'classifier' module, creation of the pipeline should
+    # still fail as model.config.num_labels is not 0
+    delattr(model, "classifier")
+    with pytest.raises(ValueError):
+        ImageFeaturesPipeline(model=model, image_processor=dummy_processor)
+
 
 def test_pipe_preprocess(dummy_image, dummy_processed_image, dummy_pipeline):
     """
