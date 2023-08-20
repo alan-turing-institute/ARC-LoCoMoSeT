@@ -1,11 +1,15 @@
 """
 Tests for the run metrics script
 """
+import glob
+import json
+import tempfile
 
 from locomoset.metrics.run import (
     compute_metric,
     nest_var_in_list,
     parameter_sweep_dicts,
+    run,
 )
 
 
@@ -63,5 +67,40 @@ def test_compute_metric(dummy_config):
     Test the metric computation function runs.
     """
     result = compute_metric(dummy_config)
-    assert isinstance(result["result"]["score"], float)
-    assert isinstance(result["result"]["time"], float)
+    assert (
+        isinstance(result["result"]["score"], float) and result["result"]["score"] != 0
+    )
+    assert isinstance(result["result"]["time"], float) and result["result"]["time"] != 0
+
+
+def test_run(dummy_config):
+    """
+    Test an end to end run of computing metrics with multiple configs.
+    """
+    # adjust dummy config to give multiple results. Setting the 2nd value to 5000 also
+    # verifies that results will still be computed if the number of samples requested is
+    # greater than the number of images in the dataset (the whole dataset is used in
+    # that case).
+    test_samples = [25, 5000]
+    dummy_config["n_samples"] = test_samples
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # set results to be saved to the temporary directory
+        dummy_config["save_dir"] = temp_dir
+
+        run(dummy_config)
+
+        # check the correct number of results files were saved
+        results_files = glob.glob(f"{temp_dir}/*.json")
+        assert len(results_files) == 2
+
+        actual_samples = set()
+        for path in results_files:
+            with open(path) as rf:
+                results = json.load(rf)
+                # check a non-zero metric score was saved
+                assert results["result"]["score"] != 0
+                actual_samples.add(results["n_samples"])
+
+        # verify there was a result for each n_samples value
+        assert actual_samples == set(test_samples)
