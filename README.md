@@ -8,7 +8,7 @@ This project is a work in progress under active development. The work packages a
 
 - WP1: Implement one metric and sanity check it on ImageNet ✅
 - WP2: Implement further metrics and tune metric hyperparameters ⏳
-- WP3: Fine-tune models and test the metrics on other datasets
+- WP3: Fine-tune models and test the metrics on other datasets ⏳
 - WP4: Write a report
 
 ## Links
