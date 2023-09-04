@@ -33,7 +33,7 @@ def nest_var_in_list(var: Any) -> list[Any]:
     return [var] if not isinstance(var, Iterable) or isinstance(var, str) else var
 
 
-def parameter_sweep_dicts(config: dict) -> list[dict]:
+def parameter_sweep_dicts(config: dict, hold_constant: list = None) -> list[dict]:
     """Generate all sub config dicts for parameter sweep of experiment parameters.
 
     Args:
@@ -43,6 +43,13 @@ def parameter_sweep_dicts(config: dict) -> list[dict]:
         list[dict]: List of all config dictionaries containing unique combination of
                     parameters.
     """
+
+    if hold_constant is not None:
+        if isinstance(hold_constant, Iterable) and not isinstance(hold_constant, str):
+            for key in hold_constant:
+                config[key] = [config[key]]
+        else:
+            config[hold_constant] = [config[hold_constant]]
     config_keys, config_vals = zip(*config.items())
     return [
         dict(zip(config_keys, v))

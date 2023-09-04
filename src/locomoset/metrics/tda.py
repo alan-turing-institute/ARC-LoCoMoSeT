@@ -1,39 +1,5 @@
 """
-Functions for calculating the TDA metric for transferability. This metric measure how
-topological invariants of the original data and ground truth labels relate to the same
-topological features in a combination of the original data and either predicted labels
-or features from the last layer of the network. Functionally this is achieved by the
-following pipeline (with preprocessing not included):
-
-1. Combine the pixel array for each image with either the ground truth label (either as
-a new row of [lab]*pixels or as a one hot vector that's been wrapped around and padded
-with zeros) or the predicted labels (similarly either as an integer value or one hot
-vector) or the features of the model (reduced via PCA to a divisor of the number of
-pixels on a side and repeated along the array to be of same size.)
-
-1. Compute the birth, death, homology dimension triples (a.k.a. homology diagrams) for
-each example image, with a set of diagrams for the ground truth and for each model
-considered.
-
-2. Combine all the diagrams for the ground truths and models together into a single
-array, padding diagram arrays (of shape [n, f, 3]) with either [0,0,0] or [0,0,1]
-(b,d,q) triples such that each f is the same and the balance of q=0 and q=1 is the same.
-
-3. Create persistence image from all diagrams (a mapping of the diagrams to various
-copies of R^2 with a binned Gaussian applied approximating the manifold). All diagrams
-for each model to be considered are required so the image considers the same area of
-R^2 for each.
-
-4. The persistence image will be of dimension (m, 2, 100, 100) for 2 homology dimensions
-and binned Gaussian of shape 100x100. m = (num_models + 1) * probe_set_size, i.e. there
-are n (probe_set_size) persistence images for the ground truth and for each model.
-Extract the array corresponding to the ground truths and each model, computing the
-Euclidean distance between the ground truth array and each model as the final metric.
-
-NB: The preprocessing requires these to be square, Grayscale images.
-
-NB: This is currently written with a streamed/iterable datset in mind for ease of
-initial experiments.
+Functions for calculating the TDA metric for transferability.
 """
 
 
@@ -49,7 +15,7 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification
 from locomoset.metrics.parc import _feature_reduce
 
 
-def pad_and_wrap_one_hot(one_hot: np.ndarray, pix_val=224):
+def pad_and_wrap_one_hot(one_hot: np.ndarray, pix_val=224) -> np.ndarray:
     """If the one hot vector is less than 224 in dimension then pad it to 224. If
     greater than pad it to a multiple of 224 then wrap it and pad last row.
 
@@ -77,7 +43,7 @@ def one_tda_example(
     one_hot: bool = False,
     model_features: bool = False,
     pixels_side: int = 224,
-):
+) -> np.ndarray:
     """Append either the features or labels (ground truth of pred) (one hot vectors or
     integers) to the pixel values of the corresponding image for use in homology diagram
     creation.
@@ -145,7 +111,9 @@ def preprocess(examples: Dataset, processor: AutoImageProcessor):
     return examples
 
 
-def ground_truth_label(n: int, tda_img_iter: Iterable, one_hot: bool = False):
+def ground_truth_label(
+    n: int, tda_img_iter: Iterable, one_hot: bool = False
+) -> np.ndarray:
     """Collect the ground truth labels and convert them to one hot vectors if required.
 
     Args:
@@ -174,7 +142,7 @@ def model_pred_labels(
     random_state: int = 42,
     feat_red_dim: int = 56,
     pixel_side: int = 224,
-):
+) -> np.ndarray:
     """Collect either the prediced labels from inference of a model or the features.
 
     Args:
@@ -228,7 +196,7 @@ def tda_probe_set(
     pixel_side: int = 224,
     feat_red_dim: int = 56,
     ground_truth: bool = False,
-):
+) -> np.ndarray:
     """Create a probeset of images with labels/features appended for use in the TDA
     pipeline.
 
@@ -280,7 +248,9 @@ def tda_probe_set(
     return np.concatenate(examples, axis=0)
 
 
-def model_diags(model_name: str, tda_img_iter: Iterable, homology, **pars):
+def model_diags(
+    model_name: str, tda_img_iter: Iterable, homology, **pars
+) -> np.ndarray:
     """Compute the homology diagrams for a given model. This loads the model and
     processor first, before processing the dataset for inference.
 
@@ -335,7 +305,7 @@ def model_diags(model_name: str, tda_img_iter: Iterable, homology, **pars):
 
 def pad_hom_diags(
     diags1: np.ndarray, diags1_dim0_count: int, diags2_dim0_count: int, hom_dim: int = 0
-):
+) -> np.ndarray:
     """Pad diags1 with [0, 0, hom_dim] to match number of equivalent homology dimension
     diagrams in diags2.
 
@@ -351,7 +321,7 @@ def pad_hom_diags(
     return np.concatenate((diags1, padding), axis=1)
 
 
-def merge_diags(diags1: np.ndarray, diags2: np.ndarray):
+def merge_diags(diags1: np.ndarray, diags2: np.ndarray) -> np.ndarray:
     """Combine two diagram arrays. These are arrays of shape:
 
         (n_examples, n_topological_features, 3)

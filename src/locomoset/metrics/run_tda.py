@@ -2,23 +2,23 @@
 Script for running the full pipeline of the TDA metric to produce experimental results
 for varied hyperparameters.
 
-NB: This is currently written with a streamed/iterable datset in mind for ease of 
+NB: This is currently written with a streamed/iterable datset in mind for ease of
 initial experiments.
 """
 
-from typing import Iterable
+import argparse
+import datetime
+import json
+import os
+from time import time
 
 import numpy as np
-from datasets import Dataset, load_dataset
+import yaml
+from datasets import load_dataset
 from gtda import diagrams as dgms
 from gtda import homology as hom
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import OneHotEncoder
-from tdqm import tdqm
-from torch import Tensor, cat, flatten, reshape
-from torchvision.transforms import Grayscale, Resize, ToTensor
-from transformers import AutoImageProcessor, AutoModelForImageClassification
 
+from locomoset.metrics.run import parameter_sweep_dicts
 from locomoset.metrics.tda import (
     merge_diags,
     model_diags,
@@ -26,15 +26,54 @@ from locomoset.metrics.tda import (
     tda_probe_set,
 )
 
+# from tdqm import tdqm
 
-def tda_metric(**pars):
-    """Draft pipeline for TDA metric.
+
+def run_tda_metric(**pars) -> dict:
+    """Pipeline for TDA metric.
+
+    This metric measure how topological invariants of the original data and ground truth
+    labels relate to the same topological features in a combination of the original data
+    and either predicted labels or features from the last layer of the network.
+    Functionally this is achieved by the following pipeline (with preprocessing not
+    included):
+
+    1. Combine the pixel array for each image with either the ground truth label (either
+    as a new row of [lab]*pixels or as a one hot vector that's been wrapped around and
+    padded with zeros) or the predicted labels (similarly either as an integer value or
+    one hot vector) or the features of the model (reduced via PCA to a divisor of the
+    number of pixels on a side and repeated along the array to be of same size.)
+
+    1. Compute the birth, death, homology dimension triples (a.k.a. homology diagrams)
+    for each example image, with a set of diagrams for the ground truth and for each
+    model considered.
+
+    2. Combine all the diagrams for the ground truths and models together into a single
+    array, padding diagram arrays (of shape [n, f, 3]) with either [0,0,0] or [0,0,1]
+    (b,d,q) triples such that each f is the same and the balance of q=0 and q=1 is the
+    same.
+
+    3. Create persistence image from all diagrams (a mapping of the diagrams to various
+    copies of R^2 with a binned Gaussian applied approximating the manifold). All
+    diagrams for each model to be considered are required so the image considers the
+    same area of R^2 for each.
+
+    4. The persistence image will be of dimension (m, 2, 100, 100) for 2 homology
+    dimensions and binned Gaussian of shape 100x100,
+    m = (num_models + 1) * probe_set_size, i.e. there are n (probe_set_size) persistence
+    images for the ground truth and for each model. Extract the array corresponding to
+    the ground truths and each model, computing the Euclidean distance between the
+    ground truth array and each model as the final metric.
+
+    NB: The preprocessing requires these to be square, Grayscale images.
+
+    NB: This is currently written with a streamed/iterable datset in mind for ease of
+    initial experiments.
 
     Params:
         - dataset: dataset
         - n_examples: size of the probe set
-        - num_classes: number of classes in dataset
-        - models: list of tuples of model functions and processors
+        - models: list model names
         - pixel_square: one side of pixel length to reshape images to
         - one_hot_labels: use one hot labels vs. integer labels in padding
         - model_features: use the features or the classifier
@@ -79,7 +118,7 @@ def tda_metric(**pars):
     # Create diagrams for each model and append to diags
     print("starting computation of model diagrams")
     model_diagrams = []
-    for model in tqdm(pars["models"]):
+    for model in pars["models"]:
         print(f"computing diagrams for {model}")
         model_diag = model_diags(model, tda_imgs, cub_hom, **pars)
         print(f"model diags shape {model_diag.shape}")
@@ -112,4 +151,59 @@ def tda_metric(**pars):
                 (idx + 1) * pars["n_examples"] : (idx + 2) * pars["n_examples"], :, :, :
             ]
         )
-    return results, perst_img
+    return results
+
+
+def run(config: dict):
+    """Run the TDA metric for a given pair (dataset, (selection of models)) for a
+    parameter sweep of the varying hyperparameters. Results saved to file path of form
+    results/results_YYYYMMDD-HHMMSS.json by default.
+
+    Args:
+        config: loaded configuration dictionary including the following keys:
+            - dataset: name of dataset
+            - n_examples: list of different probe set sizes to consider
+            - models: list model names
+            - pixel_square: one side of pixel length to reshape images to
+            - one_hot_labels: use one hot labels vs. integer labels in padding
+            - model_features: use the features or the classifier
+            - random_state: list of seeds for randomness
+            - feat_red_dim: divisor of pixel_square to reduce to
+            - (Optional) save_dir: Directory to save results, "results" if not set.
+    """
+    save_dir = config.get("save_dir", "results")
+    os.makdirs(save_dir, exist_ok=True)
+
+    # load the datset (streaming/iterable)
+    config["dataset"] = load_dataset(config["dataset"], split=config["dataset_split"])
+
+    # creates all experiment variants
+    config_variants = parameter_sweep_dicts(config, hold_constant="models")
+
+    for config_var in config_variants:
+        print(f"Starting computation for {config_var}...")
+        date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        save_path = f"{save_dir}/results_{date_str}.json"
+        results = config_var
+        metric_start = time()
+        result = run_tda_metric(**config)
+        results["result"] = {"results": result, "time": time() - metric_start}
+        with open(save_path, "w") as f:
+            json.dump(results, f, default=float)
+        print(f"Results saved to {save_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Compute the TDA metric with parameter scans."
+    )
+    parser.add_argument("config_file", help="Path to config file")
+    args = parser.parse_args()
+    with open(args.configfile, "r") as f:
+        config = yaml.safe_load(f)
+
+    run(config)
+
+
+if __name__ == "__main__":
+    main()
