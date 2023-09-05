@@ -21,22 +21,14 @@ dataset_split: "validation"
 
 # No. of images to compute the metrics with
 n_examples:
-  - 500
-  - 1000
-  - 2000
-  - 4000
-  - 6000
-  - 8000
-  - 10000
-  - 12000
-  - 14000
-  - 16000
+  - 128
+  - 256
+  - 512
 
 # Random seeds to use (e.g. for sampling the images to use)
 random_state:
   - 42
   - 43
-  - 44
 
 
 # hyperparameter choices for one hot labels

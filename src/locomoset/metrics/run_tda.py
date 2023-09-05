@@ -7,9 +7,9 @@ initial experiments.
 """
 
 import argparse
-import datetime
 import json
 import os
+from datetime import datetime
 from time import time
 
 import numpy as np
@@ -17,6 +17,7 @@ import yaml
 from datasets import load_dataset
 from gtda import diagrams as dgms
 from gtda import homology as hom
+from tqdm import tqdm
 
 from locomoset.metrics.run import parameter_sweep_dicts
 from locomoset.metrics.tda import (
@@ -118,7 +119,7 @@ def run_tda_metric(**pars) -> dict:
     # Create diagrams for each model and append to diags
     print("starting computation of model diagrams")
     model_diagrams = []
-    for model in pars["models"]:
+    for model in tqdm(pars["models"]):
         print(f"computing diagrams for {model}")
         model_diag = model_diags(model, tda_imgs, cub_hom, **pars)
         print(f"model diags shape {model_diag.shape}")
@@ -172,22 +173,36 @@ def run(config: dict):
             - (Optional) save_dir: Directory to save results, "results" if not set.
     """
     save_dir = config.get("save_dir", "results")
-    os.makdirs(save_dir, exist_ok=True)
+    os.makedirs(save_dir, exist_ok=True)
 
     # load the datset (streaming/iterable)
-    config["dataset"] = load_dataset(config["dataset"], split=config["dataset_split"])
+    dataset = load_dataset(
+        config["dataset_name"],
+        split=config["dataset_split"],
+        streaming=True,
+        token=True,
+    )
 
     # creates all experiment variants
+    print("creating config variants")
     config_variants = parameter_sweep_dicts(config, hold_constant="models")
+    print(f"done with config variant creation, created {len(config_variants)} configs")
 
-    for config_var in config_variants:
-        print(f"Starting computation for {config_var}...")
+    for config_var in tqdm(config_variants):
+        print("Starting computation for:")
+        print(json.dumps(config_var, indent=4))
+        config_var["dataset"] = dataset
+        # config_var["models"] = config_var["models"][0]
+        # config_var["n_examples"] = config_var["n_examples"][0]
+        print(f"this should be a bool {config_var['model_features']}")
+
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         save_path = f"{save_dir}/results_{date_str}.json"
         results = config_var
         metric_start = time()
-        result = run_tda_metric(**config)
+        result = run_tda_metric(**config_var)
         results["result"] = {"results": result, "time": time() - metric_start}
+        del results["dataset"]
         with open(save_path, "w") as f:
             json.dump(results, f, default=float)
         print(f"Results saved to {save_path}")
@@ -197,10 +212,13 @@ def main():
     parser = argparse.ArgumentParser(
         description="Compute the TDA metric with parameter scans."
     )
-    parser.add_argument("config_file", help="Path to config file")
+    parser.add_argument("configfile", help="Path to config file")
     args = parser.parse_args()
     with open(args.configfile, "r") as f:
         config = yaml.safe_load(f)
+
+    print("config file:")
+    print(json.dumps(config, indent=4))
 
     run(config)
 

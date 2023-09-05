@@ -158,6 +158,7 @@ def model_pred_labels(
     if model_features:
         print("computing model features instead of labels")
         preds = []
+        print(f"number of examples {n}")
         for idx, image in enumerate(inf_img_iter):
             preds.append(
                 model_fn(image["pixel_values"][None, :, :, :]).logits.detach().numpy()
@@ -165,7 +166,8 @@ def model_pred_labels(
             if idx == n - 1:
                 break
         preds = np.concatenate(preds, axis=0)
-        preds = _feature_reduce(preds, random_state, feat_red_dim)
+        preds = _feature_reduce(preds, random_state=random_state, f=feat_red_dim)
+        print(f"post reduction dims {preds.shape}")
         return np.concatenate(
             [preds for _ in range(pixel_side // feat_red_dim)], axis=1
         )
@@ -229,8 +231,10 @@ def tda_probe_set(
             random_state=random_state,
             feat_red_dim=feat_red_dim,
             pixel_side=pixel_side,
+            model_features=model_features,
         )
-    print("finished computing the labes/predicted values")
+        print(f"shape of predicted labels {labels.shape}")
+    print("finished computing the labs/predicted values")
 
     examples = []
     for idx, image in enumerate(tda_img_iter):
@@ -240,7 +244,7 @@ def tda_probe_set(
                 labels[idx],
                 one_hot,
                 model_features,
-                random_state,
+                pixels_side=pixel_side,
             )
         )
         if idx == n - 1:
@@ -304,7 +308,7 @@ def model_diags(
 
 
 def pad_hom_diags(
-    diags1: np.ndarray, diags1_dim0_count: int, diags2_dim0_count: int, hom_dim: int = 0
+    diags1: np.ndarray, diags1_dim0_count: int, diags2_dim0_count: int, hom_dim: int
 ) -> np.ndarray:
     """Pad diags1 with [0, 0, hom_dim] to match number of equivalent homology dimension
     diagrams in diags2.
@@ -313,9 +317,10 @@ def pad_hom_diags(
         diags1: diagram array 1, of shape (n_examples, num_topological features, 3)
         diags1_dim0_count: number of triples in diags 1 of form [x, y, hom_dim]
         diags2_dim0_count: number of triples in daigs 2 of form [x, y, hom_dim]
+        hom_dim: homology dimension being padded
     """
     padding = np.zeros(
-        (diags1.shape[0], diags2_dim0_count - diags1_dim0_count, diags1.shape[0])
+        (diags1.shape[0], diags2_dim0_count - diags1_dim0_count, diags1.shape[2])
     )
     padding[:, :, 2] = float(hom_dim)
     return np.concatenate((diags1, padding), axis=1)

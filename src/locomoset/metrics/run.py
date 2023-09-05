@@ -43,17 +43,17 @@ def parameter_sweep_dicts(config: dict, hold_constant: list = None) -> list[dict
         list[dict]: List of all config dictionaries containing unique combination of
                     parameters.
     """
-
     if hold_constant is not None:
         if isinstance(hold_constant, Iterable) and not isinstance(hold_constant, str):
             for key in hold_constant:
                 config[key] = [config[key]]
         else:
+            print(f"holding {hold_constant} constant")
             config[hold_constant] = [config[hold_constant]]
     config_keys, config_vals = zip(*config.items())
     return [
         dict(zip(config_keys, v))
-        for v in product(*list(map(nest_var_in_list, config_vals)))
+        for v in tqdm(product(*list(map(nest_var_in_list, config_vals))))
     ]
 
 
