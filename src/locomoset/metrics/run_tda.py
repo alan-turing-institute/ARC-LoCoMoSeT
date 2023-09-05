@@ -9,6 +9,7 @@ initial experiments.
 import argparse
 import json
 import os
+from copy import copy
 from datetime import datetime
 from time import time
 
@@ -185,7 +186,23 @@ def run(config: dict):
 
     # creates all experiment variants
     print("creating config variants")
+    feat_red_dims = config["feat_red_dim"]
+    del config["feat_red_dim"]
+    print(f"removed feat_red_dim: {config.keys()}")
     config_variants = parameter_sweep_dicts(config, hold_constant="models")
+    print("adding feat red dim back in if model_features=True")
+    new_conf_vars = []
+    for idx in tqdm(range(len(config_variants))):
+        conf = config_variants[idx]
+        if conf["model_features"]:
+            for f_dim in feat_red_dims:
+                new_conf = copy(conf)
+                new_conf["feat_red_dim"] = f_dim
+                new_conf_vars.append(new_conf)
+        else:
+            new_conf_vars.append(conf)
+    print("removing configs with no feat_red_dim but model_features=True")
+    config_variants = new_conf_vars
     print(f"done with config variant creation, created {len(config_variants)} configs")
 
     for config_var in tqdm(config_variants):
