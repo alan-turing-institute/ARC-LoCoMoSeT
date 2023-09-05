@@ -74,6 +74,13 @@ def dummy_dataset(dummy_dataset_name, dummy_split):
 
 
 @pytest.fixture
+def dummy_streamed_dataset(dummy_dataset_name, dummy_split):
+    return load_dataset(
+        dummy_dataset_name, split=dummy_split, token=True, streaming=True
+    )
+
+
+@pytest.fixture
 def dummy_processor(dummy_model_name):
     return AutoImageProcessor.from_pretrained(dummy_model_name)
 
@@ -95,3 +102,58 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "n_samples": 50,
         "random_state": test_seed,
     }
+
+
+@pytest.fixture
+def dummy_one_hot_perfect():
+    vec = np.zeros(200)
+    vec[103] = 1.0
+    return vec
+
+
+@pytest.fixture
+def dummy_one_hot_small():
+    vec = np.zeros(200)
+    vec[103] = 1.0
+    return vec
+
+
+@pytest.fixture
+def dummy_one_hot_large():
+    vec = np.zeros(260)
+    vec[103] = 1.0
+    return vec
+
+
+@pytest.fixture
+def dummy_one_hot_extra_large():
+    vec = np.zeros(512)
+    vec[260] = 1.0
+    return vec
+
+
+@pytest.fixture
+def dummy_label():
+    return 91.0
+
+
+@pytest.fixture
+def dummy_diag_hom0_weighted():
+    num_examples = 3
+    num_hom0_feats = 6
+    num_hom1_feats = 4
+    hom0 = np.zeros((num_examples, num_hom0_feats, 3))
+    hom1 = np.zeros((num_examples, num_hom1_feats, 3))
+    hom1[:, :, 2] = 1.0
+    return np.concatenate((hom0, hom1), axis=1)
+
+
+@pytest.fixture
+def dummy_diag_hom1_weighted():
+    num_examples = 3
+    num_hom0_feats = 4
+    num_hom1_feats = 6
+    hom0 = np.zeros((num_examples, num_hom0_feats, 3))
+    hom1 = np.zeros((num_examples, num_hom1_feats, 3))
+    hom1[:, :, 2] = 1.0
+    return np.concatenate((hom0, hom1), axis=1)

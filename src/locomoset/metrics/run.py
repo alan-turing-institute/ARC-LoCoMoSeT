@@ -48,7 +48,6 @@ def parameter_sweep_dicts(config: dict, hold_constant: list = None) -> list[dict
             for key in hold_constant:
                 config[key] = [config[key]]
         else:
-            print(f"holding {hold_constant} constant")
             config[hold_constant] = [config[hold_constant]]
     config_keys, config_vals = zip(*config.items())
     return [

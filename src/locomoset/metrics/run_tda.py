@@ -192,10 +192,6 @@ def run(config: dict):
         print("Starting computation for:")
         print(json.dumps(config_var, indent=4))
         config_var["dataset"] = dataset
-        # config_var["models"] = config_var["models"][0]
-        # config_var["n_examples"] = config_var["n_examples"][0]
-        print(f"this should be a bool {config_var['model_features']}")
-
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         save_path = f"{save_dir}/results_{date_str}.json"
         results = config_var

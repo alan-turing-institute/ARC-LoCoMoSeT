@@ -28,7 +28,7 @@ def pad_and_wrap_one_hot(one_hot: np.ndarray, pix_val=224) -> np.ndarray:
         that can be appended to the pixel values of an image.
     """
     if one_hot.shape[0] % pix_val == 0:
-        return one_hot
+        return one_hot.reshape(1, 1, pix_val)
     else:
         pad_vec = np.concatenate(
             (one_hot, np.zeros(pix_val - (one_hot.shape[0] % pix_val)))
@@ -158,7 +158,6 @@ def model_pred_labels(
     if model_features:
         print("computing model features instead of labels")
         preds = []
-        print(f"number of examples {n}")
         for idx, image in enumerate(inf_img_iter):
             preds.append(
                 model_fn(image["pixel_values"][None, :, :, :]).logits.detach().numpy()
@@ -185,6 +184,8 @@ def model_pred_labels(
             return OneHotEncoder(sparse_output=False).fit_transform(
                 preds.reshape(-1, 1)
             )
+        else:
+            return preds
 
 
 def tda_probe_set(
@@ -319,6 +320,9 @@ def pad_hom_diags(
         diags2_dim0_count: number of triples in daigs 2 of form [x, y, hom_dim]
         hom_dim: homology dimension being padded
     """
+    assert (
+        np.unique(diags1[0, :, 2], return_counts=True)[1][hom_dim] == diags1_dim0_count
+    ), ValueError("Diagram does not match homology dimension features")
     padding = np.zeros(
         (diags1.shape[0], diags2_dim0_count - diags1_dim0_count, diags1.shape[2])
     )
@@ -341,12 +345,14 @@ def merge_diags(diags1: np.ndarray, diags2: np.ndarray) -> np.ndarray:
         - diags1: diagram array 1
         - diags2: diagram array 2
     """
-    if diags1.shape[1] == diags2.shape[1]:
+    diags1_dims_count = np.unique(diags1[0, :, 2], return_counts=True)[1]
+    diags2_dims_count = np.unique(diags2[0, :, 2], return_counts=True)[1]
+    if (
+        diags1_dims_count[0] == diags2_dims_count[0]
+        and diags1_dims_count[1] == diags2_dims_count[1]
+    ):
         return np.concatenate((diags1, diags2), axis=0)
     else:
-        diags1_dims_count = np.unique(diags1[0, :, 2], return_counts=True)[1]
-        diags2_dims_count = np.unique(diags2[0, :, 2], return_counts=True)[1]
-
         for hom_dim, hom_dim_counts in enumerate(
             zip(diags1_dims_count, diags2_dims_count)
         ):
@@ -354,7 +360,7 @@ def merge_diags(diags1: np.ndarray, diags2: np.ndarray) -> np.ndarray:
                 diags1 = pad_hom_diags(
                     diags1, hom_dim_counts[0], hom_dim_counts[1], hom_dim
                 )
-            else:
+            elif hom_dim_counts[0] > hom_dim_counts[1]:
                 diags2 = pad_hom_diags(
                     diags2, hom_dim_counts[1], hom_dim_counts[0], hom_dim
                 )
