@@ -1,0 +1,63 @@
+###
+# TDA specific config file used for initial experiments
+###
+
+# Where to save results
+save_dir: results_wp2
+
+# HuggingFace model names or paths to local models to compute metrics for
+models:
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+  - facebook/deit-base-patch16-224
+  - microsoft/cvt-13
+  - google/vit-base-patch16-384
+
+# HuggingFace Datasets or paths to datasets to compute metrics for
+dataset_name: "imagenet-1k"
+
+# Name of dataset split to compute metrics for (Currently must be the same for all datasets)
+dataset_split: "validation"
+
+# No. of images to compute the metrics with
+n_examples:
+  - 128
+  - 256
+  - 512
+  - 1024
+  - 2048
+  - 4096
+  - 8192
+  - 16384
+
+
+# Random seeds to use (e.g. for sampling the images to use)
+random_state:
+  - 42
+  - 43
+  - 44
+
+
+# hyperparameter choices for one hot labels
+one_hot_labels:
+  - True
+  - False
+
+
+# hyperparameter choices for model features
+model_features:
+  # - True
+  - False
+
+
+# pixel sizes
+pixel_square:
+  - 224
+
+# feature_reduction_level
+feat_red_dim:
+  - 16
+  - 28
+  - 32
+  - 56
+  - 112
