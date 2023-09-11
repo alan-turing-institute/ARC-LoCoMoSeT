@@ -13,9 +13,10 @@ for accessible transfer learning." Advances in Neural Information Processing Sys
 
 import numpy as np
 from transformers import AutoModel
+from transformers.modeling_utils import PreTrainedModel
 
 
-def num_params_metric(model: AutoModel) -> int:
+def num_params_metric(model: PreTrainedModel) -> int:
     """Return the number of parameters of a model as a metric.
 
     Args:
