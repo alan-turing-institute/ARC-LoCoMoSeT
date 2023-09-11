@@ -28,8 +28,6 @@ from locomoset.metrics.tda import (
     tda_probe_set,
 )
 
-# from tdqm import tdqm
-
 
 def run_tda_metric(**pars) -> dict:
     """Pipeline for TDA metric.
@@ -46,21 +44,21 @@ def run_tda_metric(**pars) -> dict:
     one hot vector) or the features of the model (reduced via PCA to a divisor of the
     number of pixels on a side and repeated along the array to be of same size.)
 
-    1. Compute the birth, death, homology dimension triples (a.k.a. homology diagrams)
+    2. Compute the birth, death, homology dimension triples (a.k.a. homology diagrams)
     for each example image, with a set of diagrams for the ground truth and for each
     model considered.
 
-    2. Combine all the diagrams for the ground truths and models together into a single
+    3. Combine all the diagrams for the ground truths and models together into a single
     array, padding diagram arrays (of shape [n, f, 3]) with either [0,0,0] or [0,0,1]
     (b,d,q) triples such that each f is the same and the balance of q=0 and q=1 is the
     same.
 
-    3. Create persistence image from all diagrams (a mapping of the diagrams to various
+    4. Create persistence image from all diagrams (a mapping of the diagrams to various
     copies of R^2 with a binned Gaussian applied approximating the manifold). All
     diagrams for each model to be considered are required so the image considers the
     same area of R^2 for each.
 
-    4. The persistence image will be of dimension (m, 2, 100, 100) for 2 homology
+    5. The persistence image will be of dimension (m, 2, 100, 100) for 2 homology
     dimensions and binned Gaussian of shape 100x100,
     m = (num_models + 1) * probe_set_size, i.e. there are n (probe_set_size) persistence
     images for the ground truth and for each model. Extract the array corresponding to
