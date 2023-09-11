@@ -88,7 +88,9 @@ def run_tda_metric(**pars) -> dict:
     print("loaded tda objects")
 
     # If using streamed/iterable dataset it needs to be shuffled for variation in images
-    pars["dataset"] = pars["dataset"].shuffle(seed=pars["random_state"])
+    pars["dataset"] = pars["dataset"].shuffle(
+        seed=pars["random_state"], buffer_size=1000
+    )
 
     # Start by creating the diagrams for the ground truths
     print("starting ground truth diagram computation")
