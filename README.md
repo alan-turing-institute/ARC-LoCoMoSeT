@@ -18,6 +18,8 @@ This project aims to contrast and compare multiple low-cost metrics for selectin
    pip install .
    ```
 
+3. (temporary) if using LogME, NCE or LEEP fork the following repository <https://github.com/thuml/LogME> and clone into <src>.
+
 ## Usage
 
 ### Download ImageNet
