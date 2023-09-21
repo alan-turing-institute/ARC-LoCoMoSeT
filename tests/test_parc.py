@@ -7,7 +7,7 @@ import pytest
 from locomoset.metrics.parc import _feature_reduce, _lower_tri_arr, parc
 
 
-def test_parc_perfect_features(dummy_features_perfect, dummy_labels):
+def test_parc_perfect_features(dummy_features_perfect, dummy_labels, test_seed):
     """
     Test that the PARC score is 100 if the features give perfect information about
     the labels.
@@ -16,17 +16,32 @@ def test_parc_perfect_features(dummy_features_perfect, dummy_labels):
     included this no longer returns perfect results.
     """
     assert parc(
-        dummy_features_perfect, dummy_labels, feat_red_dim=None
+        dummy_features_perfect,
+        dummy_labels,
+        feat_red_dim=None,
+        scale_features=False,
+        random_state=test_seed,
     ) == pytest.approx(100)
 
+    # scaling features seems to reduce the PARC score from perfect slightly, as the
+    # features and labels are not identical anymore (even though the features still
+    # contain perfect information), so we add a tolerance here
+    assert parc(
+        dummy_features_perfect,
+        dummy_labels,
+        feat_red_dim=None,
+        scale_features=True,
+        random_state=test_seed,
+    ) == pytest.approx(100, rel=0.2)
 
-def test_parc_random_features(dummy_features_random, dummy_labels):
+
+def test_parc_random_features(dummy_features_random, dummy_labels, test_seed):
     """
     Test that the PARC score is 0 if the features are random noise.
     """
-    assert parc(dummy_features_random, dummy_labels, None) == pytest.approx(
-        0.0, abs=0.2
-    )
+    assert parc(
+        dummy_features_random, dummy_labels, feat_red_dim=None, random_state=test_seed
+    ) == pytest.approx(0.0, abs=0.2)
 
 
 def test_lower_tri():
