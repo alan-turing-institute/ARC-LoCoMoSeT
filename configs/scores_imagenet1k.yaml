@@ -3,3 +3,15 @@ facebook/deit-small-patch16-224: 79.9
 facebook/deit-base-patch16-224: 81.8
 google/vit-base-patch16-384: 85.49
 microsoft/cvt-13: 81.6
+facebook/deit-tiny-distilled-patch16-224: 74.5
+facebook/deit-small-distilled-patch16-224: 81.2
+facebook/deit-base-distilled-patch16-224: 83.4
+facebook/deit-base-patch16-384: 82.9
+facebook/deit-base-distilled-patch16-384: 85.2
+timm/eva_giant_patch14_336.clip_ft_in1k: 89.466
+timm/eva02_large_patch14_448.mim_m38m_ft_in22k_in1k: 90.054
+apple/mobilevit-small: 78.4
+apple/mobilevit-xx-small: 69.0
+microsoft/beit-large-patch16-512: 88.60
+microsoft/swin-large-patch4-window12-384-in22k: 87.3
+facebook/levit-128S: 76.6
