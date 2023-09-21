@@ -11,8 +11,6 @@ for accessible transfer learning." Advances in Neural Information Processing Sys
 34 (2021): 19301-19312.
 """
 
-import numpy as np
-from transformers import AutoModel
 from transformers.modeling_utils import PreTrainedModel
 
 
@@ -27,34 +25,3 @@ def num_params_metric(model: PreTrainedModel) -> int:
         number of paramters of said model.
     """
     return model.num_parameters()
-
-
-def rescale_by_params(models_and_metrics: dict) -> dict:
-    """Rescale the metric value for a set of models with associated metric values by the
-    number of parameters in the model, as a proxy for the models capacity to learn.
-
-    â_i = (a_i - mean(a_i)) / std(a_i) + l_i / max(l)
-
-    where a_i are the metric values and l_i the number of parameters. The a_i values
-    would typically be Z-normed with respect to the values varied over different
-    datasets, however for a single dataset here we normalise over the models.
-    Normalisation is still required to make this an effective method.
-
-    Args:
-        models_and_metrics: dictionary containing 'model_name': metric_value pairs.
-
-    Returns:
-        dictionary containgin 'model_name': scaled_metric_value paris.
-    """
-    n_pars = {}
-    for model in models_and_metrics.keys():
-        model_fn = AutoModel.from_pretrained(model, num_labels=0)
-        n_pars[model] = num_params_metric(model_fn)
-    mean_metric = np.mean(list(models_and_metrics.values()))
-    std_metric = np.std(list(models_and_metrics.values()))
-    max_n_pars = np.max(list(n_pars.values()))
-    return {
-        model: (models_and_metrics[model] - mean_metric) / std_metric
-        + n_pars[model] / max_n_pars
-        for model in n_pars.keys()
-    }
