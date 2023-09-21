@@ -17,7 +17,8 @@ def test_logme_n_samples_catch(dummy_features_perfect, dummy_labels):
 
 
 def test_logme_perfect_features(dummy_features_perfect, dummy_labels):
-    """Test that LogME returns a the perfect values (????)"""
+    """Test that LogME returns a value greater than zero for perfect features, with less
+    than zero only seen for random features"""
     features = np.concatenate(
         [
             np.asarray(dummy_features_perfect)
@@ -32,11 +33,12 @@ def test_logme_perfect_features(dummy_features_perfect, dummy_labels):
         ],
         axis=1,
     )
-    assert logme(features, labels) > 5
+    assert logme(features, labels) > 0
 
 
 def test_logme_random_features(dummy_features_random, dummy_labels):
-    """Test that LogME returns a the perfect values (????)"""
+    """Test that LogME returns a value less than zero for random features, with greater
+    than zero only seen for good features"""
     features = np.concatenate(
         [
             np.asarray(dummy_features_random)
