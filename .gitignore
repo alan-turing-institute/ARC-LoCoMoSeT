@@ -133,3 +133,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# ignore local results
+results_wp2/*
+
+# ignore LogME
+src/LogME/
