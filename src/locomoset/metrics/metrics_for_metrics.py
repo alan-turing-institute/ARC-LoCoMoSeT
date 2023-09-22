@@ -11,7 +11,7 @@ these.
 """
 
 from numpy.typing import ArrayLike
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import kendalltau, pearsonr, spearmanr
 
 
 def spearmans_rank_correlation(metric_scores: ArrayLike, validation_scores: ArrayLike):
@@ -46,3 +46,4 @@ def kendall_tau_correlation(metric_scores: ArrayLike, validation_scores: ArrayLi
         metric_scores: metric scores for each model, (s, ) for s models
         validation_scores: validation accuracy scores for each model, (s, ) for s models
     """
+    return kendalltau(metric_scores, validation_scores)[0] * 100
