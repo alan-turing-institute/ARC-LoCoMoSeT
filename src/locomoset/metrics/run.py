@@ -88,6 +88,29 @@ def compute_metric(config: dict) -> dict:
     return results
 
 
+def compute_task_agnostic_metric(config: dict) -> dict:
+    """Compute the metric for a task agnostic metric, i.e. n_pars.
+
+    Args:
+        config: config dict for specific experiment instance.
+
+    Returns:
+        Dict including original config and an additional key "results" containing the
+            metric score and time taken to compute it.
+    """
+    results = config
+    results["time"] = {}
+
+    model_head, _ = get_model_and_processor(config["model_name"], num_labels=0)
+
+    print("Computing metric..")
+    metric_start = time()
+    metric_function = METRIC_FUNCTIONS[config["metric"]]
+    score = metric_function(model_head)
+    results["result"] = {"score": score, "time": time() - metric_start}
+    return results
+
+
 def run(config: dict):
     """Run comparative metric experiment for given pair (dataset, model). Results saved
     to file path of form results/results_YYYYMMDD-HHMMSS.json by default.
@@ -115,7 +138,10 @@ def run(config: dict):
         print(f"Starting computation for {config_var}...")
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         save_path = f"{save_dir}/results_{date_str}.json"
-        results = compute_metric(config_var)
+        if config_var["metric"] == "n_pars":
+            results = compute_task_agnostic_metric(config_var)
+        else:
+            results = compute_metric(config_var)
         with open(save_path, "w") as f:
             json.dump(results, f, default=float)
         print(f"Results saved to {save_path}")

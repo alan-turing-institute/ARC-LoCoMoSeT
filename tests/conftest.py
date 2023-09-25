@@ -86,6 +86,11 @@ def dummy_model_head(dummy_model_name):
 
 
 @pytest.fixture
+def dummy_model_classifier(dummy_model_name):
+    return AutoModelForImageClassification.from_pretrained(dummy_model_name)
+
+
+@pytest.fixture
 def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
     return {
         "model_name": dummy_model_name,
