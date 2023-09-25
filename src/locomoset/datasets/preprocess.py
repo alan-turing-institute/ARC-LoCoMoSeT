@@ -3,6 +3,7 @@ Helper functions for preprocessing datasets.
 """
 from datasets import Dataset
 from transformers.image_processing_utils import BaseImageProcessor
+from transformers.image_utils import load_image
 
 
 def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
@@ -30,9 +31,9 @@ def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
             Processed sample with feature 'pixel_values' (a tensor of pixel values
             representing the processed image) and the 'image' feature deleted.
         """
-        sample["pixel_values"] = processor(sample["image"].convert("RGB"))[
-            "pixel_values"
-        ][0]
+        sample["pixel_values"] = processor(load_image(sample["image"]))["pixel_values"][
+            0
+        ]
         return sample
 
     processed_dataset = dataset.map(proc_sample, batched=False, remove_columns="image")

@@ -10,7 +10,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import spearmanr
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.ndarray:
@@ -58,6 +58,7 @@ def parc(
     labels: ArrayLike,
     feat_red_dim: int = 32,
     random_state: int = None,
+    scale_features: bool = True,
 ) -> float:
     """Takes computed features from model for each image in a probe data subset (with
     features as rows), and associated array of 1-hot vectors of labels, returning the
@@ -69,6 +70,8 @@ def parc(
         labels: Input labels of shape (num_samples, 1).
         feat_red_dim: If set, feature reduction dimension.
         random_state: Random state for dimensionality reduction.
+        scale_features: If True, use StandardScaler to convert features to have mean
+            zero and standard deviation one before computing PARC.
 
     Returns:
         PARC score for transferability.
@@ -81,6 +84,8 @@ def parc(
     labels = OneHotEncoder(sparse_output=False).fit_transform(
         labels.reshape((len(labels), 1))
     )
+    if scale_features:
+        features = StandardScaler().fit_transform(features)
     dist_imgs = 1 - np.corrcoef(_feature_reduce(features, random_state, f=feat_red_dim))
     dist_labs = 1 - np.corrcoef(labels)
 

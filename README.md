@@ -1,8 +1,15 @@
 # LoCoMoSeT: Low-Cost Model Selection for Transformers
 
-**Status:** Work in progress (one out of four work packages completed)
-
 This project aims to contrast and compare multiple low-cost metrics for selecting pre-trained models for fine-tuning on a downstream task. In particular, we intend to suggest which of the current metrics gives the most accurate prediction - prior to fine-tuning - of how well a transformer-architecture based pre-trained model for image classification will perform once fine tuned for a new data set.
+
+## Status
+
+This project is a work in progress under active development. The work packages are:
+
+- WP1: Implement one metric and sanity check it on ImageNet ✅
+- WP2: Implement further metrics and tune metric hyperparameters ⏳
+- WP3: Fine-tune models and test the metrics on other datasets
+- WP4: Write a report
 
 ## Links
 

@@ -134,9 +134,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-# Temporary results folder
+# ignore local results
 results_wp2/*
 
 # Removing LogME for licensing reasons
-src/LogME
+src/LogME/

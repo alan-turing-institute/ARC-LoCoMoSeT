@@ -12,10 +12,8 @@ from typing import Any, Iterable
 
 import yaml
 from datasets import load_dataset
-from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-from locomoset.datasets.preprocess import preprocess
 from locomoset.metrics.library import METRIC_FUNCTIONS
 from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
@@ -66,41 +64,50 @@ def compute_metric(config: dict) -> dict:
     model_head, processor = get_model_and_processor(config["model_name"], num_labels=0)
     dataset = load_dataset(config["dataset_name"], split=config["dataset_split"])
 
-    print("Preprocessing...")
-    process_start = time()
-    dataset = preprocess(dataset, processor)
-    results["time"]["preprocess"] = time() - process_start
+    print("Generating data sample...")
+    if config["n_samples"] < dataset.num_rows:
+        dataset = dataset.train_test_split(
+            train_size=config["n_samples"], shuffle=True, seed=config["random_state"]
+        )["train"]
+    labels = dataset["label"]
 
     print("Extracting features...")
     features_start = time()
-    features = get_features(dataset, model_head)
+    features = get_features(dataset, processor, model_head)
     results["time"]["features"] = time() - features_start
-
-    labels = dataset["label"]
-
-    print("Generating data sample...")
-    if config["n_samples"] < len(labels):
-        run_features, _, run_labels, _ = train_test_split(
-            features,
-            labels,
-            train_size=config["n_samples"],
-            random_state=config["random_state"],
-        )
-    else:
-        run_features = features
-        run_labels = labels
 
     print("Computing metric...")
     metric_start = time()
     metric_function = METRIC_FUNCTIONS[config["metric"]]
-    score = metric_function(
-        run_features, run_labels, random_state=config["random_state"]
-    )
+    score = metric_function(features, labels, random_state=config["random_state"])
     results["result"] = {
         "score": score,
         "time": time() - metric_start,
     }
 
+    return results
+
+
+def compute_task_agnostic_metric(config: dict) -> dict:
+    """Compute the metric for a task agnostic metric, i.e. n_pars.
+
+    Args:
+        config: config dict for specific experiment instance.
+
+    Returns:
+        Dict including original config and an additional key "results" containing the
+            metric score and time taken to compute it.
+    """
+    results = config
+    results["time"] = {}
+
+    model_head, _ = get_model_and_processor(config["model_name"], num_labels=0)
+
+    print("Computing metric..")
+    metric_start = time()
+    metric_function = METRIC_FUNCTIONS[config["metric"]]
+    score = metric_function(model_head)
+    results["result"] = {"score": score, "time": time() - metric_start}
     return results
 
 
@@ -131,7 +138,10 @@ def run(config: dict):
         print(f"Starting computation for {config_var}...")
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         save_path = f"{save_dir}/results_{date_str}.json"
-        results = compute_metric(config_var)
+        if config_var["metric"] == "n_pars":
+            results = compute_task_agnostic_metric(config_var)
+        else:
+            results = compute_metric(config_var)
         with open(save_path, "w") as f:
             json.dump(results, f, default=float)
         print(f"Results saved to {save_path}")
