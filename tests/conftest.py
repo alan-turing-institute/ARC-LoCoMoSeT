@@ -98,5 +98,15 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
 
 
 @pytest.fixture
-def dummy_validation_scores(rng):
-    return np.sort(rng.uniform(0, 1, 10)) * 100
+def dummy_validation_scores(rng, test_n_samples):
+    return np.sort(rng.uniform(0, 1, test_n_samples)) * 100
+
+
+@pytest.fixture
+def dummy_perfect_metric_scores(rng, test_n_samples):
+    return np.sort(rng.uniform(0, 1, test_n_samples)) * 100
+
+
+@pytest.fixture
+def dummy_random_metric_scores(rng, test_n_samples):
+    return rng.uniform(0, 1, test_n_samples) * 100

@@ -10,11 +10,11 @@ We also include the an aggregate (mean) correlation over datasets considered for
 these.
 """
 
-import numpy as np
+# import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import kendalltau, pearsonr, spearmanr
 
-from locomoset.metrics.library import METRIC_FOR_METRIC_FUNCTIONS
+# from locomoset.metrics.library import METRIC_FOR_METRIC_FUNCTIONS
 
 
 def spearmans_rank_correlation(metric_scores: ArrayLike, validation_scores: ArrayLike):
@@ -52,35 +52,37 @@ def kendall_tau_correlation(metric_scores: ArrayLike, validation_scores: ArrayLi
     return kendalltau(metric_scores, validation_scores)[0] * 100
 
 
-def aggregate_metric_scores(
-    metric_scores: ArrayLike,
-    validation_scores: ArrayLike,
-    metric_for_metrics: str,
-    by_dataset: bool = True,
-):
-    """Aggregate the metric scores by taking the mean over either varying datasets:
+# def aggregate_metric_scores(
+#     metric_scores: ArrayLike,
+#     validation_scores: ArrayLike,
+#     metric_for_metrics: str,
+#     by_dataset: bool = True,
+# ):
+#     """Aggregate the metric scores by taking the mean over either varying datasets:
 
-    (1/|T|) * sum_T corr([S], [V])
+#     (1/|T|) * sum_T corr([S], [V])
 
-    for set of task datsets T, and models S, or over models:
+#     for set of task datsets T, and models S, or over models:
 
-    (1/|S|) * sum_M corr([T], [V])
+#     (1/|S|) * sum_M corr([T], [V])
 
-    Args:
-        metric_scores: metric scores for each model for all datasets considered, (T, S)
-                        for T datasets and S models
-        validation_scores: validation accuracy scores for each model, (S, ) for S models
-        metric_for_metrics: which of the above metric for metrics to use
-        by_dataset: controls if the aggregation is over varying datasets or varying
-                    models
-    """
-    if not by_dataset:
-        metric_scores = metric_scores.T
-    return np.sum(
-        [
-            METRIC_FOR_METRIC_FUNCTIONS[metric_for_metrics](
-                metric_vals, validation_scores
-            )
-            for metric_vals in metric_scores
-        ]
-    ) * (1 / metric_scores.shape[0])
+#     Args:
+#         metric_scores: metric scores for each model for all datasets considered, (T,
+# S)
+#                         for T datasets and S models
+#         validation_scores: validation accuracy scores for each model, (S, ) for S
+# models
+#         metric_for_metrics: which of the above metric for metrics to use
+#         by_dataset: controls if the aggregation is over varying datasets or varying
+#                     models
+#     """
+#     if not by_dataset:
+#         metric_scores = metric_scores.T
+#     return np.sum(
+#         [
+#             METRIC_FOR_METRIC_FUNCTIONS[metric_for_metrics](
+#                 metric_vals, validation_scores
+#             )
+#             for metric_vals in metric_scores
+#         ]
+#     ) * (1 / metric_scores.shape[0])
