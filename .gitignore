@@ -137,5 +137,5 @@ dmypy.json
 # ignore local results
 results_wp2/*
 
-# Removing LogME for licensing reasons
-src/LogME/*
+# # Removing LogME for licensing reasons
+# src/LogME/*
