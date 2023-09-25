@@ -30,11 +30,12 @@ isort = "^5.12.0"
 pre-commit = "^3.3.2"
 nbqa = "^1.7.0"
 pytest-cov = "^4.1.0"
-ipykernel = "^6.25.2"
+
 
 [tool.poetry.group.notebook.dependencies]
 jupyter = "^1.0.0"
 jupyterlab = "^4.0.2"
+ipykernel = "^6.25.2"
 
 [tool.poetry.scripts]
 locomoset_run_metrics = 'locomoset.metrics.run:main'
