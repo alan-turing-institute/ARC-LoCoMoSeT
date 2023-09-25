@@ -136,7 +136,7 @@ dmypy.json
 
 
 # Temporary results folder
-results_wp2/tda_results/*
+results_wp2/*
 
 # Removing LogME for licensing reasons
 src/LogME
