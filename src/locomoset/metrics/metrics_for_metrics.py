@@ -76,14 +76,11 @@ def aggregate_metric_scores(
     """
     if not by_dataset:
         metric_scores = metric_scores.T
-    return (
-        np.sum(
-            [
-                METRIC_FOR_METRIC_FUNCTIONS[metric_for_metrics](
-                    metric_vals, validation_scores
-                )
-                for metric_vals in metric_scores
-            ]
-        )
-        * metric_scores.shape[0]
-    )
+    return np.sum(
+        [
+            METRIC_FOR_METRIC_FUNCTIONS[metric_for_metrics](
+                metric_vals, validation_scores
+            )
+            for metric_vals in metric_scores
+        ]
+    ) * (1 / metric_scores.shape[0])

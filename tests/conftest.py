@@ -95,3 +95,8 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "n_samples": 50,
         "random_state": test_seed,
     }
+
+
+@pytest.fixture
+def dummy_validation_scores(rng):
+    return np.sort(rng.uniform(0, 1, 10)) * 100
