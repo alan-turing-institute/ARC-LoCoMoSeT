@@ -26,19 +26,20 @@ def aggregate_metric_scores(
     Args:
         metric_scores: metric scores for each model for all datasets considered,
                         (T,S) for T datasets and S models
-        validation_scores: validation accuracy scores for each model, (S, ) for S
-                            models
+        validation_scores: validation accuracy scores for each model, (T, S) for T
+                            datasets and S models
         metric_for_metrics: which of the above metric for metrics to use
         by_dataset: controls if the aggregation is over varying datasets or varying
                     models
     """
     if not by_dataset:
         metric_scores = metric_scores.T
+        validation_scores = validation_scores.T
     return np.sum(
         [
             METRIC_FOR_METRIC_FUNCTIONS[metric_for_metrics](
-                metric_vals, validation_scores
+                metric_vals, validation_scores[idx]
             )
-            for metric_vals in metric_scores
+            for idx, metric_vals in enumerate(metric_scores)
         ]
     ) * (1 / metric_scores.shape[0])
