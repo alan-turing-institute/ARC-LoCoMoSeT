@@ -7,9 +7,8 @@ Relies on the implementation by the LogME authors (which corrects the original
 implementation).
 """
 
-from numpy.typing import ArrayLike
-
 from LogME.NCE import NCE
+from numpy.typing import ArrayLike
 
 
 def nce(pred_labels: ArrayLike, labels: ArrayLike, random_state=None):

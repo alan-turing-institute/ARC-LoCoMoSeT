@@ -7,9 +7,8 @@ Script for computing the LogME metric within our framework, from papers:
 Relies on the implementation by the authors.
 """
 
-from numpy.typing import ArrayLike
-
 from LogME.LogME import LogME
+from numpy.typing import ArrayLike
 
 
 def logme(features: ArrayLike, labels: ArrayLike, random_state=None):
