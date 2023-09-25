@@ -25,7 +25,7 @@ This project is a work in progress under active development. The work packages a
    pip install .
    ```
 
-3. (temporary) if using LogME, NCE or LEEP fork the following repository <https://github.com/thuml/LogME> and clone into `src`.
+3. If using LogME, NCE or LEEP clone the following repository <https://github.com/thuml/LogME> into `src`.
 
 ## Usage
 
