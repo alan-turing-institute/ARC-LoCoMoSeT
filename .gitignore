@@ -139,3 +139,7 @@ results_wp2/*
 
 # Removing LogME for licensing reasons
 src/LogME/*
+
+
+# Ignore adhoc notebooks
+notebooks/*
