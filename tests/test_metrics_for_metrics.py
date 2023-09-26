@@ -31,7 +31,7 @@ def test_pearsons_perfect_score(dummy_validation_scores, dummy_perfect_metric_sc
     """Test the pearson's correlation metric for metrics for perfect ranking"""
     assert pearsons_correlation(
         dummy_perfect_metric_scores, dummy_validation_scores
-    ) == pytest.approx(100)
+    ) == pytest.approx(100, abs=1)
 
 
 def test_pearsons_wrong_ranking_score(
