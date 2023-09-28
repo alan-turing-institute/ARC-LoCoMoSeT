@@ -50,6 +50,7 @@ include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
+known_first_party = ["locomoset"]
 
 [tool.pytest.ini_options]
 addopts = """
