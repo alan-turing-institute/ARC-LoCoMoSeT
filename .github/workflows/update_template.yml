@@ -30,7 +30,7 @@ jobs:
       - name: Update pre-commit hooks
         run: poetry run pre-commit autoupdate
 
-      - name: Push changes 
+      - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           add_options: '-u'

@@ -7,8 +7,9 @@ Relies on the implementation by the LogME authors (which corrects the original
 implementation).
 """
 
-from locomoset.LogME.NCE import NCE
 from numpy.typing import ArrayLike
+
+from locomoset.LogME.NCE import NCE
 
 
 def nce(pred_labels: ArrayLike, labels: ArrayLike, random_state=None) -> float:

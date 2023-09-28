@@ -1,9 +1,9 @@
+from locomoset.metrics.logme import logme
 from locomoset.metrics.metrics_for_metrics import (
     kendall_tau_correlation,
     pearsons_correlation,
     spearmans_rank_correlation,
 )
-from locomoset.metrics.logme import logme
 from locomoset.metrics.nce import nce
 from locomoset.metrics.parc import parc
 from locomoset.metrics.renggli import renggli
