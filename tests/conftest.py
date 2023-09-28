@@ -108,8 +108,8 @@ def dummy_validation_scores(rng, test_n_samples):
 
 
 @pytest.fixture
-def dummy_perfect_metric_scores(rng, test_n_samples):
-    return np.sort(rng.uniform(0, 1, test_n_samples)) * 100
+def dummy_perfect_metric_scores(dummy_validation_scores):
+    return dummy_validation_scores
 
 
 @pytest.fixture
