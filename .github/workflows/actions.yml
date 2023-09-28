@@ -33,6 +33,12 @@ jobs:
           poetry run nbqa isort --check-only .
           poetry run nbqa flake8 .
 
+      - name: Clone LogME repository
+        uses: actions/checkout@v3
+        with:
+          repository: thuml/LogME
+          path: src/locomoset/LogME
+
       - name: Run tests
         if: github.repository != 'alan-turing-institute/ARC-project-template'
         run: poetry run pytest
