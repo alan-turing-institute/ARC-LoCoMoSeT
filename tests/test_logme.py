@@ -16,21 +16,21 @@ def logme_n_samples():
 def test_logme_perfect_features(dummy_features_perfect, dummy_labels, logme_n_samples):
     """Test that LogME returns a value greater than zero for perfect features, with less
     than zero only seen for random features."""
-    features = np.concatenate(
-        [
-            np.asarray(dummy_features_perfect)
-            for _ in range((logme_n_samples // dummy_features_perfect.shape[0] + 1))
-        ],
-        axis=0,
-    )
-    labels = np.concatenate(
-        [
-            dummy_labels.reshape(1, -1)
-            for _ in range((logme_n_samples // dummy_labels.shape[0] + 1))
-        ],
-        axis=1,
-    )
-    assert logme(features, labels) > 0
+    # features = np.concatenate(
+    #     [
+    #         np.asarray(dummy_features_perfect)
+    #         for _ in range((logme_n_samples // dummy_features_perfect.shape[0] + 1))
+    #     ],
+    #     axis=0,
+    # )
+    # labels = np.concatenate(
+    #     [
+    #         dummy_labels.reshape(1, -1)
+    #         for _ in range((logme_n_samples // dummy_labels.shape[0] + 1))
+    #     ],
+    #     axis=1,
+    # )
+    assert logme(dummy_features_perfect, dummy_labels) > 0
 
 
 def test_logme_random_features(dummy_features_random, dummy_labels, logme_n_samples):

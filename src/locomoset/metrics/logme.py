@@ -6,8 +6,7 @@ Script for computing the LogME metric within our framework, from papers:
 
 Relies on the implementation by the authors.
 """
-
-from LogME.LogME import LogME
+from locomoset.LogME.LogME import LogME
 from numpy.typing import ArrayLike
 
 

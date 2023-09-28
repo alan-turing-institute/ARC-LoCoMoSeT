@@ -138,7 +138,7 @@ dmypy.json
 results_wp2/*
 
 # Removing LogME for licensing reasons
-src/LogME/*
+src/locomoset/LogMe/
 
 
 # Ignore adhoc notebooks

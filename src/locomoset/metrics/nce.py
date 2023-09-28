@@ -7,7 +7,7 @@ Relies on the implementation by the LogME authors (which corrects the original
 implementation).
 """
 
-from LogME.NCE import NCE
+from locomoset.LogME.NCE import NCE
 from numpy.typing import ArrayLike
 
 
