@@ -100,8 +100,3 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "n_samples": 50,
         "random_state": test_seed,
     }
-
-
-@pytest.fixture
-def logme_minimum_datatpoints_required():
-    return 3500
