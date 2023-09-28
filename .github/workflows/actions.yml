@@ -26,11 +26,11 @@ jobs:
 
       - name: Lint
         run: |
-          poetry run black --diff --color .
-          poetry run isort --diff --color .
+          poetry run black --check --diff --color .
+          poetry run isort --check --diff --color .
           poetry run flake8
-          poetry run nbqa black --diff --color .
-          poetry run nbqa isort --diff --color .
+          poetry run nbqa black --check --diff --color .
+          poetry run nbqa isort --check --diff --color .
           poetry run nbqa flake8 .
 
       - name: Clone LogME repository
