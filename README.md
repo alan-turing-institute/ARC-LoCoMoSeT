@@ -26,9 +26,9 @@ This project is a work in progress under active development. The work packages a
    ```
 
 3. If using LogME, NCE or LEEP clone the following repository <https://github.com/thuml/LogME> into `src`:
-   
+
    ```bash
-   git clone https://github.com/thuml/LogME.git src/LogME
+   git clone https://github.com/thuml/LogME.git src/locomoset/LogME
    ```
 
 ## Usage
