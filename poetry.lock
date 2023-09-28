@@ -373,6 +373,7 @@ files = [
 
 [package.dependencies]
 click = ">=8.0.0"
+colorama = {version = ">=0.4.3", optional = true, markers = "extra == \"colorama\""}
 ipython = {version = ">=7.8.0", optional = true, markers = "extra == \"jupyter\""}
 mypy-extensions = ">=0.4.3"
 packaging = ">=22.0"
@@ -4866,4 +4867,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a688b5797f6b4c09ad619765e233d7cfcd0b4925be8dae9efb08b2e82ba32bf3"
+content-hash = "0b4bff6d383f04b95ed6ba737b61cf020f7e43790cc079fea40b57e6732b8518"
