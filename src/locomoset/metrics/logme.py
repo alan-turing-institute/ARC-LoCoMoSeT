@@ -8,11 +8,12 @@ Relies on the implementation by the authors.
 """
 import warnings
 
-from locomoset.LogME.LogME import LogME
 from numpy.typing import ArrayLike
 
+from locomoset.LogME.LogME import LogME
 
-def logme(features: ArrayLike, labels: ArrayLike, random_state=None):
+
+def logme(features: ArrayLike, labels: ArrayLike, random_state=None) -> float:
     """Comput the LogME metric based on features and labels.
 
     NB: LogME gives innacurate results for smaller test sizes, from empirical tests

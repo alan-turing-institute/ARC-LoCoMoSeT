@@ -2,14 +2,8 @@
 Test functions for the LogME metric (src/locomoset/metrics/logme.py)
 """
 
-import pytest
 
 from locomoset.metrics.logme import logme
-
-
-@pytest.fixture
-def logme_n_samples():
-    return 3500
 
 
 def test_logme_perfect_features(dummy_features_perfect, dummy_labels, logme_n_samples):
