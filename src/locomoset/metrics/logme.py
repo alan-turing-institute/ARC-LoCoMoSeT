@@ -12,16 +12,19 @@ from numpy.typing import ArrayLike
 
 
 def logme(features: ArrayLike, labels: ArrayLike, random_state=None):
-    """Compute the LogME metric based on features and labels.
+    """Comput the LogME metric based on features and labels.
+
+    NB: LogME gives innacurate results for smaller test sizes, from empirical tests
+    we recommend num_samples >= 3500
 
     Args:
         features: Input features of shape (num_samples, num_features)
         labels: Input labels of shape (num_samples, 1)
-    """
-    # Check there enough samples
-    assert features.shape[0] >= 3500, ValueError(
-        "Requires >3500 samples to return a consistent result"
-    )
 
+    Returns:
+        LogME metric value.
+    """
+    if features.shape[0] <= 3500:
+        Warning("LogME gives innacurate results for smaller sample sizes.")
     metric = LogME()
     return metric.fit(features, labels)
