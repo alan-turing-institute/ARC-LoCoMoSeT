@@ -100,3 +100,19 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "n_samples": 50,
         "random_state": test_seed,
     }
+
+
+@pytest.fixture
+def dummy_validation_scores(rng, test_n_samples):
+    # Sort here to induce uncorrelation with dummy_random_metric_scores
+    return np.sort(rng.uniform(0, 1, test_n_samples)) * 100
+
+
+@pytest.fixture
+def dummy_perfect_metric_scores(dummy_validation_scores):
+    return dummy_validation_scores
+
+
+@pytest.fixture
+def dummy_random_metric_scores(rng, test_n_samples):
+    return rng.uniform(0, 1, test_n_samples) * 100
