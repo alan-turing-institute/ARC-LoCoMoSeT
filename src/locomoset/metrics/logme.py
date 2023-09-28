@@ -12,7 +12,7 @@ from numpy.typing import ArrayLike
 
 
 def logme(features: ArrayLike, labels: ArrayLike, random_state=None):
-    """Comput the LogME metric based on features and labels.
+    """Compute the LogME metric based on features and labels.
 
     Args:
         features: Input features of shape (num_samples, num_features)
