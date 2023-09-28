@@ -6,6 +6,8 @@ Script for computing the LogME metric within our framework, from papers:
 
 Relies on the implementation by the authors.
 """
+import warnings
+
 from locomoset.LogME.LogME import LogME
 from numpy.typing import ArrayLike
 
@@ -24,6 +26,6 @@ def logme(features: ArrayLike, labels: ArrayLike, random_state=None):
         LogME metric value.
     """
     if features.shape[0] <= 3500:
-        Warning("LogME gives innacurate results for smaller sample sizes.")
+        warnings.warn("LogME gives innacurate results for smaller sample sizes.")
     metric = LogME()
     return metric.fit(features, labels)
