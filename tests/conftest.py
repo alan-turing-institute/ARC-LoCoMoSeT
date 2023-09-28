@@ -104,6 +104,7 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
 
 @pytest.fixture
 def dummy_validation_scores(rng, test_n_samples):
+    "Sort here to induce uncorrelation with dummy_random_metric_scores"
     return np.sort(rng.uniform(0, 1, test_n_samples)) * 100
 
 

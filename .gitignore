@@ -140,3 +140,7 @@ results_wp2/*
 
 # ignore LogME
 src/LogME/
+
+
+# ignore notebooks
+notebooks/*
