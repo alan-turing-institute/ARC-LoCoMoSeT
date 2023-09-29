@@ -4,12 +4,13 @@ version = "0.1.0"
 description = "Low-Cost Model Selection for Transformers"
 authors = ["Applied Research Centre, The Alan Turing Institute <arc@turing.ac.uk>"]
 readme = "README.md"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 transformers = "^4.30.2"
 datasets = "^2.13.0"
 evaluate = "^0.4.0"
@@ -18,13 +19,16 @@ torchvision = "^0.15"
 scikit-learn = "^1.3.0"
 pyyaml = "^6.0"
 matplotlib = "^3.7.2"
+numba = "^0.57.1"
 h5py = "^3.9.0"
+isort = {extras = ["colors"], version = "^5.12.0"}
+black = {extras = ["colorama"], version = "^23.9.1"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
 pytest-mock = "^3.10.0"
-black = {extras = ["jupyter"], version = "^23.3.0"}
-flake8 = "^6.0.0"
+black = {extras = ["jupyter"], version = "^23.9.1"}
+flake8 = "^6.1.0"
 isort = "^5.12.0"
 pre-commit = "^3.3.2"
 nbqa = "^1.7.0"
@@ -33,6 +37,7 @@ pytest-cov = "^4.1.0"
 [tool.poetry.group.notebook.dependencies]
 jupyter = "^1.0.0"
 jupyterlab = "^4.0.2"
+ipykernel = "^6.25.2"
 
 [tool.poetry.scripts]
 locomoset_run_metrics = 'locomoset.metrics.run:main'
@@ -45,6 +50,7 @@ include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
+known_first_party = ["locomoset"]
 
 [tool.pytest.ini_options]
 addopts = """
