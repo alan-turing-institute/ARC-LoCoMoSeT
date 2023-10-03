@@ -61,13 +61,7 @@ def renggli(
 
 
 def renggli_class_function(
-    model_input: ArrayLike,
-    dataset_input: ArrayLike,
-    **metric_kwargs
-    # clf: BaseEstimator | None = None,
-    # metric: Callable = accuracy_score,
-    # test_size: float = 0.25,
-    # random_state: int = None,
+    model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs
 ) -> float:
     """Trains and evaluates a classifier on input features and labels.
 

@@ -41,6 +41,17 @@ class RenggliMetric(Metric):
 
     """Renggli metric class"""
 
-    def __init__(self, metric_name, **metric_kwargs) -> None:
+    def __init__(self, **metric_kwargs) -> None:
         metric_name = "renggli"
         super().__init__(metric_name, **metric_kwargs)
+        self.inference_type = "features"
+
+
+class PARCMetric(Metric):
+
+    """PARC metric class"""
+
+    def __init__(self, **metric_kwargs) -> None:
+        metric_name = "parc"
+        super().__init__(metric_name, **metric_kwargs)
+        self.inference_type = "features"
