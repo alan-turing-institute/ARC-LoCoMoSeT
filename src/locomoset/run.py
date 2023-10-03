@@ -51,12 +51,12 @@ def run(config: dict):
             - models: a list of HuggingFace model names to experiment with.
             - dataset_name: Name of HuggingFace dataset to use.
             - dataset_split: Dataset split to use.
-            - metrics: Which metrics to experiment on.
             - n_samples: List of how many samples (images) to compute the metric with.
             - random_state: List of random seeds to compute the metric with (used for
                 subsetting the data and dimensionality reduction).
-            - feat_red_dim: List of feature dimensions to compute the metric with (PCA
-                is used for dimensionality reduction).
+            - metrics: Which metrics to experiment on.
+            - metric_kwargs: dictionary of entries {metric_name: **metric_kwargs}
+                        containing parameters for each metric.
             - (Optional) save_dir: Directory to save results, "results" if not set.
     """
 
