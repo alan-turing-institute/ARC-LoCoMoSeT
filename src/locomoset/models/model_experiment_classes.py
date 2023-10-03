@@ -14,7 +14,7 @@ from time import time
 import numpy as np
 from datasets import load_dataset
 from numpy.typing import ArrayLike
-from transformers.modeling_utils import AutoModel
+from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.metrics.library import METRIC_CLASSES
 from locomoset.metrics.metric_classes import Metric
@@ -60,7 +60,7 @@ class ModelExperiment:
         self.labels = self.dataset["labels"]
         self.metrics = {
             metric: {
-                "metric_fn": METRIC_CLASSES[metric](config["metric_kwargs"][metric]())
+                "metric_fn": METRIC_CLASSES[metric](config["metric_kwargs"][metric])
             }
             for metric in config["metrics"]
         }
@@ -126,7 +126,7 @@ class ModelExperiment:
     def compute_metric_score(
         self,
         metric: Metric,
-        model_fn: AutoModel,
+        model_fn: PreTrainedModel,
         model_input: ArrayLike,
         dataset_input: ArrayLike,
     ) -> (float, float) | (int, float):
