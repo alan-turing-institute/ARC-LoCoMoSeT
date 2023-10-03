@@ -31,7 +31,7 @@ class ModelExperiment:
 
     """
 
-    def __init__(self, **config) -> None:
+    def __init__(self, config: dict) -> None:
         """Initialise model experiment class for given config with following args:
 
         Args:
@@ -73,7 +73,8 @@ class ModelExperiment:
         self.inference_types = np.unique(
             [self.metrics[metric]["inference_type"] for metric in config["metrics"]]
         )
-        self.results = {"time": {}}
+        self.results = config
+        self.results["time"] = {}
         self.save_dir = config.get("save_dir", "results")
         os.mkdir(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
