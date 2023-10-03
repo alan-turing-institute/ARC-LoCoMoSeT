@@ -8,7 +8,9 @@ Relies on the implementation by the authors.
 """
 import warnings
 
+import numpy as np
 from numpy.typing import ArrayLike
+from sklearn.preprocessing import LabelEncoder
 
 from locomoset.LogME.LogME import LogME
 
@@ -26,6 +28,10 @@ def logme(model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs) -> 
     Returns:
         LogME metric value.
     """
+    if not isinstance(model_input, np.ndarray):
+        model_input = np.asarray(model_input)
+    if isinstance(dataset_input[0], str):
+        dataset_input = LabelEncoder().fit_transform(dataset_input)
     LogME_bound = metric_kwargs.get("LogME_bound", 3500)
     if model_input.shape[0] <= LogME_bound:
         warnings.warn("LogME gives innacurate results for smaller sample sizes.")

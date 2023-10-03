@@ -6,11 +6,12 @@ import argparse
 from copy import copy
 
 import yaml
+from tqdm import tqdm
 
 from locomoset.models.model_experiment_classes import ModelExperiment
 
 
-def model_experiment_multiplicity(config: dict) -> list(dict):
+def model_experiment_multiplicity(config: dict) -> list[dict]:
     """For a config with multiple models submitted for experiment, create a new list of
     of config dicts with a single model for each config.
 
@@ -26,7 +27,7 @@ def model_experiment_multiplicity(config: dict) -> list(dict):
     return model_configs
 
 
-def random_state_multiplicity(config: dict) -> list(dict):
+def random_state_multiplicity(config: dict) -> list[dict]:
     """For a config with multiple random states submitted for experiment, create a new
     list of config dicts with a single random state for each config.
 
@@ -66,7 +67,7 @@ def run(config: dict):
         [],
     )
 
-    for model_config in model_configs:
+    for model_config in tqdm(model_configs):
         model_experiment = ModelExperiment(model_config)
         model_experiment.run_experiment()
         model_experiment.save_results()

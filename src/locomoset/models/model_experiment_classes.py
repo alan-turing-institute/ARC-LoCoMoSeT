@@ -10,13 +10,14 @@ import json
 import os
 from datetime import datetime
 from time import time
+from typing import Tuple
 
 import numpy as np
 from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
-from locomoset.metrics.library import METRIC_CLASSES
+from locomoset.metrics.class_library import METRIC_CLASSES
 from locomoset.metrics.metric_classes import Metric
 from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
@@ -57,26 +58,30 @@ class ModelExperiment:
             self.dataset = self.dataset.train_test_split(
                 train_size=self.n_samples, shuffle=True, seed=self.random_state
             )["train"]
-        self.labels = self.dataset["labels"]
+        self.labels = self.dataset["label"]
         self.metrics = {
             metric: {
                 "metric_fn": METRIC_CLASSES[metric](
-                    config["metric_kwargs"].get(metric, None)
+                    **config["metric_kwargs"].get(metric, {})
                 )
             }
             for metric in config["metrics"]
         }
         for metric in self.metrics.keys():
-            self.metrics[metric]["inference_type"] = self.metrics[metric][
-                "metric_fn"
-            ].get_inference_type()
+            self.metrics[metric]["inference_type"] = str(
+                self.metrics[metric]["metric_fn"].get_inference_type()
+            )
         self.inference_types = np.unique(
-            [self.metrics[metric]["inference_type"] for metric in config["metrics"]]
+            [
+                str(self.metrics[metric]["inference_type"])
+                for metric in config["metrics"]
+            ]
         )
         self.results = config
         self.results["time"] = {}
+        self.results["metric_scores"] = {}
         self.save_dir = config.get("save_dir", "results")
-        os.mkdir(self.save_dir, exist_ok=True)
+        os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
 
@@ -96,9 +101,14 @@ class ModelExperiment:
         """
         return self.dataset_name
 
+    def features_inference(self) -> ArrayLike:
+        """Perform inference for features based methods"""
+        model_fn, processor = get_model_and_processor(self.model_name, num_labels=0)
+        return get_features(self.dataset, processor, model_fn)
+
     def perform_inference(
         self, inference_type: str
-    ) -> (ArrayLike, float) | (None, float):
+    ) -> Tuple[ArrayLike, float] | Tuple[None, float]:
         """Perform inference to retrieve data necessary for metric score computation.
 
         Args:
@@ -113,17 +123,8 @@ class ModelExperiment:
             _description_
         """
         inference_start = time()
-        if inference_type is not None:
-            if inference_type == "features":
-                model_fn, processor = get_model_and_processor(
-                    self.model_name, num_labels=0
-                )
-                return (
-                    get_features(self.dataset, processor, model_fn),
-                    time() - inference_start,
-                )
-            # elif inference_type == "distribution":
-            #     model_fn, processor = get_model_and_processor(self.model_name)
+        if inference_type == "features":
+            return self.features_inference(), time() - inference_start
         return None, time() - inference_start
 
     def compute_metric_score(
@@ -132,7 +133,7 @@ class ModelExperiment:
         model_fn: PreTrainedModel,
         model_input: ArrayLike,
         dataset_input: ArrayLike,
-    ) -> (float, float) | (int, float):
+    ) -> Tuple[float, float] | Tuple[int, float]:
         """Compute the metric score for a given metric. Not every metric requires
         either, or both, of the model_input or dataset_input but these are always input
         for a consistent pipeline (even if the input is None) and dealt with within the
@@ -161,6 +162,7 @@ class ModelExperiment:
         """
         print(f"Scoring metrics: {self.metrics}")
         print(f"with inference types requires: {self.inference_types}")
+        model_fn, _ = get_model_and_processor(self.model_name, num_labels=0)
         for inference_type in self.inference_types:
             print(f"Computing metrics with inference type {inference_type}")
             print("Running inference")
@@ -174,11 +176,15 @@ class ModelExperiment:
             ]
             for metric in test_metrics:
                 print(f"Computing metric score for {metric}")
+                self.results["metric_scores"][metric] = {}
                 (
-                    self.results[metric]["score"],
-                    self.results[metric]["time"],
+                    self.results["metric_scores"][metric]["score"],
+                    self.results["metric_scores"][metric]["time"],
                 ) = self.compute_metric_score(
-                    self.metrics[metric], model_input, self.labels
+                    self.metrics[metric]["metric_fn"],
+                    model_fn,
+                    model_input,
+                    self.labels,
                 )
 
     def save_results(self):
