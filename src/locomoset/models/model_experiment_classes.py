@@ -7,6 +7,7 @@
 """
 
 import json
+import os
 from datetime import datetime
 from time import time
 
@@ -59,7 +60,7 @@ class ModelExperiment:
         self.labels = self.dataset["labels"]
         self.metrics = {
             metric: {
-                "metric_fn": METRIC_CLASSES[metric](config["metric_kwargs"][metric])
+                "metric_fn": METRIC_CLASSES[metric](config["metric_kwargs"][metric]())
             }
             for metric in config["metrics"]
         }
@@ -72,6 +73,7 @@ class ModelExperiment:
         )
         self.results = {"time": {}}
         self.save_dir = config.get("save_dir", "results")
+        os.mkdir(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
 
