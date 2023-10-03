@@ -86,22 +86,16 @@ def renggli_class_function(
     Returns:
         Metric score of the trained classifier on the test set.
     """
-    random_state = (
-        metric_kwargs["random_state"]
-        if "random_state" in metric_kwargs.keys()
-        else None
-    )
+    random_state = metric_kwargs.get("random_state", None)
     np.random.seed(random_state)
 
-    clf = metric_kwargs["clf"] if "clf" in metric_kwargs.keys() else None
+    clf = metric_kwargs.get("clf", None)
     if clf is None:
         clf = Pipeline(
             (("scaler", StandardScaler()), ("logistic", LogisticRegression()))
         )
 
-    test_size = (
-        metric_kwargs["test_size"] if "test_size" in metric_kwargs.keys() else None
-    )
+    test_size = metric_kwargs.get("test_size", None)
     feats_train, feats_test, labels_train, labels_test = train_test_split(
         model_input,
         dataset_input,
@@ -111,9 +105,5 @@ def renggli_class_function(
     clf.fit(feats_train, labels_train)
     pred_test = clf.predict(feats_test)
 
-    metric = (
-        metric_kwargs["renggli_metric"]
-        if "renggli_metric" in metric_kwargs.keys()
-        else accuracy_score
-    )
+    metric = metric_kwargs.get("renggli_metric", accuracy_score)
     return metric(labels_test, pred_test)

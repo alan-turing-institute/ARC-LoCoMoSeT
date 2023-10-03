@@ -112,11 +112,7 @@ def parc_class_function(
     Returns:
         PARC score for transferability.
     """
-    random_state = (
-        metric_kwargs["random_state"]
-        if "random_state" in metric_kwargs.keys()
-        else None
-    )
+    random_state = metric_kwargs.get("random_state", None)
     np.random.seed(random_state)
 
     if not isinstance(model_input, np.ndarray):
@@ -126,18 +122,10 @@ def parc_class_function(
     dataset_input = OneHotEncoder(sparse_output=False).fit_transform(
         dataset_input.reshape((len(dataset_input), 1))
     )
-
-    scale_features = (
-        metric_kwargs["scale_features"]
-        if "scale_features" in metric_kwargs.keys()
-        else True
-    )
-    if scale_features:
+    if metric_kwargs.get("scale_features", True):
         model_input = StandardScaler().fit_transform(model_input)
 
-    feat_red_dim = (
-        metric_kwargs["feat_red_dim"] if "feat_red_dim" in metric_kwargs.keys() else 32
-    )
+    feat_red_dim = metric_kwargs.get("feat_red_dim", 32)
     dist_imgs = 1 - np.corrcoef(
         _feature_reduce(model_input, random_state, f=feat_red_dim)
     )

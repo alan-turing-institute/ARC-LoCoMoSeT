@@ -6,6 +6,8 @@
     Model inference here is done by pipline.
 """
 
+import json
+from datetime import datetime
 from time import time
 
 import numpy as np
@@ -42,6 +44,7 @@ class ModelExperiment:
                         (bool). Defaults to False.
             metric_kwargs: dictionary of entries {metric_name: **metric_kwargs} containg
                             parameters for each metric.
+            (Optional) save_dir: Directory to save results, "results" if not set.
         """
         self.model_name = config["model_name"]
         self.dataset_name = config["dataset_name"]
@@ -68,6 +71,9 @@ class ModelExperiment:
             [self.metrics[metric]["inference_type"] for metric in config["metrics"]]
         )
         self.results = {"time": {}}
+        self.save_dir = config.get("save_dir", "results")
+        date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        self.save_path = f"{self.save_dir}/results_{date_str}.json"
 
     def get_model_name(self) -> str:
         """Get the model name
@@ -170,4 +176,8 @@ class ModelExperiment:
                     self.metrics[metric], model_input, self.labels
                 )
 
-        return self.results
+    def save_results(self):
+        """Save the experimental results."""
+        with open(self.save_path, "w") as f:
+            json.dump(self.results, f, default=float)
+        print(f"Results saved to {self.save_path}")

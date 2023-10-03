@@ -45,6 +45,7 @@ class RenggliMetric(Metric):
         metric_name = "renggli"
         super().__init__(metric_name, **metric_kwargs)
         self.inference_type = "features"
+        self.dataset_dependent = True
 
 
 class PARCMetric(Metric):
@@ -55,6 +56,7 @@ class PARCMetric(Metric):
         metric_name = "parc"
         super().__init__(metric_name, **metric_kwargs)
         self.inference_type = "features"
+        self.dataset_dependent = True
 
 
 class LogMEMetric(Metric):
@@ -65,3 +67,4 @@ class LogMEMetric(Metric):
         metric_name = "LogME"
         super().__init__(metric_name, **metric_kwargs)
         self.inference_type = "features"
+        self.dataset_dependent = True

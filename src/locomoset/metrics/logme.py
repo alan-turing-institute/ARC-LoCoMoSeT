@@ -26,9 +26,7 @@ def logme(model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs) -> 
     Returns:
         LogME metric value.
     """
-    LogME_bound = (
-        metric_kwargs["LogME_bound"] if "LogME_bound" in metric_kwargs.keys() else 3500
-    )
+    LogME_bound = metric_kwargs.get("LogME_bound", 3500)
     if model_input.shape[0] <= LogME_bound:
         warnings.warn("LogME gives innacurate results for smaller sample sizes.")
     metric = LogME()
