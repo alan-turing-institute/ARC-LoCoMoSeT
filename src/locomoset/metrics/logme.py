@@ -13,7 +13,7 @@ from numpy.typing import ArrayLike
 from locomoset.LogME.LogME import LogME
 
 
-def logme(features: ArrayLike, labels: ArrayLike, random_state=None) -> float:
+def logme(model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs) -> float:
     """Comput the LogME metric based on features and labels.
 
     NB: LogME gives innacurate results for smaller test sizes, from empirical tests
@@ -26,7 +26,10 @@ def logme(features: ArrayLike, labels: ArrayLike, random_state=None) -> float:
     Returns:
         LogME metric value.
     """
-    if features.shape[0] <= 3500:
+    LogME_bound = (
+        metric_kwargs["LogME_bound"] if "LogME_bound" in metric_kwargs.keys() else 3500
+    )
+    if model_input.shape[0] <= LogME_bound:
         warnings.warn("LogME gives innacurate results for smaller sample sizes.")
     metric = LogME()
-    return metric.fit(features, labels)
+    return metric.fit(model_input, dataset_input)

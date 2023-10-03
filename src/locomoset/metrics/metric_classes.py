@@ -55,3 +55,13 @@ class PARCMetric(Metric):
         metric_name = "parc"
         super().__init__(metric_name, **metric_kwargs)
         self.inference_type = "features"
+
+
+class LogMEMetric(Metric):
+
+    """LogME metric class"""
+
+    def __init__(self, **metric_kwargs) -> None:
+        metric_name = "LogME"
+        super().__init__(metric_name, **metric_kwargs)
+        self.inference_type = "features"

@@ -1,5 +1,10 @@
 from locomoset.metrics.logme import logme
-from locomoset.metrics.metric_classes import NoParsMetric, PARCMetric, RenggliMetric
+from locomoset.metrics.metric_classes import (
+    LogMEMetric,
+    NoParsMetric,
+    PARCMetric,
+    RenggliMetric,
+)
 from locomoset.metrics.metrics_for_metrics import (
     kendall_tau_correlation,
     pearsons_correlation,
@@ -25,4 +30,9 @@ METRIC_FUNCTIONS = {
 }
 
 
-METRIC_CLASSES = {"n_pars": NoParsMetric, "renggli": RenggliMetric, "parc": PARCMetric}
+METRIC_CLASSES = {
+    "n_pars": NoParsMetric,
+    "renggli": RenggliMetric,
+    "parc": PARCMetric,
+    "LogME": LogMEMetric,
+}
