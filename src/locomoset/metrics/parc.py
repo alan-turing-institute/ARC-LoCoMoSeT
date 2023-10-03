@@ -93,12 +93,7 @@ def parc(
 
 
 def parc_class_function(
-    model_input: ArrayLike,
-    dataset_input: ArrayLike,
-    **metric_kwargs
-    # feat_red_dim: int = 32,
-    # random_state: int = None,
-    # scale_features: bool = True,
+    model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs
 ) -> float:
     """Takes computed features from model for each image in a probe data subset (with
     features as rows), and associated array of 1-hot vectors of labels, returning the
