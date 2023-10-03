@@ -22,3 +22,6 @@ METRIC_FUNCTIONS = {
     "LogME": logme,
     "NCE": nce,
 }
+
+
+METRIC_CLASSES = {"place_holder": None}
