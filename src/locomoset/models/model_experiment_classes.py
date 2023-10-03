@@ -60,7 +60,9 @@ class ModelExperiment:
         self.labels = self.dataset["labels"]
         self.metrics = {
             metric: {
-                "metric_fn": METRIC_CLASSES[metric](config["metric_kwargs"][metric])
+                "metric_fn": METRIC_CLASSES[metric](
+                    config["metric_kwargs"].get(metric, None)
+                )
             }
             for metric in config["metrics"]
         }
