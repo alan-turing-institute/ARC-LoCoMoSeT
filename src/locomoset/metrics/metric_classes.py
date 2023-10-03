@@ -20,15 +20,15 @@ class Metric:
         return self.inference_type
 
     def fit_metric(self, model_fn, model_input, dataset_input):
-        if not self.dataset_dependent:
+        if self.dataset_dependent:
             return self.metric_function(
                 model_input, dataset_input, **self.metric_kwargs
             )
         else:
-            return self.metric_function(model_fn, **self.metric_kwargs)
+            return self.metric_function(model_fn)
 
 
-class NoParsMetric(Metric):
+class NumParsMetric(Metric):
 
     """Number of parameters metric class"""
 

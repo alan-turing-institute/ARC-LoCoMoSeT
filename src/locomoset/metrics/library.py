@@ -1,7 +1,7 @@
 from locomoset.metrics.logme import logme
 from locomoset.metrics.metric_classes import (
     LogMEMetric,
-    NoParsMetric,
+    NumParsMetric,
     PARCMetric,
     RenggliMetric,
 )
@@ -31,7 +31,7 @@ METRIC_FUNCTIONS = {
 
 
 METRIC_CLASSES = {
-    "n_pars": NoParsMetric,
+    "n_pars": NumParsMetric,
     "renggli": RenggliMetric,
     "parc": PARCMetric,
     "LogME": LogMEMetric,
