@@ -58,3 +58,68 @@ def renggli(
     clf.fit(feats_train, labels_train)
     pred_test = clf.predict(feats_test)
     return metric(labels_test, pred_test)
+
+
+def renggli_class_function(
+    model_input: ArrayLike,
+    dataset_input: ArrayLike,
+    **metric_kwargs
+    # clf: BaseEstimator | None = None,
+    # metric: Callable = accuracy_score,
+    # test_size: float = 0.25,
+    # random_state: int = None,
+) -> float:
+    """Trains and evaluates a classifier on input features and labels.
+
+    In the Renggli paper the features are from a classifier with its head removed, and
+    the trained classifier is a LogisticRegression model.
+
+    See Renggli, Cedric, et al. "Which model to transfer? finding the needle in the
+    growing haystack." Proceedings of the IEEE/CVF Conference on Computer Vision and
+    Pattern Recognition. 2022.
+
+    Args:
+        model_input: Input features of shape (num_samples, num_features).
+        dataset_input: Input labels of shape (num_samples, 1).
+        metric_kwargs:
+            clf: Type of classifier to fit. If None defaults to a LogisticRegression
+                model.
+            renggli_metric: Metric used to evaluate the classifier on the test set.
+            test_size: Size of test set (fraction of features and labels to exclude from
+                training for evaluation).
+            random_state: Random state to use for the train/test split.
+
+    Returns:
+        Metric score of the trained classifier on the test set.
+    """
+    random_state = (
+        metric_kwargs["random_state"]
+        if "random_state" in metric_kwargs.keys()
+        else None
+    )
+    np.random.seed(random_state)
+
+    clf = metric_kwargs["clf"] if "clf" in metric_kwargs.keys() else None
+    if clf is None:
+        clf = Pipeline(
+            (("scaler", StandardScaler()), ("logistic", LogisticRegression()))
+        )
+
+    test_size = (
+        metric_kwargs["test_size"] if "test_size" in metric_kwargs.keys() else None
+    )
+    feats_train, feats_test, labels_train, labels_test = train_test_split(
+        model_input,
+        dataset_input,
+        test_size=test_size,
+        random_state=random_state,
+    )
+    clf.fit(feats_train, labels_train)
+    pred_test = clf.predict(feats_test)
+
+    metric = (
+        metric_kwargs["renggli_metric"]
+        if "renggli_metric" in metric_kwargs.keys()
+        else accuracy_score
+    )
+    return metric(labels_test, pred_test)

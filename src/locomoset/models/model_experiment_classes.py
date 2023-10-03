@@ -10,18 +10,23 @@ from time import time
 
 import numpy as np
 from datasets import load_dataset
-from torch import Tensor
+from numpy.typing import ArrayLike
+from transformers.modeling_utils import AutoModel
 
 from locomoset.metrics.library import METRIC_CLASSES
+from locomoset.metrics.metric_classes import Metric
 from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
-
-# from datasets import Dataset
 
 
 class ModelExperiment:
 
-    """Model experiment base class."""
+    """Model experiment base class. Runs method metric.fit_metric() for each metric
+    stated, which takes arguments:
+
+            (model_fn, model_input, dataset_input, **model_kwargs)
+
+    """
 
     def __init__(self, **config) -> None:
         """Initialise model experiment class for given config with following args:
@@ -80,7 +85,9 @@ class ModelExperiment:
         """
         return self.dataset_name
 
-    def perform_inference(self, inference_type: str) -> (Tensor, float) | (None, float):
+    def perform_inference(
+        self, inference_type: str
+    ) -> (ArrayLike, float) | (None, float):
         """Perform inference to retrieve data necessary for metric score computation.
 
         Args:
@@ -108,7 +115,13 @@ class ModelExperiment:
             #     model_fn, processor = get_model_and_processor(self.model_name)
         return None, time() - inference_start
 
-    def compute_metric_score(self, metric, model_input, dataset_input) -> float:
+    def compute_metric_score(
+        self,
+        metric: Metric,
+        model_fn: AutoModel,
+        model_input: ArrayLike,
+        dataset_input: ArrayLike,
+    ) -> (float, float) | (int, float):
         """Compute the metric score for a given metric. Not every metric requires
         either, or both, of the model_input or dataset_input but these are always input
         for a consistent pipeline (even if the input is None) and dealt with within the
@@ -116,6 +129,7 @@ class ModelExperiment:
 
         Args:
             metric: metric object
+            model: model
             model_input: model input, from inference
             dataset_input: dataset input, from dataset (labels)
 
@@ -123,7 +137,10 @@ class ModelExperiment:
             metric score, computational time
         """
         metric_start = time()
-        return metric.fit_metric(model_input, dataset_input), time() - metric_start
+        return (
+            metric.fit_metric(model_fn, model_input, dataset_input),
+            time() - metric_start,
+        )
 
     def run_experiment(self) -> dict:
         """Run the experiment pipeline

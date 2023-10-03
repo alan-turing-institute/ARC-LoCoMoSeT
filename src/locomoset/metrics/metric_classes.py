@@ -19,13 +19,13 @@ class Metric:
     def get_inference_type(self):
         return self.inference_type
 
-    def fit_metric(self, model_input, dataset_input):
+    def fit_metric(self, model_fn, model_input, dataset_input):
         if not self.dataset_dependent:
             return self.metric_function(
                 model_input, dataset_input, **self.metric_kwargs
             )
         else:
-            return self.metric_function(model_input, **self.metric_kwargs)
+            return self.metric_function(model_fn, **self.metric_kwargs)
 
 
 class NoParsMetric(Metric):
@@ -34,4 +34,13 @@ class NoParsMetric(Metric):
 
     def __init__(self, **metric_kwargs) -> None:
         metric_name = "n_pars"
+        super().__init__(metric_name, **metric_kwargs)
+
+
+class RenggliMetric(Metric):
+
+    """Renggli metric class"""
+
+    def __init__(self, metric_name, **metric_kwargs) -> None:
+        metric_name = "renggli"
         super().__init__(metric_name, **metric_kwargs)
