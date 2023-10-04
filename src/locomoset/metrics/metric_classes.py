@@ -16,9 +16,6 @@ class Metric:
         self.dataset_dependent = False
         self.metric_kwargs = metric_kwargs
 
-    def get_inference_type(self):
-        return self.inference_type
-
     def fit_metric(self, model_fn, model_input, dataset_input):
         if self.dataset_dependent:
             return self.metric_function(

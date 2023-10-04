@@ -30,18 +30,6 @@ metrics:
   - n_pars
   - LogME
 
-# Metric kwargs:
-metric_kwargs:
-    None:
-      None
-#   renggli:
-#     None:
-#       None
-#   parc:
-#     None:
-#       None
-#   n_pars:
-#     None:
 
-#   LogME:
-#     None
+# If metrics require additional parameters specified:
+# metric_kwargs:

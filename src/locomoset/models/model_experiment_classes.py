@@ -62,14 +62,14 @@ class ModelExperiment:
         self.metrics = {
             metric: {
                 "metric_fn": METRIC_CLASSES[metric](
-                    **config["metric_kwargs"].get(metric, {})
+                    **config.get("metric_kwargs", {}).get(metric, {})
                 )
             }
             for metric in config["metrics"]
         }
         for metric in self.metrics.keys():
             self.metrics[metric]["inference_type"] = str(
-                self.metrics[metric]["metric_fn"].get_inference_type()
+                self.metrics[metric]["metric_fn"].inference_type
             )
         self.inference_types = np.unique(
             [
@@ -78,28 +78,12 @@ class ModelExperiment:
             ]
         )
         self.results = config
-        self.results["time"] = {}
+        self.results["inference_times"] = {}
         self.results["metric_scores"] = {}
         self.save_dir = config.get("save_dir", "results")
         os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
-
-    def get_model_name(self) -> str:
-        """Get the model name
-
-        Returns:
-            model name
-        """
-        return self.model_name
-
-    def get_dataset_name(self) -> str:
-        """Get dataset name
-
-        Returns:
-            dataset name
-        """
-        return self.dataset_name
 
     def features_inference(self) -> ArrayLike:
         """Perform inference for features based methods"""
@@ -166,9 +150,10 @@ class ModelExperiment:
         for inference_type in self.inference_types:
             print(f"Computing metrics with inference type {inference_type}")
             print("Running inference")
-            model_input, self.results["time"][inference_type] = self.perform_inference(
-                inference_type
-            )
+            (
+                model_input,
+                self.results["inference_times"][inference_type],
+            ) = self.perform_inference(inference_type)
             test_metrics = [
                 metric
                 for metric in self.metrics.keys()
