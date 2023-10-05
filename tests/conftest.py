@@ -96,7 +96,7 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
         "dataset_split": dummy_split,
-        "metric": "renggli",
+        "metrics": ["renggli"],
         "n_samples": 50,
         "random_state": test_seed,
     }
