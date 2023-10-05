@@ -34,7 +34,7 @@ class TaskAgnosticMetric(Metric):
         super().__init__(metric_name, **metric_kwargs)
         self.dataset_dependent = False
 
-    def fit_metric(self, model_fn):
+    def fit_metric(self, model_fn, **kwargs):
         return self.metric_function(model_fn)
 
 
@@ -50,5 +50,5 @@ class TaskSpecificMetric(Metric):
         super().__init__(metric_name, **metric_kwargs)
         self.dataset_dependent = True
 
-    def fit_metric(self, model_input, dataset_input):
+    def fit_metric(self, model_input, dataset_input, **kwargs):
         return self.metric_function(model_input, dataset_input, **self.metric_kwargs)

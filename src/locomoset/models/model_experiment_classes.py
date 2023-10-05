@@ -130,13 +130,12 @@ class ModelExperiment:
             metric score, computational time
         """
         metric_start = time()
-        if metric.dataset_dependent:
-            return (
-                metric.fit_metric(model_input, dataset_input),
-                time() - metric_start,
-            )
-        else:
-            return metric.fit_metric(model_fn), time() - metric_start
+        return (
+            metric.fit_metric(
+                model_fn=model_fn, model_input=model_input, dataset_input=dataset_input
+            ),
+            time() - metric_start,
+        )
 
     def run_experiment(self) -> dict:
         """Run the experiment pipeline
