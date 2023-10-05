@@ -17,8 +17,8 @@ from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
-from locomoset.metrics.class_library import METRIC_CLASSES
-from locomoset.metrics.metric_classes import Metric
+from locomoset.metrics.classes import Metric
+from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
 
@@ -59,12 +59,9 @@ class ModelExperiment:
                 train_size=self.n_samples, shuffle=True, seed=self.random_state
             )["train"]
         self.labels = self.dataset["label"]
+        metric_kwargs_dict = config.get("metric_kwargs", {})
         self.metrics = {
-            metric: {
-                "metric_fn": METRIC_CLASSES[metric](
-                    **config.get("metric_kwargs", {}).get(metric, {})
-                )
-            }
+            metric: {"metric_fn": METRICS[metric](**metric_kwargs_dict.get(metric, {}))}
             for metric in config["metrics"]
         }
         for metric in self.metrics.keys():

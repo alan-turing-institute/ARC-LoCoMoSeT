@@ -4,44 +4,31 @@ Test functions for the PARC score (src/locomoset/metrics/parc.py).
 import numpy as np
 import pytest
 
-from locomoset.metrics.parc import _feature_reduce, _lower_tri_arr, parc
+from locomoset.metrics.parc import PARCMetric, _feature_reduce, _lower_tri_arr
 
 
-def test_parc_perfect_features(dummy_features_perfect, dummy_labels, test_seed):
-    """
-    Test that the PARC score is 100 if the features give perfect information about
-    the labels.
-
-    NB: This is without applying feature reduction to PARC. If feature reduction is
-    included this no longer returns perfect results.
-    """
-    assert parc(
-        dummy_features_perfect,
-        dummy_labels,
-        feat_red_dim=None,
-        scale_features=False,
-        random_state=test_seed,
-    ) == pytest.approx(100)
-
-    # scaling features seems to reduce the PARC score from perfect slightly, as the
-    # features and labels are not identical anymore (even though the features still
-    # contain perfect information), so we add a tolerance here
-    assert parc(
-        dummy_features_perfect,
-        dummy_labels,
-        feat_red_dim=None,
-        scale_features=True,
-        random_state=test_seed,
-    ) == pytest.approx(100, rel=0.2)
+def test_parc_class_perfect_features(dummy_features_perfect, dummy_labels, test_seed):
+    """Test PARC metric class for perfect features"""
+    metric = PARCMetric(
+        **{"random_state": test_seed, "feat_red_dim": None, "scale_features": False}
+    )
+    assert metric.metric_name == "parc"
+    assert metric.inference_type == "features"
+    assert metric.dataset_dependent is True
+    assert metric.fit_metric(dummy_features_perfect, dummy_labels) == pytest.approx(100)
 
 
-def test_parc_random_features(dummy_features_random, dummy_labels, test_seed):
-    """
-    Test that the PARC score is 0 if the features are random noise.
-    """
-    assert parc(
-        dummy_features_random, dummy_labels, feat_red_dim=None, random_state=test_seed
-    ) == pytest.approx(0.0, abs=0.2)
+def test_parc_class_random_features(dummy_features_random, dummy_labels, test_seed):
+    """Test PARC metric class for random features"""
+    metric = PARCMetric(
+        **{"random_state": test_seed, "feat_red_dim": None, "scale_features": False}
+    )
+    assert metric.metric_name == "parc"
+    assert metric.inference_type == "features"
+    assert metric.dataset_dependent is True
+    assert metric.fit_metric(dummy_features_random, dummy_labels) == pytest.approx(
+        0.0, abs=0.2
+    )
 
 
 def test_lower_tri():

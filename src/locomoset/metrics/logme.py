@@ -13,27 +13,39 @@ from numpy.typing import ArrayLike
 from sklearn.preprocessing import LabelEncoder
 
 from locomoset.LogME.LogME import LogME
+from locomoset.metrics.classes import TaskSpecificMetric
 
 
-def logme(model_input: ArrayLike, dataset_input: ArrayLike, **metric_kwargs) -> float:
-    """Comput the LogME metric based on features and labels.
+class LogMEMetric(TaskSpecificMetric):
 
-    NB: LogME gives innacurate results for smaller test sizes, from empirical tests
-    we recommend num_samples >= 3500
+    """LogME metric class"""
 
-    Args:
-        features: Input features of shape (num_samples, num_features)
-        labels: Input labels of shape (num_samples, 1)
+    def __init__(self, **metric_kwargs) -> None:
+        metric_name = "LogME"
+        super().__init__(metric_name, **metric_kwargs)
+        self.inference_type = "features"
+        self.dataset_dependent = True
 
-    Returns:
-        LogME metric value.
-    """
-    if not isinstance(model_input, np.ndarray):
-        model_input = np.asarray(model_input)
-    if isinstance(dataset_input[0], str):
-        dataset_input = LabelEncoder().fit_transform(dataset_input)
-    LogME_bound = metric_kwargs.get("LogME_bound", 3500)
-    if model_input.shape[0] <= LogME_bound:
-        warnings.warn("LogME gives innacurate results for smaller sample sizes.")
-    metric = LogME()
-    return metric.fit(model_input, dataset_input)
+    def metric_function(
+        self, model_input: ArrayLike, dataset_input: ArrayLike, logme_bound: int = 3500
+    ) -> float:
+        """Comput the LogME metric based on features and labels.
+
+        NB: LogME gives innacurate results for smaller test sizes, from empirical tests
+        we recommend num_samples >= 3500
+
+        Args:
+            features: Input features of shape (num_samples, num_features)
+            labels: Input labels of shape (num_samples, 1)
+
+        Returns:
+            LogME metric value.
+        """
+        if not isinstance(model_input, np.ndarray):
+            model_input = np.asarray(model_input)
+        if isinstance(dataset_input[0], str):
+            dataset_input = LabelEncoder().fit_transform(dataset_input)
+        if model_input.shape[0] <= logme_bound:
+            warnings.warn("LogME gives innacurate results for smaller sample sizes.")
+        metric = LogME()
+        return metric.fit(model_input, dataset_input)

@@ -12,6 +12,8 @@ from scipy.stats import spearmanr
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from locomoset.metrics.classes import TaskSpecificMetric
+
 
 def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.ndarray:
     """Use PCA to reduce the dimensionality of features.
@@ -53,40 +55,53 @@ def _lower_tri_arr(arr: ArrayLike):
     return arr[np.triu_indices(n, 1)]
 
 
-def parc(
-    features: ArrayLike,
-    labels: ArrayLike,
-    feat_red_dim: int = 32,
-    random_state: int = None,
-    scale_features: bool = True,
-) -> float:
-    """Takes computed features from model for each image in a probe data subset (with
-    features as rows), and associated array of 1-hot vectors of labels, returning the
-    PARC metric for transferability.
+class PARCMetric(TaskSpecificMetric):
 
-    Args:
-        features: Features from model for each image in probe dataset of
-            shape (num_samples, num_features).
-        labels: Input labels of shape (num_samples, 1).
-        feat_red_dim: If set, feature reduction dimension.
-        random_state: Random state for dimensionality reduction.
-        scale_features: If True, use StandardScaler to convert features to have mean
-            zero and standard deviation one before computing PARC.
+    """PARC metric class"""
 
-    Returns:
-        PARC score for transferability.
-    """
-    np.random.seed(random_state)
-    if not isinstance(features, np.ndarray):
-        features = np.asarray(features)
-    if not isinstance(labels, np.ndarray):
-        labels = np.asarray(labels)
-    labels = OneHotEncoder(sparse_output=False).fit_transform(
-        labels.reshape((len(labels), 1))
-    )
-    if scale_features:
-        features = StandardScaler().fit_transform(features)
-    dist_imgs = 1 - np.corrcoef(_feature_reduce(features, random_state, f=feat_red_dim))
-    dist_labs = 1 - np.corrcoef(labels)
+    def __init__(self, **metric_kwargs) -> None:
+        metric_name = "parc"
+        super().__init__(metric_name, **metric_kwargs)
+        self.inference_type = "features"
+        self.dataset_dependent = True
 
-    return spearmanr(_lower_tri_arr(dist_imgs), _lower_tri_arr(dist_labs))[0] * 100
+    def metric_function(
+        self,
+        features: ArrayLike,
+        labels: ArrayLike,
+        feat_red_dim: int = 32,
+        random_state: int = None,
+        scale_features: bool = True,
+    ) -> float:
+        """Takes computed features from model for each image in a probe data subset
+        (with features as rows), and associated array of 1-hot vectors of labels,
+        returning the PARC metric for transferability.
+
+        Args:
+            features: Features from model for each image in probe dataset of
+                shape (num_samples, num_features).
+            labels: Input labels of shape (num_samples, 1).
+            feat_red_dim: If set, feature reduction dimension.
+            random_state: Random state for dimensionality reduction.
+            scale_features: If True, use StandardScaler to convert features to have mean
+                zero and standard deviation one before computing PARC.
+
+        Returns:
+            PARC score for transferability.
+        """
+        np.random.seed(random_state)
+        if not isinstance(features, np.ndarray):
+            features = np.asarray(features)
+        if not isinstance(labels, np.ndarray):
+            labels = np.asarray(labels)
+        labels = OneHotEncoder(sparse_output=False).fit_transform(
+            labels.reshape((len(labels), 1))
+        )
+        if scale_features:
+            features = StandardScaler().fit_transform(features)
+        dist_imgs = 1 - np.corrcoef(
+            _feature_reduce(features, random_state, f=feat_red_dim)
+        )
+        dist_labs = 1 - np.corrcoef(labels)
+
+        return spearmanr(_lower_tri_arr(dist_imgs), _lower_tri_arr(dist_labs))[0] * 100
