@@ -3,8 +3,6 @@
     (src/locomoset/models/model_experiment_classes.py)
 """
 
-# import pytest
-
 from locomoset.models.load import get_model_and_processor
 from locomoset.models.model_experiment_classes import ModelExperiment
 
