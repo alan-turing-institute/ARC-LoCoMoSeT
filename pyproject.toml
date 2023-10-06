@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-transformers = "^4.30.2"
+transformers = {extras = ["torch"], version = "^4.34.0"}
 datasets = "^2.13.0"
 evaluate = "^0.4.0"
 torch = "^2.0, !=2.0.1"  # See issue #27
