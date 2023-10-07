@@ -41,7 +41,7 @@ def get_features(
     #    datasets.Dataset class does not.
     #  - Pipelines expect a torch.utils.data.Dataset as input to enable batched
     #    processing.
-    #  - Pipelines generally expect only to be given the relevant input only (image in
+    #  - Pipelines generally expect to be given the relevant input only (image in
     #    this case), not the whole sample with labels, metadata etc. This is what the
     #    KeyDataset provides when iterated over.
     if isinstance(dataset, Dataset):
