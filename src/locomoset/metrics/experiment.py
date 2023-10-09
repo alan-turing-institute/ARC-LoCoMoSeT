@@ -88,6 +88,11 @@ class ModelMetricsExperiment:
         return get_features(self.dataset, processor, model_fn)
 
     def model_inference(self) -> PreTrainedModel:
+        """Perform inference for model based methods (just load the model).
+
+        Returns:
+            Model with its classification head removed.
+        """
         model_fn, _ = get_model_and_processor(self.model_name, num_labels=0)
         return model_fn
 
