@@ -3,6 +3,8 @@
     (src/locomoset/models/model_experiment_classes.py)
 """
 
+from transformers import PreTrainedModel
+
 from locomoset.models.load import get_model_and_processor
 from locomoset.models.model_experiment_classes import ModelExperiment
 
@@ -16,8 +18,8 @@ def test_model_exp_class_init(
     assert model_experiment.dataset_name == dummy_dataset_name
     assert model_experiment.n_samples == 50
     assert model_experiment.random_state == test_seed
-    assert list(model_experiment.metrics.keys())[0] == "renggli"
-    assert model_experiment.inference_types[0] == "features"
+    assert list(model_experiment.metrics.keys()) == ["renggli"]
+    assert model_experiment.inference_types == ["features"]
 
 
 def test_features_inference(dummy_config):
@@ -39,9 +41,9 @@ def test_perform_inference_task_agnostic(dummy_config):
     dummy_config["metrics"] = ["n_pars"]
     model_experiment = ModelExperiment(dummy_config)
     assert list(model_experiment.metrics.keys())[0] == "n_pars"
-    assert model_experiment.inference_types[0] == "None"
+    assert model_experiment.inference_types[0] == "model"
     inference = model_experiment.perform_inference(model_experiment.inference_types[0])
-    assert inference[0] is None
+    assert isinstance(inference[0], PreTrainedModel)
 
 
 def test_compute_metric_score(dummy_config):
@@ -50,6 +52,6 @@ def test_compute_metric_score(dummy_config):
     model_experiment = ModelExperiment(dummy_config)
     model_fn, _ = get_model_and_processor(model_experiment.model_name, num_labels=0)
     metric_score = model_experiment.compute_metric_score(
-        model_experiment.metrics["n_pars"]["metric_fn"], model_fn, _, _
+        model_experiment.metrics["n_pars"], model_fn, None
     )
     assert metric_score[0] == 1686

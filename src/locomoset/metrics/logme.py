@@ -17,21 +17,25 @@ from locomoset.metrics.classes import TaskSpecificMetric
 
 
 class LogMEMetric(TaskSpecificMetric):
-    """LogME metric class"""
+    """Wrapper around the author's implementation of the LogME metric from the papers:
+    - LogME: Practical Assessment of Pre-trained Models for Transfer Learning
+        (K. You et al., 2021)
+    - Ranking and Tuning Pre-trained Models: A New Paradigm for Exploiting Model Hubs
+        (K. You et al., 2021)
+    """
 
-    def __init__(self, **metric_kwargs) -> None:
-        metric_name = "LogME"
-        super().__init__(metric_name, **metric_kwargs)
-        self.inference_type = "features"
-        self.dataset_dependent = True
+    def __init__(self, logme_bound: int = 3500) -> None:
+        """
+        Args:
+            logme_bound: LogME may give innacurate results with small sample sizes,
+                print a warning if the no. of samples is smaller than this value (set
+                from empirical tests on ImageNet).
+        """
+        super().__init__(metric_name="LogME", inference_type="features")
+        self.logme_bound = logme_bound
 
-    def metric_function(
-        self, model_input: ArrayLike, dataset_input: ArrayLike, logme_bound: int = 3500
-    ) -> float:
-        """Compute the LogME metric based on features and labels.
-
-        NB: LogME gives innacurate results for smaller test sizes, from empirical tests
-        we recommend num_samples >= 3500
+    def metric_function(self, features: ArrayLike, labels: ArrayLike) -> float:
+        """Compute the LogME metric.
 
         Args:
             features: Input features of shape (num_samples, num_features)
@@ -40,11 +44,11 @@ class LogMEMetric(TaskSpecificMetric):
         Returns:
             LogME metric value.
         """
-        if not isinstance(model_input, np.ndarray):
-            model_input = np.asarray(model_input)
-        if isinstance(dataset_input[0], str):
-            dataset_input = LabelEncoder().fit_transform(dataset_input)
-        if model_input.shape[0] <= logme_bound:
+        if not isinstance(features, np.ndarray):
+            features = np.asarray(features)
+        if isinstance(labels[0], str):
+            labels = LabelEncoder().fit_transform(labels)
+        if features.shape[0] <= self.logme_bound:
             warnings.warn("LogME gives innacurate results for smaller sample sizes.")
         metric = LogME()
-        return metric.fit(model_input, dataset_input)
+        return metric.fit(features, labels)

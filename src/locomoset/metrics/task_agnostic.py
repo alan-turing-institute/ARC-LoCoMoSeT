@@ -8,20 +8,20 @@ from locomoset.metrics.classes import TaskAgnosticMetric
 
 
 class NumParsMetric(TaskAgnosticMetric):
-    """Number of parameters metric class"""
+    """Number of parameters metric"""
 
-    def __init__(self, **metric_kwargs) -> None:
-        metric_name = "n_pars"
-        super().__init__(metric_name, **metric_kwargs)
+    def __init__(self, random_state: int | None = None) -> None:
+        super().__init__(
+            metric_name="n_pars", inference_type="model", random_state=random_state
+        )
 
     def metric_function(self, model: PreTrainedModel) -> int:
-        """Return the number of parameters of a model as a metric.
+        """Returns the number of parameters in a model.
 
         Args:
-            model: pre-loaded hugging face model from which to return the number of
-            parameters.
+            model: Pre-loaded hugging face model
 
         Returns:
-            number of paramters of said model.
+            Number of paramters in said model.
         """
         return model.num_parameters()
