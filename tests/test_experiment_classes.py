@@ -6,7 +6,7 @@
 from transformers import PreTrainedModel
 
 from locomoset.metrics.experiment import ModelMetricsExperiment
-from locomoset.models.load import get_model_and_processor
+from locomoset.models.load import get_model_without_head
 
 
 def test_model_exp_class_init(
@@ -50,7 +50,7 @@ def test_compute_metric_score(dummy_config):
     """Test the compute metric score method"""
     dummy_config["metrics"] = ["n_pars"]
     model_experiment = ModelMetricsExperiment(dummy_config)
-    model_fn, _ = get_model_and_processor(model_experiment.model_name, num_labels=0)
+    model_fn = get_model_without_head(model_experiment.model_name)
     metric_score = model_experiment.compute_metric_score(
         model_experiment.metrics["n_pars"], model_fn, None
     )
