@@ -41,7 +41,7 @@ def _feature_reduce(features: np.ndarray, random_state: int, f: int = 32) -> np.
     ).fit_transform(features)
 
 
-def _lower_tri_arr(arr: ArrayLike):
+def _lower_tri_arr(arr: np.ndarray) -> np.ndarray:
     """Takes a square 2 dimensional array and returns the lower triangular values as a
     1 dimensional array (offset from the diagonal by 1 (i.e. no diagonal values))
 

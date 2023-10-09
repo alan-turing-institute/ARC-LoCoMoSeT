@@ -6,12 +6,12 @@ Script for computing the NCE metric within our framework, from paper:
 Relies on the implementation by the LogME authors (which corrects the original
 implementation).
 """
-from numpy.typing import ArrayLike
+import numpy as np
 
 from locomoset.LogME.NCE import NCE
 
 
-def nce(pred_labels: ArrayLike, labels: ArrayLike, random_state=None) -> float:
+def nce(pred_labels: np.ndarray, labels: np.ndarray, random_state=None) -> float:
     """Function for computing the negative conditionaly entropy metric.
 
     Args:

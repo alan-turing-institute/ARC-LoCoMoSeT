@@ -7,14 +7,13 @@ for accessible transfer learning." Advances in Neural Information Processing Sys
 34 (2021): 19301-19312.
 """
 import numpy as np
-from numpy.typing import ArrayLike
 
 from locomoset.metrics.library import METRIC_FOR_METRIC_FUNCTIONS
 
 
 def aggregate_metric_scores(
-    metric_scores: ArrayLike,
-    validation_scores: ArrayLike,
+    metric_scores: np.ndarray,
+    validation_scores: np.ndarray,
     metric_for_metrics: str,
     by_dataset: bool = True,
 ):
