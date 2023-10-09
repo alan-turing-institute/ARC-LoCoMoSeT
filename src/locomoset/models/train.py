@@ -68,16 +68,21 @@ def run_config(config: dict):
     training_args = config.get("training_args", {})
     training_args["seed"] = random_state
 
-    wandb_keys = ["wandb_entity", "wandb_project", "wandb_log_model", "wandb_name"]
-    for key in wandb_keys:
-        if key in config:
-            training_args["report_to"] = "wandb"
-            os.environ[key.upper()] = config[key]
-
-    if training_args.get("report_to") == "wandb" and "wandb_name" not in config:
-        os.environ["WANDB_NAME"] = f"{config['dataset_name']}_{config['model_name']}"
-
-    wandb.login()
+    if "wandb" in config:
+        training_args["report_to"] = "wandb"
+        wandb.login()
+        wandb_config = config["wandb"]
+        if "log_model" in wandb_config:
+            # log_model can only be specified as an env variable
+            os.environ["WANDB_LOG_MODEL"] = wandb_config["log_model"]
+            wandb_config.pop("log_model")
+        if "name" not in wandb_config:
+            wandb_config["name"] = config["model_name"]
+        if "group" not in wandb_config:
+            wandb_config["group"] = config["dataset_name"]
+        if "job_type" not in wandb_config:
+            wandb_config["job_type"] = "train"
+        wandb.init(config={"locomoset": config}, **wandb_config)
 
     training_args = TrainingArguments(**training_args)
 

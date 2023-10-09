@@ -13,19 +13,19 @@ val_split: train
 random_state: 42
 
 # Weights and Biases
-wandb_entity: jack89roberts
-wandb_project: locomoset
-wandb_log_model: end
+wandb:
+  entity: turing-arc
+  project: locomoset
+  log_model: end
 
 # Arguments for transformers.TrainingArguments
 training_args:
   output_dir: tmp
   overwrite_output_dir: True
   save_strategy: steps
-  num_train_epochs: 10
+  num_train_epochs: 1
   use_mps_device: True
   evaluation_strategy: steps
   eval_steps: 100
   logging_strategy: steps
   load_best_model_at_end: True
-  report_to: wandb
