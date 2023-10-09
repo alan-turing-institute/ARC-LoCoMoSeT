@@ -6,7 +6,6 @@ Script for computing the NCE metric within our framework, from paper:
 Relies on the implementation by the LogME authors (which corrects the original
 implementation).
 """
-
 from numpy.typing import ArrayLike
 
 from locomoset.LogME.NCE import NCE

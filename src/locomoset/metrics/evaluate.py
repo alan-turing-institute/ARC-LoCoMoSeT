@@ -9,8 +9,6 @@ common metrics from this seen in the literature are:
 We also include the an aggregate (mean) correlation over datasets considered for each of
 these.
 """
-
-
 from numpy.typing import ArrayLike
 from scipy.stats import kendalltau, pearsonr, spearmanr
 

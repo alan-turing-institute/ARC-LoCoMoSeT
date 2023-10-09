@@ -1,11 +1,10 @@
 """
-    Classes for the model experiments. This is the overarching class that takes as an
-    input the name of the model, a dataset, a list of metrics to score the model by, and
-    any parameters required by said metrics.
+Classes for the model experiments. This is the overarching class that takes as an
+input the name of the model, a dataset, a list of metrics to score the model by, and
+any parameters required by said metrics.
 
-    Model inference here is done by pipline.
+Model inference here is done by pipline.
 """
-
 import json
 import os
 from datetime import datetime

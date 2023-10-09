@@ -1,12 +1,10 @@
 """
-    Base metric class for unifying the method.
+Base metric class for unifying the method.
 """
-
 from abc import ABC, abstractmethod
 
 
 class Metric(ABC):
-
     """Base class for metrics"""
 
     def __init__(self, metric_name, **metric_kwargs) -> None:
@@ -26,7 +24,6 @@ class Metric(ABC):
 
 
 class TaskAgnosticMetric(Metric):
-
     """Base class for task agnostic metrics, for which the metric function input is
     solely the model function."""
 
@@ -39,11 +36,8 @@ class TaskAgnosticMetric(Metric):
 
 
 class TaskSpecificMetric(Metric):
-
     """Base class for task specific metric, for which the input is of shape:
-
     (model_input, dataset_input, **kwargs)
-
     """
 
     def __init__(self, metric_name, **metric_kwargs) -> None:

@@ -18,7 +18,6 @@ from locomoset.metrics.classes import TaskSpecificMetric
 
 
 class RenggliMetric(TaskSpecificMetric):
-
     """Renggli metric class"""
 
     def __init__(self, **metric_kwargs) -> None:

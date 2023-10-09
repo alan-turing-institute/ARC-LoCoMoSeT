@@ -2,14 +2,12 @@
 Functions for the task-agnostic metrics. In particular the number of parameters of a
 model as a metric.
 """
-
 from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.metrics.classes import TaskAgnosticMetric
 
 
 class NumParsMetric(TaskAgnosticMetric):
-
     """Number of parameters metric class"""
 
     def __init__(self, **metric_kwargs) -> None:

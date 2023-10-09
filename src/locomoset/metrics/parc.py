@@ -56,7 +56,6 @@ def _lower_tri_arr(arr: ArrayLike):
 
 
 class PARCMetric(TaskSpecificMetric):
-
     """PARC metric class"""
 
     def __init__(self, **metric_kwargs) -> None:

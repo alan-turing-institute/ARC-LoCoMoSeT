@@ -1,7 +1,6 @@
 """
-    Entry point for running experiments per model for each metric stated in config.
+Entry point for running experiments per model for each metric stated in config.
 """
-
 import argparse
 from copy import copy
 
