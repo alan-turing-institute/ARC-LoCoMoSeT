@@ -1,6 +1,10 @@
 """
 Functions for aggregating the metric for metrics score over different datasets
 considered, as found in the PARC paper:
+
+Bolya, Daniel, Rohit Mittapalli, and Judy Hoffman. "Scalable diverse model selection
+for accessible transfer learning." Advances in Neural Information Processing Systems
+34 (2021): 19301-19312.
 """
 import numpy as np
 from numpy.typing import ArrayLike
