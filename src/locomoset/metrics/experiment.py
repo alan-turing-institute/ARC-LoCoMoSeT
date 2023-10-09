@@ -21,7 +21,7 @@ from locomoset.models.features import get_features
 from locomoset.models.load import get_model_and_processor
 
 
-class ModelExperiment:
+class ModelMetricsExperiment:
     """Model experiment class. Runs method metric.fit_metric() for each metric stated,
     which takes arguments: (model_input, dataset_input).
     """

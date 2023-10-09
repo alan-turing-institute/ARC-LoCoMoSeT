@@ -7,7 +7,7 @@ from copy import copy
 import yaml
 from tqdm import tqdm
 
-from locomoset.models.model_experiment_classes import ModelExperiment
+from locomoset.metrics.experiment import ModelMetricsExperiment
 
 
 def model_experiment_multiplicity(config: dict) -> list[dict]:
@@ -67,7 +67,7 @@ def run(config: dict):
     )
 
     for model_config in tqdm(model_configs):
-        model_experiment = ModelExperiment(model_config)
+        model_experiment = ModelMetricsExperiment(model_config)
         model_experiment.run_experiment()
         model_experiment.save_results()
 
