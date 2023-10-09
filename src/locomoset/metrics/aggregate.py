@@ -16,7 +16,7 @@ def aggregate_metric_scores(
     validation_scores: np.ndarray,
     metric_for_metrics: str,
     by_dataset: bool = True,
-):
+) -> float:
     """Aggregate the metric scores by taking the mean over either varying datasets:
 
     (1/|T|) * sum_T corr([S], [V])
@@ -30,9 +30,13 @@ def aggregate_metric_scores(
                         (T,S) for T datasets and S models
         validation_scores: validation accuracy scores for each model, (T, S) for T
                             datasets and S models
-        metric_for_metrics: which of the above metric for metrics to use
+        metric_for_metrics: which of the metric for metrics to use (e.g. "spearmans",
+            "pearsons", "kendall_tau")
         by_dataset: controls if the aggregation is over varying datasets or varying
                     models
+
+    Returns:
+        Aggregated metric score
     """
     if not by_dataset:
         metric_scores = metric_scores.T

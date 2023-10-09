@@ -170,7 +170,7 @@ class ModelExperiment:
                     self.labels,
                 )
 
-    def save_results(self):
+    def save_results(self) -> None:
         """Save the experimental results."""
         with open(self.save_path, "w") as f:
             json.dump(self.results, f, default=float)
