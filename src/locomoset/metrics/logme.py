@@ -17,7 +17,6 @@ from locomoset.metrics.classes import TaskSpecificMetric
 
 
 class LogMEMetric(TaskSpecificMetric):
-
     """LogME metric class"""
 
     def __init__(self, **metric_kwargs) -> None:
@@ -29,7 +28,7 @@ class LogMEMetric(TaskSpecificMetric):
     def metric_function(
         self, model_input: ArrayLike, dataset_input: ArrayLike, logme_bound: int = 3500
     ) -> float:
-        """Comput the LogME metric based on features and labels.
+        """Compute the LogME metric based on features and labels.
 
         NB: LogME gives innacurate results for smaller test sizes, from empirical tests
         we recommend num_samples >= 3500
