@@ -4,7 +4,7 @@ Test functions for metrics for metrics (src/locmoset/metrics/metrics_for_metrics
 
 import pytest
 
-from locomoset.metrics.metrics_for_metrics import (
+from locomoset.metrics.evaluate import (
     kendall_tau_correlation,
     pearsons_correlation,
     spearmans_rank_correlation,

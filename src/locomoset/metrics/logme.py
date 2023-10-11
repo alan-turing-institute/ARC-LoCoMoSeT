@@ -8,25 +8,47 @@ Relies on the implementation by the authors.
 """
 import warnings
 
+import numpy as np
 from numpy.typing import ArrayLike
+from sklearn.preprocessing import LabelEncoder
 
 from locomoset.LogME.LogME import LogME
+from locomoset.metrics.classes import TaskSpecificMetric
 
 
-def logme(features: ArrayLike, labels: ArrayLike, random_state=None) -> float:
-    """Comput the LogME metric based on features and labels.
-
-    NB: LogME gives innacurate results for smaller test sizes, from empirical tests
-    we recommend num_samples >= 3500
-
-    Args:
-        features: Input features of shape (num_samples, num_features)
-        labels: Input labels of shape (num_samples, 1)
-
-    Returns:
-        LogME metric value.
+class LogMEMetric(TaskSpecificMetric):
+    """Wrapper around the author's implementation of the LogME metric from the papers:
+    - LogME: Practical Assessment of Pre-trained Models for Transfer Learning
+        (K. You et al., 2021)
+    - Ranking and Tuning Pre-trained Models: A New Paradigm for Exploiting Model Hubs
+        (K. You et al., 2021)
     """
-    if features.shape[0] <= 3500:
-        warnings.warn("LogME gives innacurate results for smaller sample sizes.")
-    metric = LogME()
-    return metric.fit(features, labels)
+
+    def __init__(self, logme_bound: int = 3500) -> None:
+        """
+        Args:
+            logme_bound: LogME may give innacurate results with small sample sizes,
+                print a warning if the no. of samples is smaller than this value (set
+                from empirical tests on ImageNet).
+        """
+        super().__init__(metric_name="LogME", inference_type="features")
+        self.logme_bound = logme_bound
+
+    def metric_function(self, features: ArrayLike, labels: ArrayLike) -> float:
+        """Compute the LogME metric.
+
+        Args:
+            features: Input features of shape (num_samples, num_features)
+            labels: Input labels of shape (num_samples, 1)
+
+        Returns:
+            LogME metric value.
+        """
+        if not isinstance(features, np.ndarray):
+            features = np.asarray(features)
+        if isinstance(labels[0], str):
+            labels = LabelEncoder().fit_transform(labels)
+        if features.shape[0] <= self.logme_bound:
+            warnings.warn("LogME gives innacurate results for smaller sample sizes.")
+        metric = LogME()
+        return metric.fit(features, labels)

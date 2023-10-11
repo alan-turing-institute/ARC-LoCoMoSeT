@@ -25,7 +25,7 @@ class ImageFeaturesPipeline(ImageClassificationPipeline):
         model: PreTrainedModel,
         image_processor: BaseImageProcessor,
         **kwargs,
-    ):
+    ) -> None:
         """Initialise an ImageFeaturesPipeline.
 
         Args:

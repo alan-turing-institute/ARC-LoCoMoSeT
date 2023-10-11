@@ -6,7 +6,7 @@ Test for functions for aggregating metric for metrics scores
 import numpy as np
 import pytest
 
-from locomoset.metrics.aggregate_metric_for_metrics import aggregate_metric_scores
+from locomoset.metrics.aggregate import aggregate_metric_scores
 
 
 def test_aggregate_metric_for_metrics_perfect_scores_spearmans(

@@ -55,7 +55,7 @@ def plot_actual_vs_metric(
     )
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Make a plot of metric scores vs. actual fine-tuned performance"
     )

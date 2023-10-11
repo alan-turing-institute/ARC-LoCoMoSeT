@@ -18,7 +18,7 @@ dataset_split:
   - "validation"
 
 # Metrics to compute
-metric:
+metrics:
   - "renggli"
   - "parc"
 
@@ -40,3 +40,6 @@ random_state:
   - 42
   - 43
   - 44
+
+# If metrics require additional parameters specified:
+# metric_kwargs:
