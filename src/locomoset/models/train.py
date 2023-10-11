@@ -3,11 +3,11 @@ import os
 
 import evaluate
 import numpy as np
+import wandb
 import yaml
 from datasets import Dataset, load_dataset
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 
-import wandb
 from locomoset.datasets.preprocess import prepare_training_data
 from locomoset.models.load import get_model_with_dataset_labels, get_processor
 

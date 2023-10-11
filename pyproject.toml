@@ -52,6 +52,7 @@ include = '\.pyi?$'
 [tool.isort]
 profile = "black"
 known_first_party = ["locomoset"]
+known_third_party=["wandb"]
 
 [tool.pytest.ini_options]
 addopts = """
