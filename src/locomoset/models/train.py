@@ -2,6 +2,7 @@ import argparse
 import os
 import warnings
 from copy import copy
+from typing import Callable
 
 import evaluate
 import numpy as np
@@ -14,7 +15,7 @@ from locomoset.datasets.preprocess import prepare_training_data
 from locomoset.models.load import get_model_with_dataset_labels, get_processor
 
 
-def get_metrics_fn(metric_name="accuracy"):
+def get_metrics_fn(metric_name="accuracy") -> Callable:
     accuracy = evaluate.load(metric_name)
 
     def compute_metrics(eval_pred):
@@ -30,7 +31,7 @@ def train(
     train_dataset: Dataset,
     val_dataset: Dataset,
     training_args: TrainingArguments,
-):
+) -> None:
     trainer = Trainer(
         model,
         training_args,
@@ -59,7 +60,7 @@ class FineTuningConfig:
         training_args: dict | None = None,
         use_wandb: bool = False,
         wandb_args: dict | None = None,
-    ):
+    ) -> None:
         self.model_name = model_name
         self.dataset_name = dataset_name
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
@@ -88,7 +89,7 @@ class FineTuningConfig:
             config = yaml.safe_load(f)
         return cls.from_dict(config)
 
-    def init_wandb(self):
+    def init_wandb(self) -> None:
         if not self.use_wandb:
             warnings.warn("Ignored wandb initialisation as use_wandb=False")
             return
@@ -130,7 +131,7 @@ class FineTuningConfig:
         }
 
 
-def run_config(config: FineTuningConfig):
+def run_config(config: FineTuningConfig) -> None:
     processor = get_processor(config.model_name)
 
     train_split = config.dataset_args["train_split"]
@@ -157,7 +158,7 @@ def run_config(config: FineTuningConfig):
     train(model, train_dataset, val_dataset, config.get_training_args())
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Fine-tune a model given a training config."
     )
