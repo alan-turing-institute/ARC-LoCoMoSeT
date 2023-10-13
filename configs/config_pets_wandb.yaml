@@ -1,0 +1,36 @@
+# Where to save results
+save_dir: results_pets
+
+# HuggingFace model names or paths to local models to compute metrics for
+models:
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+
+# HuggingFace Datasets or paths to datasets to compute metrics for
+dataset_name:
+  "pcuenq/oxford-pets"
+
+# Name of dataset split to compute metrics for (Currently must be the same for all datasets)
+dataset_split:
+  "train"
+
+# No. of images to compute the metrics with
+n_samples:
+  50
+
+# Random seeds to use (e.g. for sampling the images to use)
+random_state:
+  - 42
+  - 43
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+
+# Weights and Biases
+wandb:
+  entity: edable-heath
+  project: locomoset_metrics_tests

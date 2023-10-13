@@ -7,6 +7,7 @@ from copy import copy
 import yaml
 from tqdm import tqdm
 
+import wandb
 from locomoset.metrics.experiment import ModelMetricsExperiment
 
 
@@ -59,6 +60,8 @@ def run(config: dict):
                         containing parameters for each metric.
             - (Optional) save_dir: Directory to save results, "results" if not set.
     """
+    if wandb in config:
+        wandb.login()
 
     model_configs = random_state_multiplicity(config)
     model_configs = sum(
@@ -67,9 +70,12 @@ def run(config: dict):
     )
 
     for model_config in tqdm(model_configs):
+        print(model_config)
         model_experiment = ModelMetricsExperiment(model_config)
         model_experiment.run_experiment()
         model_experiment.save_results()
+        if "wandb" in model_config:
+            model_experiment.log_wandb_results()
 
 
 def main():

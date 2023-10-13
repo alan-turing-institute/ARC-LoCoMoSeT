@@ -15,6 +15,7 @@ from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+import wandb
 from locomoset.metrics.classes import Metric
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -76,6 +77,15 @@ class ModelMetricsExperiment:
         os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
+
+        # Initalise weights and biases:
+        if "wandb" in config:
+            wandb_config = config["wandb"]
+            if "name" not in wandb_config:
+                wandb_config["name"] = config["model_name"]
+            if "group" not in wandb_config:
+                wandb_config["group"] = config["dataset_name"]
+            wandb.init(config={"locomoset": config}, **wandb_config)
 
     def features_inference(self) -> ArrayLike:
         """Perform inference for features based methods.
@@ -184,3 +194,7 @@ class ModelMetricsExperiment:
         with open(self.save_path, "w") as f:
             json.dump(self.results, f, default=float)
         print(f"Results saved to {self.save_path}")
+
+    def log_wandb_results(self) -> None:
+        """Log the results to weights and biases."""
+        wandb.log(self.results)

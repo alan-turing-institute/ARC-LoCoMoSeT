@@ -24,15 +24,19 @@ class LogMEMetric(TaskSpecificMetric):
         (K. You et al., 2021)
     """
 
-    def __init__(self, logme_bound: int = 3500) -> None:
+    def __init__(
+        self, logme_bound: int = 3500, random_state: int | None = None
+    ) -> None:
         """
         Args:
             logme_bound: LogME may give innacurate results with small sample sizes,
                 print a warning if the no. of samples is smaller than this value (set
                 from empirical tests on ImageNet).
+            random_state: implemented to get fit with the class structure
         """
         super().__init__(metric_name="LogME", inference_type="features")
         self.logme_bound = logme_bound
+        self.random_state = random_state
 
     def metric_function(self, features: ArrayLike, labels: ArrayLike) -> float:
         """Compute the LogME metric.

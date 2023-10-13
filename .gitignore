@@ -148,3 +148,8 @@ notebooks/*
 
 # Ignore adhoc perst results
 results_pets/*
+
+
+# ignore wandb directory (and notebook)
+wandb/*
+wandb_notebook.ipynb
