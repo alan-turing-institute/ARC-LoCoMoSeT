@@ -148,3 +148,8 @@ notebooks/*
 
 # Ignore adhoc perst results
 results_pets/*
+
+
+# Ignore wandb
+wandb/*
+wandb_notebook.ipynb

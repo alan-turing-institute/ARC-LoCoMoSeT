@@ -15,6 +15,7 @@ from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+import wandb
 from locomoset.metrics.classes import Metric
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -184,3 +185,8 @@ class ModelMetricsExperiment:
         with open(self.save_path, "w") as f:
             json.dump(self.results, f, default=float)
         print(f"Results saved to {self.save_path}")
+
+    def log_wandb_results(self) -> None:
+        """Log the results to weights and biases."""
+        wandb.log(self.results)
+        wandb.finish()

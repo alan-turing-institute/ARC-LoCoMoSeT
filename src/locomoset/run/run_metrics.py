@@ -2,46 +2,12 @@
 Entry point for running experiments per model for each metric stated in config.
 """
 import argparse
-from copy import copy
-
-import yaml
-from tqdm import tqdm
 
 from locomoset.metrics.experiment import ModelMetricsExperiment
+from locomoset.run.config_gen import MetricConfig
 
 
-def model_experiment_multiplicity(config: dict) -> list[dict]:
-    """For a config with multiple models submitted for experiment, create a new list of
-    of config dicts with a single model for each config.
-
-    Args:
-        config: config dictionary containing multiplicity of models.
-    """
-    model_configs = []
-    for model in config["models"]:
-        new_config = copy(config)
-        new_config["model_name"] = model
-        del new_config["models"]
-        model_configs.append(new_config)
-    return model_configs
-
-
-def random_state_multiplicity(config: dict) -> list[dict]:
-    """For a config with multiple random states submitted for experiment, create a new
-    list of config dicts with a single random state for each config.
-
-    Args:
-        config: config dictionary containing multiplicity of random stages.
-    """
-    model_configs = []
-    for rstate in config["random_state"]:
-        new_config = copy(config)
-        new_config["random_state"] = rstate
-        model_configs.append(new_config)
-    return model_configs
-
-
-def run(config: dict):
+def run_config(config: MetricConfig):
     """Run comparative metric experiment for a given pair (model, dataset) for stated
     metrics. Results saved to file path of form results/results_YYYYMMDD-HHMMSS.json by
     default.
@@ -60,16 +26,17 @@ def run(config: dict):
             - (Optional) save_dir: Directory to save results, "results" if not set.
     """
 
-    model_configs = random_state_multiplicity(config)
-    model_configs = sum(
-        [model_experiment_multiplicity(model_config) for model_config in model_configs],
-        [],
-    )
+    if config.use_wandb:
+        config.init_wandb()
 
-    for model_config in tqdm(model_configs):
-        model_experiment = ModelMetricsExperiment(model_config)
-        model_experiment.run_experiment()
+    model_experiment = ModelMetricsExperiment(config.to_dict())
+    model_experiment.run_experiment()
+
+    if config.local_save:
         model_experiment.save_results()
+
+    if config.use_wandb:
+        model_experiment.log_wandb_results
 
 
 def main():
@@ -78,10 +45,9 @@ def main():
     )
     parser.add_argument("configfile", help="Path to config file")
     args = parser.parse_args()
-    with open(args.configfile, "r") as f:
-        config = yaml.safe_load(f)
+    config = MetricConfig.read_yaml(args.configfile)
 
-    run(config)
+    run_config(config)
 
 
 if __name__ == "__main__":
