@@ -193,5 +193,5 @@ class TopLevelMetricConfig:
         )
         os.mkdir(configs_path)
         for idx, config in enumerate(self.sub_configs):
-            with open(f"{configs_path}/{idx}", "w") as f:
+            with open(f"{configs_path}/{idx}.yaml", "w") as f:
                 yaml.safe_dump(config.to_dict(), f)
