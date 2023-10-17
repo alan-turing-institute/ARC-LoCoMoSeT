@@ -80,10 +80,15 @@ class ModelMetricsExperiment:
 
         # Initalise weights and biases:
         if "wandb" in config:
+            wandb.login()
             wandb_config = config["wandb"]
             if "name" not in wandb_config:
                 wandb_config["name"] = config["model_name"]
+            elif wandb_config["name"] != config["model_name"]:
+                wandb_config["name"] = config["model_name"]
             if "group" not in wandb_config:
+                wandb_config["group"] = config["dataset_name"]
+            elif wandb_config["group"] != config["dataset_name"]:
                 wandb_config["group"] = config["dataset_name"]
             wandb.init(config={"locomoset": config}, **wandb_config)
 
@@ -197,4 +202,15 @@ class ModelMetricsExperiment:
 
     def log_wandb_results(self) -> None:
         """Log the results to weights and biases."""
+        metric_sum = sum(
+            [
+                self.results["metric_scores"][metric]["score"]
+                for metric in self.results["metric_scores"].keys()
+            ]
+        )
+        self.results["scaled_metric_scores"] = {
+            metric: self.results["metric_scores"][metric]["score"] / metric_sum
+            for metric in self.results["metric_scores"].keys()
+        }
         wandb.log(self.results)
+        wandb.finish()
