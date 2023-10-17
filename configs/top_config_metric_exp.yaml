@@ -14,7 +14,7 @@ dataset_names:
   "pcuenq/oxford-pets"
 
 # Name of dataset split to compute metrics for (Currently must be the same for all datasets)
-dataset_splits:
+dataset_split:
   "train"
 
 # No. of images to compute the metrics with
@@ -29,7 +29,6 @@ random_states:
 # Metrics to compute
 metrics:
   - renggli
-  - parc
   - n_pars
   - LogME
 

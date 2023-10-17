@@ -24,7 +24,7 @@ class LogMEMetric(TaskSpecificMetric):
         (K. You et al., 2021)
     """
 
-    def __init__(self, logme_bound: int = 3500) -> None:
+    def __init__(self, logme_bound: int = 3500, random_state=None) -> None:
         """
         Args:
             logme_bound: LogME may give innacurate results with small sample sizes,

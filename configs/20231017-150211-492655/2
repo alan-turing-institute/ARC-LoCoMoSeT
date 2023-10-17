@@ -1,0 +1,15 @@
+dataset_name: pcuenq/oxford-pets
+dataset_split: train
+metrics:
+- renggli
+- n_pars
+- LogME
+model_name: facebook/deit-small-patch16-224
+n_samples: 50
+random_state: 42
+run_name: pcuenq-oxford-pets_facebook-deit-small-patch16-224
+save_dir: results_pets
+use_wandb: true
+wandb_args:
+  entity: edable-heath
+  project: locomoset_metrics_tests

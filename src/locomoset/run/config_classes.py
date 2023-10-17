@@ -35,7 +35,7 @@ class MetricConfig:
         self.dataset_name = dataset_name
         self.metrics = metrics
         self.save_dir = save_dir
-        self.dataset_split = dataset_split or {"dataset_split": "train"}
+        self.dataset_split = dataset_split or "train"
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
         self.n_samples = n_samples or 50
         self.random_state = random_state
@@ -127,6 +127,7 @@ class TopLevelMetricConfig:
         self.random_states = random_states
         self.wandb = wandb
         self.sub_configs = []
+        self.save_dir = save_dir
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
@@ -156,7 +157,7 @@ class TopLevelMetricConfig:
             sweep_dict["model_name"] = copy(self.models)
         else:
             sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_names):
+        if isinstance(self.dataset_names, list):
             sweep_dict["dataset_name"] = copy(self.dataset_names)
         else:
             sweep_dict["dataset_name"] = [copy(self.dataset_names)]
@@ -164,7 +165,7 @@ class TopLevelMetricConfig:
             sweep_dict["n_samples"] = copy(self.n_samples)
         else:
             sweep_dict["n_samples"] = [copy(self.n_samples)]
-        if isinstance(self.random_states):
+        if isinstance(self.random_states, list):
             sweep_dict["random_state"] = copy(self.random_states)
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
@@ -187,8 +188,10 @@ class TopLevelMetricConfig:
 
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs"""
-        configs_path = f"{self.config_dir}{datetime.today}"
+        configs_path = (
+            f"{self.config_dir}/{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
+        )
         os.mkdir(configs_path)
         for idx, config in enumerate(self.sub_configs):
-            with open(f"{configs_path}{idx}", "w") as f:
+            with open(f"{configs_path}/{idx}", "w") as f:
                 yaml.safe_dump(config.to_dict(), f)
