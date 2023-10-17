@@ -74,7 +74,9 @@ class MetricConfig:
         if "name" not in wandb_config:
             wandb_config["name"] = self.run_name
         if "group" not in wandb_config:
-            wandb_config["group"] = self.dataset_name
+            wandb_config[
+                "group"
+            ] = f"{self.dataset_name}_{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
     def to_dict(self) -> dict:
