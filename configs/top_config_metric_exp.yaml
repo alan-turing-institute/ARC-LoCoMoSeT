@@ -8,6 +8,19 @@ save_dir: results_pets
 models:
   - facebook/deit-tiny-patch16-224
   - facebook/deit-small-patch16-224
+  - facebook/deit-base-patch16-224
+  - google/vit-base-patch16-384
+  - microsoft/cvt-13
+  - facebook/deit-tiny-distilled-patch16-224
+  - facebook/deit-small-distilled-patch16-224
+  - facebook/deit-base-distilled-patch16-224
+  - facebook/deit-base-patch16-384
+  - facebook/deit-base-distilled-patch16-384
+  - apple/mobilevit-small
+  - apple/mobilevit-xx-small
+  - microsoft/beit-large-patch16-512
+  - microsoft/swin-large-patch4-window12-384-in22k
+  - facebook/levit-128S
 
 # HuggingFace Datasets or paths to datasets to compute metrics for
 dataset_names:
