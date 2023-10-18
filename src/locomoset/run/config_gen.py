@@ -12,7 +12,7 @@ def gen_configs(config: TopLevelMetricConfig):
     config
     """
     config.generate_sub_configs()
-    config.save_sub_configs()
+    return config.save_sub_configs()
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     args = parser.parse_args()
     config = TopLevelMetricConfig.read_yaml(args.configfile)
 
-    gen_configs(config)
+    print(gen_configs(config))
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ dataset_split:
 
 # No. of images to compute the metrics with
 n_samples:
-  5000
+  50
 
 # Random seeds to use (e.g. for sampling the images to use)
 random_states:

@@ -30,6 +30,7 @@ class MetricConfig:
         use_wandb: bool = False,
         wandb_args: dict | None = None,
         local_save: bool = False,
+        config_gen_dtime: str | None = None,
     ) -> None:
         self.model_name = model_name
         self.dataset_name = dataset_name
@@ -42,6 +43,7 @@ class MetricConfig:
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
         self.local_save = local_save
+        self.config_gen_dtime = config_gen_dtime
 
     @classmethod
     def from_dict(cls, config: dict) -> "MetricConfig":
@@ -55,6 +57,8 @@ class MetricConfig:
             random_state=config.get("random_state"),
             use_wandb=config.get("use_wandb", "wandb" in config),
             wandb_args=config.get("wandb"),
+            local_save=config.get("local_save"),
+            config_gen_dtime=config.get("config_gen_dtime"),
         )
 
     @classmethod
@@ -74,9 +78,10 @@ class MetricConfig:
         if "name" not in wandb_config:
             wandb_config["name"] = self.run_name
         if "group" not in wandb_config:
-            wandb_config[
-                "group"
-            ] = f"{self.dataset_name}_{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
+            if self.config_gen_dtime is not None:
+                wandb_config["group"] = f"{self.dataset_name}_{self.config_gen_dtime}"
+            else:
+                wandb_config["group"] = f"{self.dataset_name}"
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
     def to_dict(self) -> dict:
@@ -91,6 +96,8 @@ class MetricConfig:
             "random_state": self.random_state,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
+            "config_gen_dtime": self.config_gen_dtime,
+            "local_save": self.local_save,
         }
 
 
@@ -119,6 +126,7 @@ class TopLevelMetricConfig:
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
     ) -> None:
+        self.config_gen_dtime = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.config_dir = config_dir
         self.models = models
         self.metrics = metrics
@@ -180,6 +188,7 @@ class TopLevelMetricConfig:
             pdict["save_dir"] = self.save_dir
             pdict["wandb"] = self.wandb
             pdict["metrics"] = self.metrics
+            pdict["config_gen_dtime"] = self.config_gen_dtime
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[MetricConfig]:
@@ -190,10 +199,9 @@ class TopLevelMetricConfig:
 
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs"""
-        configs_path = (
-            f"{self.config_dir}/{datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
-        )
+        configs_path = f"{self.config_dir}/{self.config_gen_dtime}"
         os.mkdir(configs_path)
         for idx, config in enumerate(self.sub_configs):
             with open(f"{configs_path}/{idx}.yaml", "w") as f:
                 yaml.safe_dump(config.to_dict(), f)
+        return configs_path
