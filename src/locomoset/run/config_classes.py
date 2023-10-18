@@ -138,6 +138,7 @@ class TopLevelMetricConfig:
         self.wandb = wandb
         self.sub_configs = []
         self.save_dir = save_dir
+        self.num_configs = 0
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
@@ -189,6 +190,9 @@ class TopLevelMetricConfig:
             pdict["wandb"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
+        self.num_configs = len(param_sweep_dicts)
+        if self.num_configs > 1001:
+            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[MetricConfig]:
@@ -202,6 +206,7 @@ class TopLevelMetricConfig:
         configs_path = f"{self.config_dir}/{self.config_gen_dtime}"
         os.mkdir(configs_path)
         for idx, config in enumerate(self.sub_configs):
-            with open(f"{configs_path}/{idx}.yaml", "w") as f:
+            # save with +1 as slurm array jobs index from 1 not 0!
+            with open(f"{configs_path}/config_{idx+1}.yaml", "w") as f:
                 yaml.safe_dump(config.to_dict(), f)
-        return configs_path
+        return configs_path, self.num_configs

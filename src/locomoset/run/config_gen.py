@@ -23,7 +23,7 @@ def main():
     args = parser.parse_args()
     config = TopLevelMetricConfig.read_yaml(args.configfile)
 
-    print(gen_configs(config))
+    print(str(gen_configs(config)).strip("()"))
 
 
 if __name__ == "__main__":
