@@ -32,7 +32,6 @@ metrics:
   - n_pars
   - LogME
 
-
 # Weights and Biases
 wandb:
   entity: edable-heath
