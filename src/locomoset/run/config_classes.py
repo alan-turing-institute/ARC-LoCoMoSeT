@@ -82,6 +82,8 @@ class MetricConfig:
                 wandb_config["group"] = f"{self.dataset_name}_{self.config_gen_dtime}"
             else:
                 wandb_config["group"] = f"{self.dataset_name}"
+        if "job_type" not in wandb_config:
+            wandb_config["job_type"] = "metrics"
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
     def to_dict(self) -> dict:
@@ -187,7 +189,7 @@ class TopLevelMetricConfig:
         ]
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
-            pdict["wandb"] = self.wandb
+            pdict["wandb_args"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
         self.num_configs = len(param_sweep_dicts)
