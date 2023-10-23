@@ -8,9 +8,8 @@ from copy import copy
 from datetime import datetime
 from itertools import product
 
-import yaml
-
 import wandb
+import yaml
 
 
 class MetricConfig:
@@ -56,7 +55,7 @@ class MetricConfig:
             n_samples=config.get("n_samples"),
             random_state=config.get("random_state"),
             use_wandb=config.get("use_wandb", "wandb" in config),
-            wandb_args=config.get("wandb"),
+            wandb_args=config.get("wandb_args"),
             local_save=config.get("local_save"),
             config_gen_dtime=config.get("config_gen_dtime"),
         )
