@@ -1,11 +1,17 @@
 """
 Tests for functions that load or process data/models.
 """
+import string
+
 from torch.nn import Identity
 from transformers import PreTrainedModel
 from transformers.image_processing_utils import BaseImageProcessor
 
-from locomoset.models.load import get_model_without_head, get_processor
+from locomoset.models.load import (
+    get_model_with_dataset_labels,
+    get_model_without_head,
+    get_processor,
+)
 
 
 def test_get_processor(dummy_model_name):
@@ -24,3 +30,11 @@ def test_get_model_without_head(dummy_model_name):
     model = get_model_without_head(dummy_model_name)
     assert isinstance(model, PreTrainedModel)
     assert isinstance(model.classifier, Identity)
+
+
+def test_get_model_with_dataset_labels(
+    dummy_model_name, dummy_dataset, dummy_n_classes
+):
+    model = get_model_with_dataset_labels(dummy_model_name, dummy_dataset)
+    assert model.num_labels == dummy_n_classes
+    assert model.config.id2label == list(string.ascii_lowercase)[:dummy_n_classes]
