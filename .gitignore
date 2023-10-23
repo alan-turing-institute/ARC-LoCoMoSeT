@@ -157,7 +157,3 @@ wandb_notebook.ipynb
 
 # Ignore generated configs
 configs/2*/*
-
-
-# Ignore MS2 Baskerville scripts
-baskerville_scripts/MS2_scripts/*
