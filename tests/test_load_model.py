@@ -35,6 +35,9 @@ def test_get_model_without_head(dummy_model_name):
 def test_get_model_with_dataset_labels(
     dummy_model_name, dummy_dataset, dummy_n_classes
 ):
+    """
+    Test loading a model and adapting it for use with a new dataset works correctly
+    """
     model = get_model_with_dataset_labels(dummy_model_name, dummy_dataset)
     assert model.num_labels == dummy_n_classes
     assert model.config.id2label == list(string.ascii_lowercase)[:dummy_n_classes]
