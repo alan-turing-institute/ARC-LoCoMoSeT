@@ -157,3 +157,7 @@ wandb_notebook.ipynb
 
 # Ignore generated configs
 configs/2*/*
+
+# Ignore baskerville environs
+locomosetenv/*
+src/locomoset/LogME/*
