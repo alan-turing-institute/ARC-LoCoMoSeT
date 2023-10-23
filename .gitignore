@@ -139,7 +139,7 @@ results_wp2/*
 
 
 # Removing LogME for licensing reasons
-src/locomoset/LogMe/
+src/locomoset/LogME/
 
 
 # Ignore adhoc notebooks
@@ -160,4 +160,4 @@ configs/2*/*
 
 # Ignore baskerville environs
 locomosetenv/*
-src/locomoset/LogME/*
+src/locomoset/LogME/
