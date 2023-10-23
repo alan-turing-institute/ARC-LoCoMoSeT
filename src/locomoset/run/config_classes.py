@@ -186,7 +186,7 @@ class TopLevelMetricConfig:
         ]
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
-            pdict["wandb"] = self.wandb
+            pdict["wandb_args"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
         return param_sweep_dicts
