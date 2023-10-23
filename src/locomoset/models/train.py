@@ -1,4 +1,3 @@
-import argparse
 import os
 import warnings
 from copy import copy
@@ -156,17 +155,3 @@ def run_config(config: FineTuningConfig) -> None:
         config.init_wandb()
 
     train(model, train_dataset, val_dataset, config.get_training_args())
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Fine-tune a model given a training config."
-    )
-    parser.add_argument("configfile", help="Path to config file")
-    args = parser.parse_args()
-    config = FineTuningConfig.read_yaml(args.configfile)
-    run_config(config)
-
-
-if __name__ == "__main__":
-    main()

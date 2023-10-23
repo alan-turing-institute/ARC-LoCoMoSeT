@@ -42,6 +42,7 @@ ipykernel = "^6.25.2"
 
 [tool.poetry.scripts]
 locomoset_run_metrics = 'locomoset.run.run_metrics:main'
+locomoset_run_train = 'locomoset.run.run_train:main'
 locomoset_plot_vs_actual = 'locomoset.plots.plot_vs_actual:main'
 locomoset_plot_vs_samples = 'locomoset.plots.plot_vs_samples:main'
 
