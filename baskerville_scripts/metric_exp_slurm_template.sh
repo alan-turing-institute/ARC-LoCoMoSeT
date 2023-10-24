@@ -20,7 +20,7 @@ eval "$(${EBROOTMINICONDA3}/bin/conda shell.bash hook)"
 CONFIGSPATH=/PATH/TO/CONFIGS
 
 # Define the path to your Conda environment (modify as appropriate)
-/bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/locomosetenv
+CONDA_ENV_PATH=/bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/locomosetenv
 conda activate ${CONDA_ENV_PATH}
 
 # Run script
