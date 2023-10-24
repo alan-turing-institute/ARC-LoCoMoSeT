@@ -10,6 +10,7 @@ from itertools import product
 
 import wandb
 import yaml
+from jinja2 import Environment, FileSystemLoader
 
 
 class MetricConfig:
@@ -126,6 +127,8 @@ class TopLevelMetricConfig:
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
+        bask: dict | None = None,
+        use_bask: bool = False,
     ) -> None:
         self.config_gen_dtime = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.config_dir = config_dir
@@ -140,6 +143,8 @@ class TopLevelMetricConfig:
         self.sub_configs = []
         self.save_dir = save_dir
         self.num_configs = 0
+        self.bask = bask
+        self.use_bask = use_bask
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
@@ -153,6 +158,8 @@ class TopLevelMetricConfig:
             n_samples=config.get("n_samples"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
+            bask=config.get("bask"),
+            use_bask=config.get("use_bask"),
         )
 
     @classmethod
@@ -202,6 +209,25 @@ class TopLevelMetricConfig:
             MetricConfig.from_dict(config) for config in self.parameter_sweep()
         ]
 
+    def create_bask_job_script(self, array_number) -> None:
+        """Generates a baskervill jobscript from template"""
+        bask_pars = {}
+        bask_pars["job_name"] = self.bask.get("job_name", "locomoset_metric_experiment")
+        bask_pars["walltime"] = self.bask.get("walltime", "0-0:30:0")
+        bask_pars["node_number"] = self.bask.get("node_number", 1)
+        bask_pars["gpu_number"] = self.bask.get("gpu_number", 1)
+        bask_pars["cpu_per_gpu"] = self.bask.get("cpu_per_gpu", 36)
+        config_path = f"{self.config_dir}/{self.config_gen_dtime}"
+        bask_pars["config_path"] = config_path
+        bask_pars["array_number"] = array_number
+
+        jenv = Environment(loader=FileSystemLoader("templates/"))
+        template = jenv.get_template("metric_exp_slurm_template.sh")
+        content = template.render(bask_pars)
+        file_name = f"metric_exp_jobscript_{self.config_gen_dtime}.sh"
+        with open(f"{config_path}/{file_name}", "w") as f:
+            f.write(content)
+
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs"""
         configs_path = f"{self.config_dir}/{self.config_gen_dtime}"
@@ -210,4 +236,3 @@ class TopLevelMetricConfig:
             # save with +1 as slurm array jobs index from 1 not 0!
             with open(f"{configs_path}/config_{idx+1}.yaml", "w") as f:
                 yaml.safe_dump(config.to_dict(), f)
-        return configs_path, self.num_configs

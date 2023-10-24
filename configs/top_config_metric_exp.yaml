@@ -36,3 +36,14 @@ metrics:
 wandb:
   entity: edable-heath
   project: locomoset_metrics_tests
+
+# Baskerville arguments:
+use_bask:
+  True
+
+bask:
+  job_name: 'locomoset_metric_experiment'
+  walltime: '0-0:30:0'
+  node_number: 1
+  gpu_number: 1
+  cpu_per_gpu': 36
