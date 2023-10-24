@@ -7,6 +7,7 @@
 #SBATCH --gpus 1
 #SBATCH --cpus-per-gpu 36
 #SBATCH --array=1-10
+#SBATCH --output ./slurm_train_logs/locomoset_metric_experiment-%j.out
 
 # Load required modules here (pip etc.)
 module purge
