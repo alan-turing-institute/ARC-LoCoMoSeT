@@ -26,4 +26,3 @@ DT=$(date '+%Y%m%d-%H%M%S')
 cp metric_exp_slurm_template.sh metric_exp_job_${DT}.sh
 sed -i -e "s/#SBATCH --array=1-10/#SBATCH --array=1-${NUMCONFIGS}/g" metric_exp_job_${DT}.sh
 sed -i -e "s%CONFIGSPATH=/PATH/TO/CONFIGS%CONFIGSPATH=${CONFIGSPATH}%g" metric_exp_job_${DT}.sh
-rm metric_exp_job_${DT}.sh-e
