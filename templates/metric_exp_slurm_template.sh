@@ -24,4 +24,4 @@ CONDA_ENV_PATH=/bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/locomosetenv
 conda activate ${CONDA_ENV_PATH}
 
 # Run script
-python3 src/locomoset/run/run_metrics.py ${CONFIGSPATH}/config_${SLURM_ARRAY_TASK_ID}.yaml
+python3 locomoset_run_metrics ${CONFIGSPATH}/config_${SLURM_ARRAY_TASK_ID}.yaml
