@@ -56,7 +56,7 @@ class MetricConfig:
             n_samples=config.get("n_samples"),
             random_state=config.get("random_state"),
             use_wandb=config.get("use_wandb", "wandb" in config),
-            wandb_args=config.get("wandb_args"),
+            wandb_args=config.get("wandb"),
             local_save=config.get("local_save"),
             config_gen_dtime=config.get("config_gen_dtime"),
         )
@@ -195,9 +195,7 @@ class TopLevelMetricConfig:
         ]
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
-            pdict["wandb_args"] = self.wandb
-            if self.wandb is not None:
-                pdict["use_wandb"] = True
+            pdict["wandb"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
         self.num_configs = len(param_sweep_dicts)
