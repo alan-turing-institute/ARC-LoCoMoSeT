@@ -24,5 +24,5 @@ CONDA_ENV_PATH=/bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/locomosetenv
 conda activate ${CONDA_ENV_PATH}
 
 # Run script
-echo 'Starting task with id' ${SLURM_ARRAY_TASK_ID
+echo 'Starting task with id' ${SLURM_ARRAY_TASK_ID}
 locomoset_run_metrics ${CONFIGSPATH}/config_${SLURM_ARRAY_TASK_ID}.yaml
