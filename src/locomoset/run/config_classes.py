@@ -196,6 +196,8 @@ class TopLevelMetricConfig:
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
             pdict["wandb_args"] = self.wandb
+            if self.wandb is not None:
+                pdict["use_wandb"] = True
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
         self.num_configs = len(param_sweep_dicts)
