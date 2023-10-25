@@ -44,7 +44,7 @@ ipykernel = "^6.25.2"
 locomoset_run_metrics = 'locomoset.run.run_metrics:main'
 locomoset_plot_vs_actual = 'locomoset.plots.plot_vs_actual:main'
 locomoset_plot_vs_samples = 'locomoset.plots.plot_vs_samples:main'
-locomoset_gen_configs = 'locomoset.run.gen_configs:main'
+locomoset_gen_configs = 'locomoset.run.config_gen:main'
 
 [tool.black]
 line-length = 88
