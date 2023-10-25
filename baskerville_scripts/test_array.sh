@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --account=vjgo8416-ms-img-pc
-#SBATCH --qos=turing
+#SBATCH --account vjgo8416-locomoset
+#SBATCH --qos turing
 #SBATCH --gpus=1
 #SBATCH --time 00:05:00
 #SBATCH --array=1-4
