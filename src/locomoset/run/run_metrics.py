@@ -36,6 +36,7 @@ def run_config(config: MetricConfig):
         model_experiment.save_results()
 
     if config.use_wandb:
+        print(config.wandb_args)
         model_experiment.log_wandb_results()
 
 
