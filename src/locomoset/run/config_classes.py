@@ -84,6 +84,7 @@ class MetricConfig:
                 wandb_config["group"] = f"{self.dataset_name}"
         if "job_type" not in wandb_config:
             wandb_config["job_type"] = "metrics"
+        print(wandb_config)
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
     def to_dict(self) -> dict:
