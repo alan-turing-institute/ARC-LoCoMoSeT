@@ -9,7 +9,7 @@ from transformers.modeling_utils import PreTrainedModel
 
 
 def get_model_and_processor(
-    model_name: str, num_labels: Optional[int] = None
+    model_name: str, num_labels: Optional[int] = None, cache: Optional[str] = None
 ) -> tuple[PreTrainedModel, BaseImageProcessor]:
     """Load a model and its corresponding preprocessor.
 
@@ -22,11 +22,21 @@ def get_model_and_processor(
         Model and preprocessor.
     """
     if num_labels is not None:
-        model = AutoModelForImageClassification.from_pretrained(
-            model_name, num_labels=num_labels
-        )
+        if cache is not None:
+            model = AutoModelForImageClassification.from_pretrained(
+                model_name, num_labels=num_labels, cache_dir=cache
+            )
+        else:
+            model = AutoModelForImageClassification.from_pretrained(
+                model_name, num_labels=num_labels
+            )
     else:
-        model = AutoModelForImageClassification.from_pretrained(model_name)
+        if cache is not None:
+            model = AutoModelForImageClassification.from_pretrained(
+                model_name, cache_dir=cache
+            )
+        else:
+            model = AutoModelForImageClassification.from_pretrained(model_name)
 
     processor = AutoImageProcessor.from_pretrained(model_name)
     return model, processor
