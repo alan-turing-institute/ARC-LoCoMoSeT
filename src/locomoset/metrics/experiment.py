@@ -11,11 +11,11 @@ from datetime import datetime
 from time import time
 from typing import Tuple
 
+import wandb
 from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
-import wandb
 from locomoset.metrics.classes import Metric
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -61,7 +61,12 @@ class ModelMetricsExperiment:
         # Load/generate dataset
         print("Generating data sample...")
         self.dataset_name = config["dataset_name"]
-        self.dataset = load_dataset(self.dataset_name, split=config["dataset_split"])
+        self.dataset_cache = config["caches"]["datasets"]
+        self.dataset = load_dataset(
+            self.dataset_name,
+            split=config["dataset_split"],
+            cache_dir=self.dataset_cache,
+        )
         self.n_samples = config["n_samples"]
         if self.n_samples < self.dataset.num_rows:
             self.dataset = self.dataset.train_test_split(

@@ -31,6 +31,7 @@ class MetricConfig:
         wandb_args: dict | None = None,
         local_save: bool = False,
         config_gen_dtime: str | None = None,
+        caches: dict | None = None,
     ) -> None:
         self.model_name = model_name
         self.dataset_name = dataset_name
@@ -44,6 +45,7 @@ class MetricConfig:
         self.wandb_args = wandb_args or {}
         self.local_save = local_save
         self.config_gen_dtime = config_gen_dtime
+        self.caches = caches
 
     @classmethod
     def from_dict(cls, config: dict) -> "MetricConfig":
@@ -59,6 +61,7 @@ class MetricConfig:
             wandb_args=config.get("wandb_args"),
             local_save=config.get("local_save"),
             config_gen_dtime=config.get("config_gen_dtime"),
+            caches=config.get("caches"),
         )
 
     @classmethod
@@ -101,6 +104,7 @@ class MetricConfig:
             "wandb_args": self.wandb_args,
             "config_gen_dtime": self.config_gen_dtime,
             "local_save": self.local_save,
+            "caches": self.caches,
         }
 
 
@@ -130,6 +134,7 @@ class TopLevelMetricConfig:
         wandb: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
+        caches: dict | None = None,
     ) -> None:
         self.config_gen_dtime = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.config_dir = config_dir
@@ -146,6 +151,7 @@ class TopLevelMetricConfig:
         self.num_configs = 0
         self.bask = bask
         self.use_bask = use_bask
+        self.caches = caches
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
@@ -161,6 +167,7 @@ class TopLevelMetricConfig:
             wandb=config.get("wandb"),
             bask=config.get("bask"),
             use_bask=config.get("use_bask"),
+            cahces=config.get("caches"),
         )
 
     @classmethod
@@ -199,6 +206,7 @@ class TopLevelMetricConfig:
             pdict["wandb_args"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
+            pdict["caches"] = self.caches
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:
             warnings.warn("Slurm array jobs cannot exceed more than 1001!")

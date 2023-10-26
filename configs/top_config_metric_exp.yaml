@@ -47,3 +47,7 @@ bask:
   node_number: 1
   gpu_number: 1
   cpu_per_gpu': 36
+
+caches:
+  datasets: ./.cache/huggingface/datasets
+  models: ./.cache/huggingface/models
