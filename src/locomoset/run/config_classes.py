@@ -167,7 +167,7 @@ class TopLevelMetricConfig:
             wandb=config.get("wandb"),
             bask=config.get("bask"),
             use_bask=config.get("use_bask"),
-            cahces=config.get("caches"),
+            caches=config.get("caches"),
         )
 
     @classmethod
