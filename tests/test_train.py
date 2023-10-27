@@ -23,7 +23,10 @@ def test_train(dummy_model_name, dummy_dataset, dummy_processor):
     train_dataset, val_dataset = prepare_training_data(dummy_dataset, dummy_processor)
     model = get_model_with_dataset_labels(dummy_model_name, train_dataset)
     training_args = TrainingArguments(
-        output_dir="tmp", num_train_epochs=1, evaluation_strategy="epoch"
+        output_dir="tmp",
+        num_train_epochs=1,
+        evaluation_strategy="epoch",
+        report_to="none",
     )
     trainer = train(deepcopy(model), train_dataset, val_dataset, training_args)
     assert not torch.equal(
@@ -57,6 +60,7 @@ def test_run_config(dummy_model_name, dummy_dataset_name):
                 "num_train_epochs": 1,
                 "save_strategy": "no",
                 "evaluation_strategy": "epoch",
+                "report_to": "none",
             },
         }
     )
