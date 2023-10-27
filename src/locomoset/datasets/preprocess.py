@@ -122,8 +122,7 @@ def prepare_training_data(
     random_state: int | None = None,
     test_size: float | int | None = None,
 ) -> (Dataset, Dataset):
-    """
-    Preprocesses a dataset and splits it into train and validation sets.
+    """Preprocesses a dataset and splits it into train and validation sets.
 
     Args:
         dataset: HuggingFace Dataset or DatasetDict to process and split. Each Dataset
@@ -137,6 +136,9 @@ def prepare_training_data(
             input is a single Dataset/single-entry DatasetDict.
         test_size: Size of test set (fraction of features and labels to exclude from
             training for evaluation).
+
+    Returns:
+        Tuple of preprocessed train and validation datasets.
     """
     dataset = encode_labels(dataset)
 
