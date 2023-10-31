@@ -148,3 +148,17 @@ notebooks/*
 
 # Ignore adhoc perst results
 results_pets/*
+
+
+# Ignore wandb
+wandb/*
+wandb_notebook.ipynb
+tmp/*
+
+
+# Ignore generated configs
+configs/2*/*
+
+# Ignore baskerville environs
+locomosetenv/*
+src/locomoset/LogME/
