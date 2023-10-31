@@ -1,8 +1,10 @@
 """
 Make some dummy image data to use in tests.
 """
+import string
+
 import numpy as np
-from datasets import Dataset
+from datasets import ClassLabel, Dataset
 from dummy_config import config
 from PIL import Image
 
@@ -22,7 +24,8 @@ img_array = rng.integers(
 img_PIL = [Image.fromarray(img, mode="RGB") for img in img_array]
 
 n_classes = config["n_classes"]
-labels = rng.integers(0, n_classes, n_images)
+names = list(string.ascii_lowercase)[:n_classes]
+labels = rng.choice(names, n_images)
 
 dataset = Dataset.from_dict(
     mapping={
@@ -30,6 +33,11 @@ dataset = Dataset.from_dict(
         "label": labels,
     },
 )
+
+# convert "label" feature to ClassLabel, which provides functionality for converting
+# between class names and indices and is the expected input format for locomoset
+# functions
+dataset = dataset.cast_column("label", ClassLabel(names=names))
 
 # Note: Not using dataset.save_to_disk() here, because then HuggingFace wants you to use
 # Dataset.load_from_disk() instead of Dataset.load_dataset(), see

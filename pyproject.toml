@@ -11,7 +11,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-transformers = "^4.30.2"
+transformers = {extras = ["torch"], version = "^4.34.0"}
 datasets = "^2.13.0"
 evaluate = "^0.4.0"
 torch = "^2.0, !=2.0.1"  # See issue #27
@@ -23,6 +23,7 @@ numba = "^0.57.1"
 h5py = "^3.9.0"
 isort = {extras = ["colors"], version = "^5.12.0"}
 black = {extras = ["colorama"], version = "^23.9.1"}
+wandb = "^0.15.12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
@@ -41,6 +42,7 @@ ipykernel = "^6.25.2"
 
 [tool.poetry.scripts]
 locomoset_run_metrics = 'locomoset.run.run_metrics:main'
+locomoset_run_train = 'locomoset.run.run_train:main'
 locomoset_plot_vs_actual = 'locomoset.plots.plot_vs_actual:main'
 locomoset_plot_vs_samples = 'locomoset.plots.plot_vs_samples:main'
 
@@ -51,6 +53,7 @@ include = '\.pyi?$'
 [tool.isort]
 profile = "black"
 known_first_party = ["locomoset"]
+known_third_party=["wandb"]
 
 [tool.pytest.ini_options]
 addopts = """
