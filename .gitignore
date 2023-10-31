@@ -162,3 +162,7 @@ configs/2*/*
 # Ignore baskerville environs
 locomosetenv/*
 src/locomoset/LogME/
+
+
+# Ignore slurm logs
+slurm_logs/*
