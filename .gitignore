@@ -153,6 +153,7 @@ results_pets/*
 # Ignore wandb
 wandb/*
 wandb_notebook.ipynb
+tmp/*
 
 
 # Ignore generated configs
