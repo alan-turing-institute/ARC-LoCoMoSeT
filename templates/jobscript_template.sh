@@ -7,7 +7,7 @@
 #SBATCH --gpus {{ gpu_number }}
 #SBATCH --cpus-per-gpu {{ cpu_per_gpu }}
 #SBATCH --array=1-{{ array_number }}
-#SBATCH --output ./slurm_logs/locomoset_metric_experiment-%j.out
+#SBATCH --output ./slurm_logs/locomoset_{{ config_type }}_experiment-%j.out
 
 # Load required modules here (pip etc.)
 module purge
