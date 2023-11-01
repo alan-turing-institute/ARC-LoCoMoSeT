@@ -15,7 +15,20 @@ from jinja2 import Environment, FileSystemLoader
 
 class Config(ABC):
 
-    """Base class for config objects."""
+    """Base class for config objects
+
+    Attributes:
+        model_name: Name of the HuggingFace model to fine-tune.
+        dataset_name: Name of the HuggingFace dataset to use for fine-tuning.
+        run_name: Name of the run (used for wandb/local save location), defaults to
+            {dataset_name}_{model_name}.
+        random_state: Random state to use for train/test split and training.
+        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
+            to {"train_split": "train"}.
+        training_args: Dict of arguments to pass to TrainingArguments.
+        use_wandb: Whether to use wandb for logging.
+        wandb_args: Arguments to pass to wandb.init.
+    """
 
     def __init__(
         self,
@@ -39,18 +52,24 @@ class Config(ABC):
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
 
     def init_wandb(self) -> None:
-        """Ininitalise wandb method"""
+        """Initialise a wandb run if the config specifies to use wandb and a run has not
+        already been initialised."""
         if not self.use_wandb:
             warnings.warn("Ignored wandb initialisation as use_wandb=False")
             return
         if wandb.run is not None:
             raise ValueError("A wandb run has already been initialised")
+
         wandb.login()
         wandb_config = copy(self.wandb_args)
+
         if "log_model" in wandb_config:
-            # log_model can only be specified as an env variable
+            # log_model can only be specified as an env variable, so we set the env
+            # variable then remove it from the init args.
             os.environ["WANDB_LOG_MODEL"] = wandb_config["log_model"]
             wandb_config.pop("log_model")
+
+        # set default names for any that haven't been specified
         if "name" not in wandb_config:
             wandb_config["name"] = self.run_name
         if "group" not in wandb_config:
@@ -60,24 +79,45 @@ class Config(ABC):
                 wandb_config["group"] = f"{self.dataset_name}"
         if "job_type" not in wandb_config:
             wandb_config["job_type"] = "misc"
-        print(wandb_config)
+
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
     @abstractclassmethod
     def from_dict(cls, dict) -> "Config":
-        """Generate a config object from a dictionary"""
+        """Create a FineTuningConfig from a config dict.
+
+        Args:
+            config: Dict that must contain "model_name" and "dataset_name" keys. Can
+                also contain "run_name", "random_state", "dataset_args",
+                "training_args", "use_wandb" and "wandb_args" keys. If "use_wandb" is
+                not specified, it is set to True if "wandb" is in the config dict.
+
+        Returns:
+            FineTuningConfig object.
+        """
         raise NotImplementedError
 
     @classmethod
     def read_yaml(cls, path: str) -> "Config":
-        """Generate a config object from a yaml file"""
+        """Create a FineTuningConfig from a yaml file.
+
+        Args:
+            path: Path to yaml file.
+
+        Returns:
+            FineTuningConfig object.
+        """
         with open(path, "r") as f:
             config = yaml.safe_load(f)
         return cls.from_dict(config=config)
 
     @abstractclassmethod
     def to_dict(self) -> dict:
-        """Return config as dictionary"""
+        """Convert the config to a dict.
+
+        Returns:
+            Dict representation of the config.
+        """
         raise NotImplementedError
 
 
@@ -108,7 +148,7 @@ class TopLevelConfig(ABC):
         slurm_template_path: str | None = None,
         config_gen_dtime: str | None = None,
     ) -> None:
-        self.confing_type = config_type
+        self.config_type = config_type
         self.config_gen_dtime = config_gen_dtime or datetime.now().strftime(
             "%Y%m%d-%H%M%S-%f"
         )
@@ -158,7 +198,7 @@ class TopLevelConfig(ABC):
         jenv = Environment(loader=FileSystemLoader("templates/"))
         template = jenv.get_template(self.slurm_template_path)
         content = template.render(bask_pars)
-        file_name = f"{self.confing_type}_jobscript_{self.config_gen_dtime}.sh"
+        file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}.sh"
         with open(f"{config_path}/{file_name}", "w") as f:
             f.write(content)
 
@@ -168,5 +208,7 @@ class TopLevelConfig(ABC):
         os.mkdir(configs_path)
         for idx, config in enumerate(self.sub_configs):
             # save with +1 as slurm array jobs index from 1 not 0!
-            with open(f"{configs_path}/config_{idx+1}.yaml", "w") as f:
+            with open(
+                f"{configs_path}/config_{self.config_type}_{idx+1}.yaml", "w"
+            ) as f:
                 yaml.safe_dump(config.to_dict(), f)

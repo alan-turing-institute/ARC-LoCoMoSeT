@@ -13,7 +13,20 @@ from locomoset.run.config_classes import Config, TopLevelConfig
 
 class FineTuningConfig(Config):
 
-    """Class for the fine tuning config"""
+    """Fine-tuning configuration class.
+
+    Attributes:
+        model_name: Name of the HuggingFace model to fine-tune.
+        dataset_name: Name of the HuggingFace dataset to use for fine-tuning.
+        run_name: Name of the run (used for wandb/local save location), defaults to
+            {dataset_name}_{model_name}.
+        random_state: Random state to use for train/test split and training.
+        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
+            to {"train_split": "train"}.
+        training_args: Dict of arguments to pass to TrainingArguments.
+        use_wandb: Whether to use wandb for logging.
+        wandb_args: Arguments to pass to wandb.init.
+    """
 
     def __init__(
         self,
@@ -43,6 +56,17 @@ class FineTuningConfig(Config):
 
     @classmethod
     def from_dict(cls, config: dict) -> "FineTuningConfig":
+        """Create a FineTuningConfig from a config dict.
+
+        Args:
+            config: Dict that must contain "model_name" and "dataset_name" keys. Can
+                also contain "run_name", "random_state", "dataset_args",
+                "training_args", "use_wandb" and "wandb_args" keys. If "use_wandb" is
+                not specified, it is set to True if "wandb" is in the config dict.
+
+        Returns:
+            FineTuningConfig object.
+        """
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
@@ -55,6 +79,13 @@ class FineTuningConfig(Config):
         )
 
     def get_training_args(self) -> TrainingArguments:
+        """Get a TrainingArguments object based on the config. Use the training_args
+        attribute of the config as a base, adding in seed, run_name, and output_dir
+        using other attributes in the config class where needed.
+
+        Returns:
+            TrainingArguments object.
+        """
         training_args = copy(self.training_args)
         training_args["seed"] = self.random_state
         training_args["run_name"] = self.run_name
@@ -64,6 +95,11 @@ class FineTuningConfig(Config):
         return TrainingArguments(**training_args)
 
     def to_dict(self) -> dict:
+        """Convert the config to a dict.
+
+        Returns:
+            Dict representation of the config.
+        """
         return {
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
