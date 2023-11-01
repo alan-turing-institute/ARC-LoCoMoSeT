@@ -74,8 +74,8 @@ class FineTuningConfig(Config):
             random_state=config.get("random_state"),
             dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
-            use_wandb=config.get("use_wandb", "wandb" in config),
-            wandb_args=config.get("wandb"),
+            use_wandb=config.get("use_wandb", "wandb_args" in config),
+            wandb_args=config.get("wandb_args"),
         )
 
     def get_training_args(self) -> TrainingArguments:
@@ -152,18 +152,19 @@ class TopLevelFineTuningConfig(TopLevelConfig):
     def from_dict(cls, config: dict) -> "TopLevelFineTuningConfig":
         """Generate a top level fine tuning config object from a dectionary"""
         return cls(
-            model_name=config["model_name"],
-            dataset_name=config["dataset_name"],
-            random_state=config.get("random_state"),
-            use_wandb=config.get("use_wandb", "wandb_args" in config),
-            wandb_args=config.get("wandb_args"),
-            local_save=config.get("local_save"),
+            config_type=config["config_type"],
+            config_dir=config["config_dir"],
+            models=config["models"],
+            dataset_names=config["dataset_names"],
+            random_states=config.get("random_state"),
+            wandb=config.get("wandb"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
-            config_gen_dtime=config.get("config_gen_dtime"),
             dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
+            use_bask=config.get("use_bask"),
+            bask=config.get("bask"),
         )
 
     def parameter_sweep(self) -> list[dict]:

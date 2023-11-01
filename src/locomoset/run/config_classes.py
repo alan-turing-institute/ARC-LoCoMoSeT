@@ -162,7 +162,7 @@ class TopLevelConfig(ABC):
         self.bask = bask
         self.use_bask = use_bask
         self.caches = caches
-        self.slurm_template_path = slurm_template_path
+        self.slurm_template_path = slurm_template_path or "templates/"
 
     @abstractclassmethod
     def from_dict(cls, config: dict) -> "TopLevelConfig":
@@ -194,9 +194,10 @@ class TopLevelConfig(ABC):
         config_path = f"{self.config_dir}/{self.config_gen_dtime}"
         bask_pars["config_path"] = config_path
         bask_pars["array_number"] = array_number
+        bask_pars["config_type"] = self.config_type
 
-        jenv = Environment(loader=FileSystemLoader("templates/"))
-        template = jenv.get_template(self.slurm_template_path)
+        jenv = Environment(loader=FileSystemLoader(self.slurm_template_path))
+        template = jenv.get_template("jobscript_template.sh")
         content = template.render(bask_pars)
         file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}.sh"
         with open(f"{config_path}/{file_name}", "w") as f:
@@ -205,7 +206,7 @@ class TopLevelConfig(ABC):
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs"""
         configs_path = f"{self.config_dir}/{self.config_gen_dtime}"
-        os.mkdir(configs_path)
+        os.makedirs(configs_path, exist_ok=True)
         for idx, config in enumerate(self.sub_configs):
             # save with +1 as slurm array jobs index from 1 not 0!
             with open(

@@ -10,6 +10,9 @@ config_dir: configs
 save_dir: results_pets
 local_save: False
 
+# Where to find the slurm template
+slurm_template_path: templates/
+
 # Huggingface model names or paths to local models
 models:
   - facebook/deit-tiny-patch16-224
@@ -74,7 +77,6 @@ metrics:
 # Name of dataset split to compute metrics for (Currently must be the same for all datasets)
 dataset_split:
   "train"
-
 
 # No. of images to compute the metrics with
 n_samples:

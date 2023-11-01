@@ -229,6 +229,7 @@ class TopLevelMetricConfig(TopLevelConfig):
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
         """Generate a top level metric config object from a dictionary"""
         return cls(
+            config_type=config["config_type"],
             config_dir=config["config_dir"],
             models=config["models"],
             dataset_names=config["dataset_names"],
