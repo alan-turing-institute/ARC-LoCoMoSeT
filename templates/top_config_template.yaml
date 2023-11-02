@@ -61,7 +61,7 @@ training_args:
   overwrite_output_dir: True
   save_strategy: "no"
   num_train_epochs: 1
-  use_mps_device: True
+  use_mps_device: False
   evaluation_strategy: steps
   eval_steps: 100
   logging_strategy: steps
