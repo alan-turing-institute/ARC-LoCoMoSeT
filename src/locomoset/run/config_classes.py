@@ -186,11 +186,12 @@ class TopLevelConfig(ABC):
     def create_bask_job_script(self, array_number) -> None:
         """Generates a baskervill jobscript from template"""
         bask_pars = {}
-        bask_pars["job_name"] = self.bask.get("job_name", "locomoset_metric_experiment")
-        bask_pars["walltime"] = self.bask.get("walltime", "0-0:30:0")
-        bask_pars["node_number"] = self.bask.get("node_number", 1)
-        bask_pars["gpu_number"] = self.bask.get("gpu_number", 1)
-        bask_pars["cpu_per_gpu"] = self.bask.get("cpu_per_gpu", 36)
+        bask = self.bask[self.config_type]
+        bask_pars["job_name"] = bask.get("job_name", "locomoset_experiment")
+        bask_pars["walltime"] = bask.get("walltime", "0-0:30:0")
+        bask_pars["node_number"] = bask.get("node_number", 1)
+        bask_pars["gpu_number"] = bask.get("gpu_number", 1)
+        bask_pars["cpu_per_gpu"] = bask.get("cpu_per_gpu", 36)
         config_path = f"{self.config_dir}/{self.config_gen_dtime}"
         bask_pars["config_path"] = config_path
         bask_pars["array_number"] = array_number

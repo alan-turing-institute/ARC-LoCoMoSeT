@@ -35,11 +35,18 @@ wandb:
 # Baskerville arguments
 use_bask: True
 bask:
-  job_name: 'locomoset_metric_experiment'
-  walltime: '0-0:30:0'
-  node_number: 1
-  gpu_number: 1
-  cpu_per_gpu': 36
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+  train:
+    job_name: 'locomoset_train_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
 
 # Cache locations:
 caches:

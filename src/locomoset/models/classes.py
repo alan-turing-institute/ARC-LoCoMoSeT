@@ -77,6 +77,8 @@ class FineTuningConfig(Config):
             training_args=config.get("training_args"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
             wandb_args=config.get("wandb_args"),
+            caches=config.get("caches"),
+            config_gen_dtime=config.get("config_gen_dtime"),
         )
 
     def get_training_args(self) -> TrainingArguments:
@@ -155,11 +157,11 @@ class TopLevelFineTuningConfig(TopLevelConfig):
     def from_dict(cls, config: dict) -> "TopLevelFineTuningConfig":
         """Generate a top level fine tuning config object from a dectionary"""
         return cls(
-            config_type=config["config_type"],
-            config_dir=config["config_dir"],
-            models=config["models"],
-            dataset_names=config["dataset_names"],
-            random_states=config.get("random_state"),
+            config_type=config.get("config_type"),
+            config_dir=config.get("config_dir"),
+            models=config.get("models"),
+            dataset_names=config.get("dataset_names"),
+            random_states=config.get("random_states"),
             wandb=config.get("wandb"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
