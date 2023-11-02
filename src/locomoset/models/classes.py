@@ -53,6 +53,7 @@ class FineTuningConfig(Config):
         )
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.training_args = training_args or {}
+        self.wandb_args["job_type"] = "train"
 
     @classmethod
     def from_dict(cls, config: dict) -> "FineTuningConfig":
@@ -101,6 +102,8 @@ class FineTuningConfig(Config):
             Dict representation of the config.
         """
         return {
+            "caches": self.caches,
+            "config_gen_dtime": self.config_gen_dtime,
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
             "run_name": self.run_name,

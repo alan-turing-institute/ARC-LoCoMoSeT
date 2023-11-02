@@ -148,6 +148,7 @@ class MetricConfig(Config):
         self.dataset_split = dataset_split or "train"
         self.n_samples = n_samples or 50
         self.local_save = local_save
+        self.wandb_args["job_type"] = "metrics"
 
     @classmethod
     def from_dict(cls, config: dict) -> "MetricConfig":
