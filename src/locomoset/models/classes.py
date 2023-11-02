@@ -26,6 +26,8 @@ class FineTuningConfig(Config):
         training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
+        config_gen_dtime: when the config object was created.
+        caches: where to cache the huggingface models and datasets.
     """
 
     def __init__(
@@ -119,7 +121,15 @@ class FineTuningConfig(Config):
 
 class TopLevelFineTuningConfig(TopLevelConfig):
 
-    """Class for generating Fine Tuning Configs from a top level config file"""
+    """Takes a YAML file or dictionary with a top level config class containing all
+    items to vary over for fine tuning experiments, optionally producing and saving
+    individual configs for each variant.
+
+    Possible entries to vary over if multiple given:
+        - models
+        - dataset_names
+        - random_states
+    """
 
     def __init__(
         self,
@@ -155,7 +165,24 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelFineTuningConfig":
-        """Generate a top level fine tuning config object from a dectionary"""
+        """Generate a top level fine tuning config object from a dictionary
+
+        Args:
+            config: config dictionary, must contain:
+                    - config_type: label for type of experiment config.
+                    - config_dir: which directory to save the specific configs to.
+                    - models: which model(s) to run the fine tuning on.
+                    - dataset_names: which dataset(s) to run the fine tuning on.
+                    - slurm_template_path: where the slurm_template is
+
+                    Can also contain "random_states", "dataset_args",
+                    "config_gen_dtime", "training_args", "use_wandb", "wandb_args",
+                    "use_bask" and "bask" keys. If "use_wandb" is not specified, it is
+                    set to True if "wandb" is in the config dict.
+
+        Returns:
+            TopLevelFineTuningConfig object
+        """
         return cls(
             config_type=config.get("config_type"),
             config_dir=config.get("config_dir"),
@@ -173,7 +200,12 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         )
 
     def parameter_sweep(self) -> list[dict]:
-        """Parameter sweep over entries with multiplicity."""
+        """Parameter sweep over entries with multiplicity. Returns config dictionaries
+        with single variable values for these entries.
+
+        Returns:
+            list of config dictionaries for FineTuningConfig objects.
+        """
         sweep_dict = {}
 
         if isinstance(self.models, list):
@@ -205,7 +237,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[Config]:
-        """Generate the sub configs based on parameter_sweeps"""
+        """Generate the sub configs objects based on parameter_sweeps."""
         self.sub_configs = [
             FineTuningConfig.from_dict(config) for config in self.parameter_sweep()
         ]

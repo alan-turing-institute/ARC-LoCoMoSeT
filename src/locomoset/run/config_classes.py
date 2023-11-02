@@ -1,5 +1,5 @@
 """
-    Classes for configs for runs of the MetricExperimentClass
+    Base classes for config objects and config generating objects for experiments.
 """
 
 import os
@@ -53,7 +53,14 @@ class Config(ABC):
 
     def init_wandb(self) -> None:
         """Initialise a wandb run if the config specifies to use wandb and a run has not
-        already been initialised."""
+        already been initialised.
+
+        If name, group and job_type and not specificied in the input config then they
+        are set as:
+                name: run_name
+                group: data_set_name_config_gen_dtime OR data_set_name
+                job_type: misc
+        """
         if not self.use_wandb:
             warnings.warn("Ignored wandb initialisation as use_wandb=False")
             return
@@ -123,9 +130,9 @@ class Config(ABC):
 
 class TopLevelConfig(ABC):
 
-    """Takes a YAML file with a top level config class containing all items to vary over
-    for metric experiments, optionally producing and saving individual configs for each
-    variant.
+    """Takes a YAML file or dictionary with a top level config class containing all
+    items to vary over for experiments, optionally producing and saving individual
+    configs for each variant.
 
     Possible entries to vary over if multiple given:
         - models
@@ -166,25 +173,49 @@ class TopLevelConfig(ABC):
 
     @abstractclassmethod
     def from_dict(cls, config: dict) -> "TopLevelConfig":
+        """Generate a config generator object from an input dictionary. Parameters are
+        specifc to each experiment type and so must be implemented in child class."""
         raise NotImplementedError
 
     @classmethod
     def read_yaml(cls, path: str) -> "TopLevelConfig":
+        """Generate a config generator object from an (path to) a yaml file.
+
+        Args:
+            path: path to YAML file containing top level config.
+
+        Returns:
+            TopLevelConfig object.
+        """
         with open(path, "r") as f:
             config = yaml.safe_load(f)
         return cls.from_dict(config=config)
 
     @abstractmethod
     def parameter_sweep(self) -> list[dict]:
-        """Parameter sweep over entries with multiplicity."""
+        """Parameter sweep over entries with multiplicity. Specific choice of variable
+        over which to vary and by experiment type and so must be implemented in child
+        class."""
         raise NotImplementedError
 
     @abstractmethod
     def generate_sub_configs(self) -> list[Config]:
+        """Generate all sub configs from a config generator. Type of config to be
+        generated is specific to esperiment type and so must be implemented in child
+        class."""
         raise NotImplementedError
 
     def create_bask_job_script(self, array_number) -> None:
-        """Generates a baskervill jobscript from template"""
+        """Generates a baskervill jobscript from template.
+
+        Args:
+            array_number: number of configs to vary over, input from the parameter_sweep
+                            method.
+
+        Returns:
+            Saves specific baskerville jobscript with correct labels, parameters and
+            paths.
+        """
         bask_pars = {}
         bask = self.bask[self.config_type]
         bask_pars["job_name"] = bask.get("job_name", "locomoset_experiment")
@@ -205,7 +236,9 @@ class TopLevelConfig(ABC):
             f.write(content)
 
     def save_sub_configs(self) -> None:
-        """Save the generated subconfigs"""
+        """Save the generated subconfigs to a top level director given by the config
+        directory and a specific directory given by the date time that the configs have
+        been generated"""
         configs_path = f"{self.config_dir}/{self.config_gen_dtime}"
         os.makedirs(configs_path, exist_ok=True)
         for idx, config in enumerate(self.sub_configs):

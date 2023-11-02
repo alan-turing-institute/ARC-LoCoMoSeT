@@ -115,7 +115,23 @@ class TaskSpecificMetric(Metric):
 
 class MetricConfig(Config):
 
-    """Metric config class"""
+    """Metric configuration class.
+
+    Attributes:
+        model_name: Name of the HuggingFace model to perform metric experiment on.
+        dataset_name: Name of the HuggingFace dataset to use for metric experiment.
+        metrics: Which metrics to perform the experiments on.
+        run_name: Name of the run (used for wandb/local save location), defaults to
+            {dataset_name}_{model_name}.
+        random_state: Random state to use for train/test split.
+        use_wandb: Whether to use wandb for logging.
+        wandb_args: Arguments to pass to wandb.init.
+        n_samples: How many samples to use in the metric experiments.
+        local_save: Whether to save a local copy of the results or not.
+        save_dir: Where to save a local copy of the results.
+        config_gen_dtime: When the config object was generated.
+        caches: Where to cache the huggingface models and datasets.
+    """
 
     def __init__(
         self,
@@ -152,6 +168,19 @@ class MetricConfig(Config):
 
     @classmethod
     def from_dict(cls, config: dict) -> "MetricConfig":
+        """Create a MetricConfig from a config dict.
+
+        Args:
+            config: Dict that must contain "model_name" and "dataset_name" keys. Can
+                also contain "run_name", "random_state", "metrics",
+                "save_dir", "dataset_split", "n_samples", "local_save",
+                "config_gen_dtime", "caches", "use_wandb" and "wandb_args" keys. If
+                "use_wandb" is not specified, it is set to True if "wandb" is in the
+                config dict.
+
+        Returns:
+            MetricConfig object.
+        """
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
@@ -168,6 +197,11 @@ class MetricConfig(Config):
         )
 
     def to_dict(self) -> dict:
+        """Convert the config to a dict.
+
+        Returns:
+            Dict representation of the config.
+        """
         return {
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
@@ -187,7 +221,16 @@ class MetricConfig(Config):
 
 class TopLevelMetricConfig(TopLevelConfig):
 
-    """Class for generating MetricConfigs from a top level config file"""
+    """Takes a YAML file or dictionary with a top level config class containing all
+    items to vary over for metric experiments, optionally producing and saving
+    individual configs for each variant.
+
+    Possible entries to vary over if multiple given:
+        - models
+        - dataset_names
+        - n_samples
+        - random_states
+    """
 
     def __init__(
         self,
@@ -228,7 +271,24 @@ class TopLevelMetricConfig(TopLevelConfig):
 
     @classmethod
     def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
-        """Generate a top level metric config object from a dictionary"""
+        """Generate a top level metric config object from a dictionary
+
+        Args:
+            config: config dictionary, must contain:
+                    - config_type: label for type of experiment config.
+                    - config_dir: which directory to save the specific configs to.
+                    - models: which model(s) to run the fine tuning on.
+                    - dataset_names: which dataset(s) to run the fine tuning on.
+                    - slurm_template_path: where the slurm_template is
+
+                    Can also contain "random_states", "n_samples", "caches",
+                    "dataset_splits", "config_gen_dtime", "use_wandb", "wandb_args",
+                    "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
+                    set to True if "wandb" is in the config dict.
+
+        Returns:
+            TopLevelFineTuningConfig object
+        """
         return cls(
             config_type=config["config_type"],
             config_dir=config["config_dir"],
@@ -248,7 +308,12 @@ class TopLevelMetricConfig(TopLevelConfig):
         )
 
     def parameter_sweep(self) -> list[dict]:
-        """Parameter sweep over entries with multiplicity."""
+        """Parameter sweep over entries with multiplicity. Returns config dictionaries
+        with single variable values for these entries.
+
+        Returns:
+            list of config dictionaries for FineTuningConfig objects.
+        """
         sweep_dict = {}
 
         if isinstance(self.models, list):
