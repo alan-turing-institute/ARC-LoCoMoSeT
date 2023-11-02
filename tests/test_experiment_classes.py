@@ -10,10 +10,10 @@ from locomoset.models.load import get_model_without_head
 
 
 def test_model_exp_class_init(
-    dummy_config, dummy_model_name, dummy_dataset_name, test_seed
+    dummy_metric_config, dummy_model_name, dummy_dataset_name, test_seed
 ):
     """Test the class initialisation"""
-    model_experiment = ModelMetricsExperiment(dummy_config)
+    model_experiment = ModelMetricsExperiment(dummy_metric_config)
     assert model_experiment.model_name == dummy_model_name
     assert model_experiment.dataset_name == dummy_dataset_name
     assert model_experiment.n_samples == 50
@@ -22,34 +22,34 @@ def test_model_exp_class_init(
     assert model_experiment.inference_types == ["features"]
 
 
-def test_features_inference(dummy_config):
+def test_features_inference(dummy_metric_config):
     """Test the features inference method"""
-    model_experiment = ModelMetricsExperiment(dummy_config)
+    model_experiment = ModelMetricsExperiment(dummy_metric_config)
     features = model_experiment.features_inference()
     assert features.shape == (50, 5)
 
 
-def test_perform_inference_task_specifc(dummy_config):
+def test_perform_inference_task_specifc(dummy_metric_config):
     """Test the perform inference method for a task specific case"""
-    model_experiment = ModelMetricsExperiment(dummy_config)
+    model_experiment = ModelMetricsExperiment(dummy_metric_config)
     inference = model_experiment.perform_inference(model_experiment.inference_types[0])
     assert inference[0].shape == (50, 5)
 
 
-def test_perform_inference_task_agnostic(dummy_config):
+def test_perform_inference_task_agnostic(dummy_metric_config):
     """Test the perform inference method for a task agnostic case"""
-    dummy_config["metrics"] = ["n_pars"]
-    model_experiment = ModelMetricsExperiment(dummy_config)
+    dummy_metric_config["metrics"] = ["n_pars"]
+    model_experiment = ModelMetricsExperiment(dummy_metric_config)
     assert list(model_experiment.metrics.keys())[0] == "n_pars"
     assert model_experiment.inference_types[0] == "model"
     inference = model_experiment.perform_inference(model_experiment.inference_types[0])
     assert isinstance(inference[0], PreTrainedModel)
 
 
-def test_compute_metric_score(dummy_config):
+def test_compute_metric_score(dummy_metric_config):
     """Test the compute metric score method"""
-    dummy_config["metrics"] = ["n_pars"]
-    model_experiment = ModelMetricsExperiment(dummy_config)
+    dummy_metric_config["metrics"] = ["n_pars"]
+    model_experiment = ModelMetricsExperiment(dummy_metric_config)
     model_fn = get_model_without_head(model_experiment.model_name)
     metric_score = model_experiment.compute_metric_score(
         model_experiment.metrics["n_pars"], model_fn, None

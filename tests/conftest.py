@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -96,6 +97,32 @@ def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
         "dataset_split": dummy_split,
+        "metrics": ["renggli"],
+        "n_samples": 50,
+        "random_state": test_seed,
+    }
+
+
+@pytest.fixture
+def dummy_config_gen_dtime():
+    return datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+
+
+@pytest.fixture
+def dummy_metric_config(
+    test_seed, dummy_split, dummy_dataset_name, dummy_model_name, dummy_config_gen_dtime
+):
+    return {
+        "caches": {
+            "datasets": "./.cache/huggingface/datasets",
+            "models": "./.cache/huggingface/models",
+        },
+        "config_gen_dtime": dummy_config_gen_dtime,
+        "model_name": dummy_model_name,
+        "dataset_name": dummy_dataset_name,
+        "dataset_split": dummy_split,
+        "local_save": False,
+        "save_dir": "results",
         "metrics": ["renggli"],
         "n_samples": 50,
         "random_state": test_seed,
