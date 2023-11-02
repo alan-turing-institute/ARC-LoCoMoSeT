@@ -8,7 +8,7 @@ from itertools import product
 
 import numpy as np
 
-from locomoset.run.config_classes import Config, TopLevelConfig
+from locomoset.config.config_classes import Config, TopLevelConfig
 
 
 class Metric(ABC):
@@ -248,6 +248,8 @@ class TopLevelMetricConfig(TopLevelConfig):
         use_bask: bool = False,
         caches: dict | None = None,
         slurm_template_path: str | None = None,
+        slurm_template_name: str | None = None,
+        slurm_template_extension: str | None = None,
         config_gen_dtime: str | None = None,
     ) -> None:
         super().__init__(
@@ -261,6 +263,8 @@ class TopLevelMetricConfig(TopLevelConfig):
             use_bask,
             caches,
             slurm_template_path,
+            slurm_template_name,
+            slurm_template_extension,
             config_gen_dtime,
         )
         self.metrics = metrics
@@ -304,6 +308,8 @@ class TopLevelMetricConfig(TopLevelConfig):
             use_bask=config.get("use_bask"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
+            slurm_template_name=config.get("slurm_template_name"),
+            slurm_template_extension=config.get("slurm_template_extension"),
             config_gen_dtime=config.get("config_gen_dtime"),
         )
 

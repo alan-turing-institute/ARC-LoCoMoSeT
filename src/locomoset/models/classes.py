@@ -8,7 +8,7 @@ from itertools import product
 
 from transformers import TrainingArguments
 
-from locomoset.run.config_classes import Config, TopLevelConfig
+from locomoset.config.config_classes import Config, TopLevelConfig
 
 
 class FineTuningConfig(Config):
@@ -143,6 +143,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         use_bask: bool = False,
         caches: dict | None = None,
         slurm_template_path: str | None = None,
+        slurm_template_name: str | None = None,
+        slurm_template_extension: str | None = None,
         config_gen_dtime: str | None = None,
         dataset_args: dict | None = None,
         training_args: dict | None = None,
@@ -158,6 +160,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             use_bask,
             caches,
             slurm_template_path,
+            slurm_template_name,
+            slurm_template_extension,
             config_gen_dtime,
         )
         self.dataset_args = dataset_args
@@ -193,6 +197,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
+            slurm_template_name=config.get("slurm_template_name"),
+            slurm_template_extension=config.get("slurm_template_extension"),
             dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),

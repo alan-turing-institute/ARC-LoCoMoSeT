@@ -92,18 +92,6 @@ def dummy_model_classifier(dummy_model_name):
 
 
 @pytest.fixture
-def dummy_config(test_seed, dummy_split, dummy_dataset_name, dummy_model_name):
-    return {
-        "model_name": dummy_model_name,
-        "dataset_name": dummy_dataset_name,
-        "dataset_split": dummy_split,
-        "metrics": ["renggli"],
-        "n_samples": 50,
-        "random_state": test_seed,
-    }
-
-
-@pytest.fixture
 def dummy_config_gen_dtime():
     return datetime.now().strftime("%Y%m%d-%H%M%S-%f")
 
@@ -126,6 +114,32 @@ def dummy_metric_config(
         "metrics": ["renggli"],
         "n_samples": 50,
         "random_state": test_seed,
+        "wandb_args": {"entity": "test_entity", "project": "test_project"},
+    }
+
+
+@pytest.fixture
+def dummy_fine_tuning_config(
+    test_seed, dummy_dataset_name, dummy_model_name, dummy_config_gen_dtime
+):
+    return {
+        "caches": {
+            "datasets": "./.cache/huggingface/datasets",
+            "models": "./.cache/huggingface/models",
+        },
+        "config_gen_dtime": dummy_config_gen_dtime,
+        "model_name": dummy_model_name,
+        "dataset_name": dummy_dataset_name,
+        "random_state": test_seed,
+        "dataset_args": {"train_split": "train"},
+        "training_args": {
+            "output_dir": "tmp",
+            "num_train_epochs": 1,
+            "save_strategy": "no",
+            "evaluation_strategy": "epoch",
+            "report_to": "none",
+        },
+        "wandb_args": {"entity": "test_entity", "project": "test_project"},
     }
 
 
@@ -143,3 +157,75 @@ def dummy_perfect_metric_scores(dummy_validation_scores):
 @pytest.fixture
 def dummy_random_metric_scores(rng, test_n_samples):
     return rng.uniform(0, 1, test_n_samples) * 100
+
+
+@pytest.fixture
+def dummy_jinja_editable_file():
+    return str(
+        Path(__file__, "..", "data", "dummy_jinja_editable_script.yaml").resolve()
+    )
+
+
+@pytest.fixture
+def dummy_jinja_env_location():
+    return str(Path("..", "data").resolve())
+
+
+@pytest.fixture
+def dummy_top_level_config(
+    dummy_model_name,
+    dummy_dataset_name,
+    test_seed,
+    test_n_samples,
+    dummy_config_gen_dtime,
+    dummy_jinja_editable_file,
+    dummy_jinja_env_location,
+):
+    return {
+        "config_type": "both",
+        "config_dir": "tmp",
+        "config_gen_dtime": dummy_config_gen_dtime,
+        "save_dir": "tmp",
+        "local_save": False,
+        "slurm_template_path": "./tests/data/",
+        "slurm_template_name": "dummy_jinja_editable_script.yaml",
+        "slurmt_template_extension": "yaml",
+        "models": dummy_model_name,
+        "dataset_names": dummy_dataset_name,
+        "random_states": [test_seed, test_seed + 1],
+        "wandb": {"entity": "test_entity", "project": "test_project"},
+        "use_bask": True,
+        "bask": {
+            "metrics": {
+                "job_name": "locomoset_metric_experiment",
+                "walltime": "0-0:30:0",
+                "node_number": 1,
+                "gpu_number": 1,
+                "cpu_per_gpu": 36,
+            },
+            "train": {
+                "job_name": "locomoset_train_experiment",
+                "walltime": "0-0:30:0",
+                "node_number": 1,
+                "gpu_number": 1,
+                "cpu_per_gpu": 36,
+            },
+        },
+        "caches": {
+            "datasets": "./.cache/huggingface/datasets",
+            "models": "./.cache/huggingface/models",
+        },
+        "dataset_args": {"train_split": "train", "val_split": "train"},
+        "training_args": {
+            "training_args": {
+                "output_dir": "tmp",
+                "num_train_epochs": 1,
+                "save_strategy": "no",
+                "evaluation_strategy": "epoch",
+                "report_to": "none",
+            },
+        },
+        "metrics": ["renggli", "n_pars", "LogME"],
+        "dataset_split": "train",
+        "n_samples": test_n_samples,
+    }

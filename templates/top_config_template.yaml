@@ -12,6 +12,8 @@ local_save: False
 
 # Where to find the slurm template
 slurm_template_path: templates/
+slurm_template_name: jobscript_template.sh
+slurm_template_extension: sh
 
 # Huggingface model names or paths to local models
 models:

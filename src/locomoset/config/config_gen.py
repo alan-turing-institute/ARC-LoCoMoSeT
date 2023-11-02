@@ -4,9 +4,9 @@
 
 import argparse
 
+from locomoset.config.config_classes import TopLevelConfig
 from locomoset.metrics.classes import TopLevelMetricConfig
 from locomoset.models.classes import TopLevelFineTuningConfig
-from locomoset.run.config_classes import TopLevelConfig
 
 
 def gen_configs(config: TopLevelConfig, alt_config: TopLevelConfig | None = None):
