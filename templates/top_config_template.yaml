@@ -13,7 +13,7 @@ local_save: False
 # Where to find the slurm template
 slurm_template_path: templates/
 slurm_template_name: jobscript_template.sh
-slurm_template_extension: sh
+slurm_template_extension: sh  # extension required for testing purposes
 
 # Huggingface model names or paths to local models
 models:
@@ -34,7 +34,7 @@ wandb:
   entity: edable-heath
   project: locomoset_metrics_tests
 
-# Baskerville arguments
+# Baskerville arguments, with separate arguments available for the different experiment types
 use_bask: True
 bask:
   metrics:
@@ -55,7 +55,7 @@ caches:
   datasets: ./.cache/huggingface/datasets
   models: ./.cache/huggingface/models
 
-# Training specific config ---------------------
+# Training specific config -----------------------------------------------------------------
 
 # dataset arguments
 dataset_args:
@@ -75,7 +75,7 @@ training_args:
   eval_steps: 100
   logging_strategy: steps
 
-# Metric Experiment specific config -------------
+# Metric Experiment specific config ---------------------------------------------------------
 
 # Metrics to compute
 metrics:
