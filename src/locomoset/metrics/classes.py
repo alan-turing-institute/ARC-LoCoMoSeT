@@ -230,6 +230,35 @@ class TopLevelMetricConfig(TopLevelConfig):
         - dataset_names
         - n_samples
         - random_states
+
+    Args:
+        Must contain:
+        - config_type (str): which config type to generate (metrics or train)
+        - config_dir (str): where to save the generated configs to
+        - metrics (str | list[str]): (list of) metric(s) to run metric experiment on
+        - models (str | list[str]): (list of) model(s) to generate experiment configs
+                                    for
+        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+                                           configs for
+        - dataset_splits (str | list[str]): (list of) dataset split(s) to run metric
+                                            experiments on
+        - n_samples (int | list[int]): (list of) sample number(s) to generate experiment
+                                       configs for
+
+        Can also contain:
+        - random_states (int | list[int]): (list of) random state(s) to generate
+                                           experiment configs for
+        - wandb (dict | None) (optional): weights and biases arguments
+        - bask (dict | None) (optional): baskerville computational arguments
+        - use_bask (bool) (optional): flag for using and generating baskerville run
+        - caches (dict | None) (optional): caching directories for models and datasets
+        - slurm_template_path (str | None): path for setting jinja environment to look
+                                            for jobscript template
+        - slurm_template_name (str | None) (optional): path for jobscript template
+        - slurm_template_extension (str | None) (optional): extension for jobscript
+                                                            template
+        - config_gen_dtime (str | None) (optional): config generation date-time for
+                                                    keeping track of generated configs
     """
 
     def __init__(
@@ -274,7 +303,9 @@ class TopLevelMetricConfig(TopLevelConfig):
         self.save_dir = save_dir
 
     @classmethod
-    def from_dict(cls, config: dict) -> "TopLevelMetricConfig":
+    def from_dict(
+        cls, config: dict, config_type: str | None = None
+    ) -> "TopLevelMetricConfig":
         """Generate a top level metric config object from a dictionary
 
         Args:
@@ -289,12 +320,18 @@ class TopLevelMetricConfig(TopLevelConfig):
                     "dataset_splits", "config_gen_dtime", "use_wandb", "wandb_args",
                     "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
                     set to True if "wandb" is in the config dict.
+            config_type (optional): pass the config type to the class constructor
+                                    explicitly. Defaults to None.
 
         Returns:
             TopLevelFineTuningConfig object
         """
+        if config_type is not None:
+            config_type = config_type
+        else:
+            config_type = config.get("config_type")
         return cls(
-            config_type=config["config_type"],
+            config_type=config_type,
             config_dir=config["config_dir"],
             models=config["models"],
             dataset_names=config["dataset_names"],

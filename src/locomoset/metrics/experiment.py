@@ -61,7 +61,7 @@ class ModelMetricsExperiment:
         # Caches
         if config["caches"] is not None:
             self.dataset_cache = config["caches"]["datasets"]
-            self.model_cache = config["caches"]["datasets"]
+            self.model_cache = config["caches"]["models"]
 
         # Load/generate dataset
         print("Generating data sample...")

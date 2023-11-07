@@ -41,16 +41,16 @@ def main():
 
     alt_config = None
     if args.type == "metrics":
-        config = TopLevelMetricConfig.read_yaml(args.configfile)
-        config.config_type = "metrics"
+        config = TopLevelMetricConfig.read_yaml(args.configfile, config_type="metrics")
     elif args.type == "train":
-        config = TopLevelFineTuningConfig.read_yaml(args.configfile)
-        config.config_type = "train"
+        config = TopLevelFineTuningConfig.read_yaml(
+            args.configfile, config_type="train"
+        )
     else:
-        config = TopLevelMetricConfig.read_yaml(args.configfile)
-        config.config_type = "metrics"
-        alt_config = TopLevelFineTuningConfig.read_yaml(args.configfile)
-        alt_config.config_type = "train"
+        config = TopLevelMetricConfig.read_yaml(args.configfile, config_type="metrics")
+        alt_config = TopLevelFineTuningConfig.read_yaml(
+            args.configfile, config_type="train"
+        )
 
     gen_configs(config, alt_config)
 

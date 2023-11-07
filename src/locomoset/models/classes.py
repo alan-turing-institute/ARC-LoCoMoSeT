@@ -129,6 +129,30 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         - models
         - dataset_names
         - random_states
+
+    Args:
+        Must contain:
+        - config_type (str): which config type to generate (metrics or train)
+        - config_dir (str): where to save the generated configs to
+        - models (str | list[str]): (list of) model(s) to generate experiment configs
+                                    for
+        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+                                           configs for
+        - random_states (int | list[int]): (list of) random state(s) to generate
+                                           experiment configs for
+        - wandb (dict | None) (optional): weights and biases arguments
+        - bask (dict | None) (optional): baskerville computational arguments
+        - use_bask (bool) (optional): flag for using and generating baskerville run
+        - caches (dict | None) (optional): caching directories for models and datasets
+        - slurm_template_path (str | None): path for setting jinja environment to look
+                                            for jobscript template
+        - slurm_template_name (str | None) (optional): path for jobscript template
+        - slurm_template_extension (str | None) (optional): extension for jobscript
+                                                            template
+        - config_gen_dtime (str | None) (optional): config generation date-time for
+                                                    keeping track of generated configs
+        - dataset_args (dict | None) (optional): dataset arguments for training purposes
+        - training_args (dict | None) (optional): arguments for training
     """
 
     def __init__(
@@ -168,7 +192,9 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         self.training_args = training_args
 
     @classmethod
-    def from_dict(cls, config: dict) -> "TopLevelFineTuningConfig":
+    def from_dict(
+        cls, config: dict, config_type: str | None = None
+    ) -> "TopLevelFineTuningConfig":
         """Generate a top level fine tuning config object from a dictionary
 
         Args:
@@ -183,12 +209,18 @@ class TopLevelFineTuningConfig(TopLevelConfig):
                     "config_gen_dtime", "training_args", "use_wandb", "wandb_args",
                     "use_bask" and "bask" keys. If "use_wandb" is not specified, it is
                     set to True if "wandb" is in the config dict.
+            config_type (optional): pass the config type to the class constructor
+                                    explicitly. Defaults to None.
 
         Returns:
             TopLevelFineTuningConfig object
         """
+        if config_type is not None:
+            config_type = config_type
+        else:
+            config_type = config.get("config_type")
         return cls(
-            config_type=config.get("config_type"),
+            config_type=config_type,
             config_dir=config.get("config_dir"),
             models=config.get("models"),
             dataset_names=config.get("dataset_names"),

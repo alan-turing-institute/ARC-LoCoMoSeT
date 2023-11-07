@@ -85,7 +85,7 @@ class Config(ABC):
             else:
                 wandb_config["group"] = f"{self.dataset_name}"
         if "job_type" not in wandb_config:
-            wandb_config["job_type"] = "misc"
+            raise ValueError("No Job type given")
 
         wandb.init(config={"locomoset": self.to_dict()}, **wandb_config)
 
@@ -139,6 +139,30 @@ class TopLevelConfig(ABC):
         - dataset_names
         - n_samples
         - random_states
+
+    Args:
+        Must contain:
+        - config_type (str): which config type to generate (metrics or train)
+        - config_dir (str): where to save the generated configs to
+        - models (str | list[str]): (list of) model(s) to generate experiment configs
+                                    for
+        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+                                           configs for
+
+        Can also contain:
+        - random_states (int | list[int]): (list of) random state(s) to generate
+                                           experiment configs for
+        - wandb (dict | None) (optional): weights and biases arguments
+        - bask (dict | None) (optional): baskerville computational arguments
+        - use_bask (bool) (optional): flag for using and generating baskerville run
+        - caches (dict | None) (optional): caching directories for models and datasets
+        - slurm_template_path (str | None): path for setting jinja environment to look
+                                            for jobscript template
+        - slurm_template_name (str | None) (optional): path for jobscript template
+        - slurm_template_extension (str | None) (optional): extension for jobscript
+                                                            template
+        - config_gen_dtime (str | None) (optional): config generation date-time for
+                                                    keeping track of generated configs
     """
 
     def __init__(
@@ -176,24 +200,34 @@ class TopLevelConfig(ABC):
         self.slurm_template_extension = slurm_template_extension or ".sh"
 
     @abstractclassmethod
-    def from_dict(cls, config: dict) -> "TopLevelConfig":
+    def from_dict(
+        cls, config: dict, config_type: str | None = None
+    ) -> "TopLevelConfig":
         """Generate a config generator object from an input dictionary. Parameters are
-        specifc to each experiment type and so must be implemented in child class."""
+        specifc to each experiment type and so must be implemented in child class.
+
+        Args:
+            config: config dictionary
+            config_type (optional): pass the config type to the class constructor
+                                    explicitly. Defaults to None.
+        """
         raise NotImplementedError
 
     @classmethod
-    def read_yaml(cls, path: str) -> "TopLevelConfig":
+    def read_yaml(cls, path: str, config_type: str | None = None) -> "TopLevelConfig":
         """Generate a config generator object from an (path to) a yaml file.
 
         Args:
             path: path to YAML file containing top level config.
+            config_type (optional): pass the config type to the class constructor
+                                    explicitly. Defaults to None.
 
         Returns:
             TopLevelConfig object.
         """
         with open(path, "r") as f:
             config = yaml.safe_load(f)
-        return cls.from_dict(config=config)
+        return cls.from_dict(config=config, config_type=config_type)
 
     @abstractmethod
     def parameter_sweep(self) -> list[dict]:
