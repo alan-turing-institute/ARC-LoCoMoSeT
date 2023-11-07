@@ -159,8 +159,6 @@ class TopLevelConfig(ABC):
         - slurm_template_path (str | None): path for setting jinja environment to look
                                             for jobscript template
         - slurm_template_name (str | None) (optional): path for jobscript template
-        - slurm_template_extension (str | None) (optional): extension for jobscript
-                                                            template
         - config_gen_dtime (str | None) (optional): config generation date-time for
                                                     keeping track of generated configs
     """
@@ -178,7 +176,6 @@ class TopLevelConfig(ABC):
         caches: dict | None = None,
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
-        slurm_template_extension: str | None = None,
         config_gen_dtime: str | None = None,
     ) -> None:
         self.config_type = config_type
@@ -197,7 +194,6 @@ class TopLevelConfig(ABC):
         self.caches = caches
         self.slurm_template_path = slurm_template_path or "templates/"
         self.slurm_template_name = slurm_template_name or "jobscript_template.sh"
-        self.slurm_template_extension = slurm_template_extension or ".sh"
 
     @abstractclassmethod
     def from_dict(
@@ -269,8 +265,7 @@ class TopLevelConfig(ABC):
         jenv = Environment(loader=FileSystemLoader(self.slurm_template_path))
         template = jenv.get_template(self.slurm_template_name)
         content = template.render(bask_pars)
-        file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}"
-        file_name = f"{file_name}.{self.slurm_template_extension}"
+        file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}.sh"
         with open(f"{config_path}/{file_name}", "w") as f:
             f.write(content)
 

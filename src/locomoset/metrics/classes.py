@@ -255,8 +255,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         - slurm_template_path (str | None): path for setting jinja environment to look
                                             for jobscript template
         - slurm_template_name (str | None) (optional): path for jobscript template
-        - slurm_template_extension (str | None) (optional): extension for jobscript
-                                                            template
         - config_gen_dtime (str | None) (optional): config generation date-time for
                                                     keeping track of generated configs
     """
@@ -278,7 +276,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         caches: dict | None = None,
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
-        slurm_template_extension: str | None = None,
         config_gen_dtime: str | None = None,
     ) -> None:
         super().__init__(
@@ -293,7 +290,6 @@ class TopLevelMetricConfig(TopLevelConfig):
             caches,
             slurm_template_path,
             slurm_template_name,
-            slurm_template_extension,
             config_gen_dtime,
         )
         self.metrics = metrics
