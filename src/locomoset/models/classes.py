@@ -226,7 +226,6 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
-            slurm_template_extension=config.get("slurm_template_extension"),
             dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),

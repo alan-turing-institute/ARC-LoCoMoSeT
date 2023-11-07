@@ -342,7 +342,6 @@ class TopLevelMetricConfig(TopLevelConfig):
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
-            slurm_template_extension=config.get("slurm_template_extension"),
             config_gen_dtime=config.get("config_gen_dtime"),
         )
 
