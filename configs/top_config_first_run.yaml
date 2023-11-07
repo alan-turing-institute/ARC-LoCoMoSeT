@@ -105,4 +105,8 @@ dataset_split:
 
 # No. of images to compute the metrics with
 n_samples:
-  50
+  - 500
+  - 1000
+  - 10000
+  - 15000
+  - 30000
