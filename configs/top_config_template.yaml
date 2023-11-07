@@ -10,9 +10,9 @@ config_dir: configs
 save_dir: results_pets
 local_save: False
 
-# Where to find the slurm template
-slurm_template_path: templates/
-slurm_template_name: jobscript_template.sh # extension required for testing purposes
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
 
 # Huggingface model names or paths to local models
 models:

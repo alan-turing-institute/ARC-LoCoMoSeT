@@ -7,6 +7,7 @@ import warnings
 from abc import ABC, abstractclassmethod, abstractmethod
 from copy import copy
 from datetime import datetime
+from pathlib import Path
 
 import wandb
 import yaml
@@ -192,7 +193,9 @@ class TopLevelConfig(ABC):
         self.bask = bask
         self.use_bask = use_bask
         self.caches = caches
-        self.slurm_template_path = slurm_template_path or "templates/"
+        self.slurm_template_path = slurm_template_path or str(
+            Path("src", "locomoset", "config/").resolve()
+        )
         self.slurm_template_name = slurm_template_name or "jobscript_template.sh"
 
     @abstractclassmethod

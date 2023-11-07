@@ -167,6 +167,5 @@ src/locomoset/LogME/
 # Ignore slurm logs
 slurm_logs/*
 
-
-# Ignore generated config for now
-configs/*
+# Ignore generated configs
+configs/2*
