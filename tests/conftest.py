@@ -178,8 +178,6 @@ def dummy_top_level_config(
     test_seed,
     test_n_samples,
     dummy_config_gen_dtime,
-    dummy_jinja_editable_file,
-    dummy_jinja_env_location,
 ):
     return {
         "config_type": "both",
@@ -189,7 +187,6 @@ def dummy_top_level_config(
         "local_save": False,
         "slurm_template_path": "./tests/data/",
         "slurm_template_name": "dummy_jinja_editable_script.yaml",
-        "slurmt_template_extension": "yaml",
         "models": dummy_model_name,
         "dataset_names": dummy_dataset_name,
         "random_states": [test_seed, test_seed + 1],
