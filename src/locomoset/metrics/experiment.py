@@ -11,6 +11,7 @@ from datetime import datetime
 from time import time
 from typing import Tuple
 
+import torch
 import wandb
 from datasets import load_dataset
 from numpy.typing import ArrayLike
@@ -41,6 +42,7 @@ class ModelMetricsExperiment:
                 - (Optional) metric_kwargs: dictionary of entries
                     {metric_name: **metric_kwargs} containing parameters for each metric
                 - (Optional) save_dir: Directory to save results, "results" if not set.
+                - (Optional) device: which device to use for inference
         """
         # Parse model/seed config
         self.model_name = config["model_name"]
@@ -62,6 +64,11 @@ class ModelMetricsExperiment:
         if config["caches"] is not None:
             self.dataset_cache = config["caches"]["datasets"]
             self.model_cache = config["caches"]["models"]
+
+        # Set up device
+        self.device = config.get("device")
+        if self.device == "cuda":
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load/generate dataset
         print("Generating data sample...")
@@ -96,7 +103,7 @@ class ModelMetricsExperiment:
         """
         model_fn = get_model_without_head(self.model_name)
         processor = get_processor(self.model_name)
-        return get_features(self.dataset, processor, model_fn)
+        return get_features(self.dataset, processor, model_fn, device=self.device)
 
     def model_inference(self) -> PreTrainedModel:
         """Perform inference for model based methods (just load the model).

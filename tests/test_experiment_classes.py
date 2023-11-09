@@ -78,6 +78,7 @@ def test_init_top_level_metric_config(dummy_top_level_config, dummy_config_gen_d
     assert config.config_type == "metrics"
     assert config.config_gen_dtime == dummy_config_gen_dtime
     assert isinstance(config.sub_configs[0], MetricConfig)
+    assert config.sub_configs[0].device == "cuda"
 
 
 def test_top_level_metric_config_param_sweep(dummy_top_level_config, test_seed):

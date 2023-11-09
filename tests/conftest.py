@@ -225,4 +225,5 @@ def dummy_top_level_config(
         "metrics": ["renggli", "n_pars", "LogME"],
         "dataset_split": "train",
         "n_samples": test_n_samples,
+        "inference_args": {"device": "cuda"},
     }

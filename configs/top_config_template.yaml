@@ -90,3 +90,7 @@ dataset_split:
 # No. of images to compute the metrics with
 n_samples:
   50
+
+# Arguments required for inference
+inference_args:
+  device: cuda
