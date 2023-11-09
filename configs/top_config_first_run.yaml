@@ -49,6 +49,7 @@ random_states:
 wandb:
   entity: turing-arc
   project: locomoset
+  log_model: checkpoint
 
 # Baskerville arguments, with separate arguments available for the different experiment types
 use_bask: True

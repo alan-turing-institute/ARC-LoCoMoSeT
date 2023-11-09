@@ -32,6 +32,7 @@ random_states:
 wandb:
   entity: edable-heath
   project: locomoset_metrics_tests
+  log_model: checkpoint
 
 # Baskerville arguments, with separate arguments available for the different experiment types
 use_bask: True
