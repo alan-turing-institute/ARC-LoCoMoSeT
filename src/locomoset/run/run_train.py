@@ -1,6 +1,7 @@
 import argparse
 
-from locomoset.models.train import FineTuningConfig, run_config
+from locomoset.models.classes import FineTuningConfig
+from locomoset.models.train import run_config
 
 
 def main() -> None:

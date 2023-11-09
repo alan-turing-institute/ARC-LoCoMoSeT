@@ -1,3 +1,7 @@
+"""
+    Test functions for the training module (src/locomoset/models/train.py)
+"""
+
 from copy import deepcopy
 
 import numpy as np
@@ -34,36 +38,11 @@ def test_train(dummy_model_name, dummy_dataset, dummy_processor):
     )
 
 
-def test_init_fine_tuning_config():
-    dummy_config = {
-        "model_name": "test_model",
-        "dataset_name": "test_dataset",
-        "random_state": 42,
-        "dataset_args": {"train_split": "test_split"},
-        "training_args": {"output_dir": "tmp", "num_train_epochs": 1},
-        "wandb": {"entity": "test_entity", "project": "test_project"},
-    }
-    config = FineTuningConfig.from_dict(dummy_config)
-    assert config.run_name == "test_dataset_test_model"
-    assert isinstance(config.get_training_args(), TrainingArguments)
-    assert config.use_wandb is True
+def test_run_config(dummy_fine_tuning_config):
+    # remove wandb args for purpose of this test
+    dummy_fine_tuning_config.pop("wandb_args")
 
-
-def test_run_config(dummy_model_name, dummy_dataset_name):
-    dummy_config = FineTuningConfig.from_dict(
-        {
-            "model_name": dummy_model_name,
-            "dataset_name": dummy_dataset_name,
-            "random_state": 42,
-            "training_args": {
-                "output_dir": "tmp",
-                "num_train_epochs": 1,
-                "save_strategy": "no",
-                "evaluation_strategy": "epoch",
-                "report_to": "none",
-            },
-        }
-    )
+    dummy_config = FineTuningConfig.from_dict(dummy_fine_tuning_config)
     trainer = run_config(dummy_config)
     metrics = trainer.evaluate()
     assert metrics["eval_loss"] > 0

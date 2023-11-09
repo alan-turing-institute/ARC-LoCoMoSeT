@@ -139,7 +139,7 @@ results_wp2/*
 
 
 # Removing LogME for licensing reasons
-src/locomoset/LogMe/
+src/locomoset/LogME/
 
 
 # Ignore adhoc notebooks
@@ -148,3 +148,24 @@ notebooks/*
 
 # Ignore adhoc perst results
 results_pets/*
+
+
+# Ignore wandb
+wandb/*
+wandb_notebook.ipynb
+tmp/*
+
+
+# Ignore generated configs
+configs/2*/*
+
+# Ignore baskerville environs
+locomosetenv/*
+src/locomoset/LogME/
+
+
+# Ignore slurm logs
+slurm_logs/*
+
+# Ignore generated configs
+configs/2*
