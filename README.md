@@ -100,7 +100,13 @@ You can also run `locomoset_plot_vs_actual --help` to see the arguments.
    poetry install
    ```
 
-2. Install pre-commit hooks:
+2. If using LogME, NCE or LEEP clone the following repository <https://github.com/thuml/LogME> into `src`:
+
+   ```bash
+   git clone https://github.com/thuml/LogME.git src/locomoset/LogME
+   ```
+
+3. Install pre-commit hooks:
 
    ```bash
    poetry run pre-commit install --install-hooks
