@@ -70,6 +70,7 @@ bask:
 caches:
   datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
   models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+  wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
 
 # Training specific config -----------------------------------------------------------------
 
