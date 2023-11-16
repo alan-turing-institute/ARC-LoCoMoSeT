@@ -84,7 +84,7 @@ metrics:
   - LogME
 
 # Name of dataset split to compute metrics for (Currently must be the same for all datasets)
-dataset_split:
+dataset_splits:
   "train"
 
 # No. of images to compute the metrics with
