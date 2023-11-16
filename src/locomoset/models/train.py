@@ -3,9 +3,10 @@ from typing import Callable
 import evaluate
 import numpy as np
 import wandb
-from datasets import Dataset, load_dataset
+from datasets import Dataset
 from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArguments
 
+from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import prepare_training_data
 from locomoset.models.classes import FineTuningConfig
 from locomoset.models.load import get_model_with_dataset_labels, get_processor

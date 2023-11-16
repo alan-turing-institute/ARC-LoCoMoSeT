@@ -13,10 +13,10 @@ from typing import Tuple
 
 import torch
 import wandb
-from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+from locomoset.datasets.load import load_dataset
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
