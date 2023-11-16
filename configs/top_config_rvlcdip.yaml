@@ -112,3 +112,7 @@ n_samples:
   - 10000
   - 30000
   - 300000
+
+# Arguments required for inference
+inference_args:
+  device: cuda
