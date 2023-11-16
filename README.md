@@ -35,10 +35,15 @@ This project is a work in progress under active development. The work packages a
 
 ### Download ImageNet
 
-ImageNet-1k is gated so you need to login with a HuggingFace token to download it (they're under <https://huggingface.co/settings/tokens> in your account settings). Once you have a token:
+ImageNet-1k is gated so you need to login with a HuggingFace token to download it (they're under <https://huggingface.co/settings/tokens> in your account settings). Log in to the HuggingFace CLI:
 
 ```bash
 huggingface-cli login
+```
+
+Once you've done this, head on over to <https://huggingface.co/datasets/imagenet-1k>, read the terms and conditions and if happy to proceed agree to them. Then run:
+
+```bash
 python -c "import datasets; datasets.load_dataset('imagenet-1k')"
 ```
 
