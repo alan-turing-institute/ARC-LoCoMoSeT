@@ -16,7 +16,6 @@ slurm_template_name: 'jobscript_template.sh'
 
 # Huggingface model names or paths to local models
 models:
-  - facebook/deit-base-distilled-patch16-224
   - facebook/deit-tiny-patch16-224
   - facebook/deit-small-patch16-224
   - facebook/deit-base-patch16-224
@@ -24,18 +23,18 @@ models:
   - apple/mobilevit-xx-small
   - google/vit-base-patch16-384
   - google/vit-large-patch16-224
-  - google/vit-hybrid-base-bit-384
   - microsoft/cvt-13
   - microsoft/cvt-21-384-22k
   - facebook/deit-base-patch16-384
-  - facebook/deit-base-distilled-patch16-384
   - microsoft/beit-large-patch16-512
   - microsoft/beit-base-patch16-224
   - microsoft/beit-base-patch16-224-pt22k-ft22k
   - microsoft/swin-large-patch4-window12-384-in22k
-  - facebook/levit-128S
   - facebook/dinov2-small-imagenet1k-1-layer
   - facebook/dinov2-base-imagenet1k-1-layer
+  - microsoft/swin-base-patch4-window12-384
+  - Intel/vit-base-patch16-224-int8-static
+  - microsoft/swinv2-base-patch4-window8-256
 
 # HuggingFace Datasets or paths to local datasets
 dataset_names:
@@ -56,13 +55,13 @@ use_bask: True
 bask:
   metrics:
     job_name: 'locomoset_metric_experiment'
-    walltime: '2-0:0:0'
+    walltime: '0-04:00:00'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
   train:
     job_name: 'locomoset_train_experiment'
-    walltime: '2-0:0:0'
+    walltime: '0-12:00:00'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
@@ -112,3 +111,7 @@ n_samples:
   - 10000
   - 15000
   - 30000
+
+# Arguments required for inference
+inference_args:
+  device: cuda

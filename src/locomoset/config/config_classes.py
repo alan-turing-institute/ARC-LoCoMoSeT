@@ -68,6 +68,10 @@ class Config(ABC):
         if wandb.run is not None:
             raise ValueError("A wandb run has already been initialised")
 
+        if "wandb" in self.caches:
+            # where wandb artifacts will be cached
+            os.environ["WANDB_CACHE_DIR"] = self.caches["wandb"]
+
         wandb.login()
         wandb_config = copy(self.wandb_args)
 
@@ -130,7 +134,6 @@ class Config(ABC):
 
 
 class TopLevelConfig(ABC):
-
     """Takes a YAML file or dictionary with a top level config class containing all
     items to vary over for experiments, optionally producing and saving individual
     configs for each variant.
@@ -146,22 +149,23 @@ class TopLevelConfig(ABC):
         - config_type (str): which config type to generate (metrics or train)
         - config_dir (str): where to save the generated configs to
         - models (str | list[str]): (list of) model(s) to generate experiment configs
-                                    for
+            for
         - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
-                                           configs for
+            configs for
 
         Can also contain:
         - random_states (int | list[int]): (list of) random state(s) to generate
-                                           experiment configs for
+            experiment configs for
         - wandb (dict | None) (optional): weights and biases arguments
         - bask (dict | None) (optional): baskerville computational arguments
         - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models and datasets
+        - caches (dict | None) (optional): caching directories for models, datasets,
+            and wandb
         - slurm_template_path (str | None): path for setting jinja environment to look
-                                            for jobscript template
+            for jobscript template
         - slurm_template_name (str | None) (optional): path for jobscript template
         - config_gen_dtime (str | None) (optional): config generation date-time for
-                                                    keeping track of generated configs
+            keeping track of generated configs
     """
 
     def __init__(

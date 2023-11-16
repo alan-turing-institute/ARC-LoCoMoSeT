@@ -31,6 +31,7 @@ def gen_configs(
 
     # copy top level config file into generate configs
     shutil.copy2(config_path, f"{config.config_dir}/{config.config_gen_dtime}")
+    print(f"Config files saved to {config.config_dir}/{config.config_gen_dtime}")
 
 
 def main():

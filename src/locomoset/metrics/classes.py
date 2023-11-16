@@ -131,6 +131,7 @@ class MetricConfig(Config):
         save_dir: Where to save a local copy of the results.
         config_gen_dtime: When the config object was generated.
         caches: Where to cache the huggingface models and datasets.
+        device: Which device to run inference on
     """
 
     def __init__(
@@ -148,6 +149,7 @@ class MetricConfig(Config):
         local_save: bool = False,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
+        device: str | None = None,
     ) -> None:
         super().__init__(
             model_name=model_name,
@@ -165,6 +167,7 @@ class MetricConfig(Config):
         self.n_samples = n_samples or 50
         self.local_save = local_save
         self.wandb_args["job_type"] = "metrics"
+        self.device = device
 
     @classmethod
     def from_dict(cls, config: dict) -> "MetricConfig":
@@ -194,6 +197,7 @@ class MetricConfig(Config):
             local_save=config.get("local_save"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
+            device=config.get("device"),
         )
 
     def to_dict(self) -> dict:
@@ -216,6 +220,7 @@ class MetricConfig(Config):
             "config_gen_dtime": self.config_gen_dtime,
             "local_save": self.local_save,
             "caches": self.caches,
+            "device": self.device,
         }
 
 
@@ -257,6 +262,8 @@ class TopLevelMetricConfig(TopLevelConfig):
         - slurm_template_name (str | None) (optional): path for jobscript template
         - config_gen_dtime (str | None) (optional): config generation date-time for
                                                     keeping track of generated configs
+        - inference_args (dict | None) (optional): arguments required for inference in
+                                                   the metric experiments.
     """
 
     def __init__(
@@ -277,6 +284,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
+        inference_args: dict | None = None,
     ) -> None:
         super().__init__(
             config_type,
@@ -297,6 +305,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         self.n_samples = n_samples
         self.save_dir = save_dir
         self.save_dir = save_dir
+        self.inference_args = inference_args or {}
 
     @classmethod
     def from_dict(
@@ -318,6 +327,8 @@ class TopLevelMetricConfig(TopLevelConfig):
                     set to True if "wandb" is in the config dict.
             config_type (optional): pass the config type to the class constructor
                                     explicitly. Defaults to None.
+            inference_args (optional): pass inference specific arguments to the metric
+                                       experiments
 
         Returns:
             TopLevelFineTuningConfig object
@@ -343,6 +354,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
             config_gen_dtime=config.get("config_gen_dtime"),
+            inference_args=config.get("inference_args"),
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -375,12 +387,17 @@ class TopLevelMetricConfig(TopLevelConfig):
         param_sweep_dicts = [
             dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
         ]
+
+        # input inference args
+        device = self.inference_args.get("device")
+
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
             pdict["wandb_args"] = self.wandb
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
+            pdict["device"] = device
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:
             warnings.warn("Slurm array jobs cannot exceed more than 1001!")

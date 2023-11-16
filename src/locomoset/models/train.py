@@ -81,14 +81,16 @@ def run_config(config: FineTuningConfig) -> Trainer:
     Returns:
         Trainer object.
     """
-    processor = get_processor(config.model_name)
+    processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
     train_split = config.dataset_args["train_split"]
     val_split = config.dataset_args.get("val_split", None)
     if val_split is None or val_split == train_split:
-        dataset = load_dataset(config.dataset_name, split=train_split)
+        dataset = load_dataset(
+            config.dataset_name, split=train_split, cache_dir=config.caches["datasets"]
+        )
     else:
-        dataset = load_dataset(config.dataset_name)
+        dataset = load_dataset(config.dataset_name, cache_dir=config.caches["datasets"])
 
     train_dataset, val_dataset = prepare_training_data(
         dataset,
@@ -99,7 +101,9 @@ def run_config(config: FineTuningConfig) -> Trainer:
         config.dataset_args.get("test_size"),
     )
 
-    model = get_model_with_dataset_labels(config.model_name, train_dataset)
+    model = get_model_with_dataset_labels(
+        config.model_name, train_dataset, cache=config.caches["models"]
+    )
 
     if config.use_wandb:
         config.init_wandb()

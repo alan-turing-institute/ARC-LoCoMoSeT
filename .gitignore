@@ -169,3 +169,6 @@ slurm_logs/*
 
 # Ignore generated configs
 configs/2*
+
+# Ignore output folder on baskerville
+output/*
