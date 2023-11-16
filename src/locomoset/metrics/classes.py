@@ -333,7 +333,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             dataset_names=config["dataset_names"],
             metrics=config["metrics"],
             save_dir=config.get("save_dir"),
-            dataset_splits=config.get("dataset_split"),
+            dataset_splits=config.get("dataset_splits"),
             n_samples=config.get("n_samples"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
