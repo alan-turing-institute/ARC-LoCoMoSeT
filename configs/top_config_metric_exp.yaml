@@ -1,3 +1,6 @@
+# Where to put the subconfigs generated from this one
+config_dir: configs
+
 # Where to save results
 save_dir: results_pets
 
@@ -7,7 +10,7 @@ models:
   - facebook/deit-small-patch16-224
 
 # HuggingFace Datasets or paths to datasets to compute metrics for
-dataset_name:
+dataset_names:
   "pcuenq/oxford-pets"
 
 # Name of dataset split to compute metrics for (Currently must be the same for all datasets)
@@ -19,19 +22,32 @@ n_samples:
   50
 
 # Random seeds to use (e.g. for sampling the images to use)
-random_state:
+random_states:
   - 42
   - 43
 
 # Metrics to compute
 metrics:
   - renggli
-  - parc
   - n_pars
   - LogME
-
 
 # Weights and Biases
 wandb:
   entity: edable-heath
   project: locomoset_metrics_tests
+
+# Baskerville arguments:
+use_bask:
+  True
+
+bask:
+  job_name: 'locomoset_metric_experiment'
+  walltime: '0-0:30:0'
+  node_number: 1
+  gpu_number: 1
+  cpu_per_gpu': 36
+
+caches:
+  datasets: ./.cache/huggingface/datasets
+  models: ./.cache/huggingface/models

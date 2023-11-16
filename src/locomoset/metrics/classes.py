@@ -1,9 +1,14 @@
 """
 Base metric class for unifying the method.
 """
+import warnings
 from abc import ABC, abstractmethod
+from copy import copy
+from itertools import product
 
 import numpy as np
+
+from locomoset.config.config_classes import Config, TopLevelConfig
 
 
 class Metric(ABC):
@@ -106,3 +111,283 @@ class TaskSpecificMetric(Metric):
     def fit_metric(self, model_input, dataset_input) -> float | int:
         self.set_random_state()
         return self.metric_function(model_input, dataset_input)
+
+
+class MetricConfig(Config):
+
+    """Metric configuration class.
+
+    Attributes:
+        model_name: Name of the HuggingFace model to perform metric experiment on.
+        dataset_name: Name of the HuggingFace dataset to use for metric experiment.
+        metrics: Which metrics to perform the experiments on.
+        run_name: Name of the run (used for wandb/local save location), defaults to
+            {dataset_name}_{model_name}.
+        random_state: Random state to use for train/test split.
+        use_wandb: Whether to use wandb for logging.
+        wandb_args: Arguments to pass to wandb.init.
+        n_samples: How many samples to use in the metric experiments.
+        local_save: Whether to save a local copy of the results or not.
+        save_dir: Where to save a local copy of the results.
+        config_gen_dtime: When the config object was generated.
+        caches: Where to cache the huggingface models and datasets.
+    """
+
+    def __init__(
+        self,
+        model_name: str,
+        dataset_name: str,
+        metrics: list[str],
+        save_dir: str | None = None,
+        dataset_split: str | None = None,
+        run_name: str | None = None,
+        n_samples: int | None = None,
+        random_state: int | None = None,
+        use_wandb: bool = False,
+        wandb_args: dict | None = None,
+        local_save: bool = False,
+        config_gen_dtime: str | None = None,
+        caches: dict | None = None,
+    ) -> None:
+        super().__init__(
+            model_name=model_name,
+            dataset_name=dataset_name,
+            run_name=run_name,
+            random_state=random_state,
+            use_wandb=use_wandb,
+            wandb_args=wandb_args,
+            config_gen_dtime=config_gen_dtime,
+            caches=caches,
+        )
+        self.metrics = metrics
+        self.save_dir = save_dir
+        self.dataset_split = dataset_split or "train"
+        self.n_samples = n_samples or 50
+        self.local_save = local_save
+        self.wandb_args["job_type"] = "metrics"
+
+    @classmethod
+    def from_dict(cls, config: dict) -> "MetricConfig":
+        """Create a MetricConfig from a config dict.
+
+        Args:
+            config: Dict that must contain "model_name" and "dataset_name" keys. Can
+                also contain "run_name", "random_state", "metrics",
+                "save_dir", "dataset_split", "n_samples", "local_save",
+                "config_gen_dtime", "caches", "use_wandb" and "wandb_args" keys. If
+                "use_wandb" is not specified, it is set to True if "wandb" is in the
+                config dict.
+
+        Returns:
+            MetricConfig object.
+        """
+        return cls(
+            model_name=config["model_name"],
+            dataset_name=config["dataset_name"],
+            metrics=config["metrics"],
+            save_dir=config.get("save_dir"),
+            dataset_split=config.get("dataset_split"),
+            n_samples=config.get("n_samples"),
+            random_state=config.get("random_state"),
+            use_wandb=config.get("use_wandb", "wandb_args" in config),
+            wandb_args=config.get("wandb_args"),
+            local_save=config.get("local_save"),
+            config_gen_dtime=config.get("config_gen_dtime"),
+            caches=config.get("caches"),
+        )
+
+    def to_dict(self) -> dict:
+        """Convert the config to a dict.
+
+        Returns:
+            Dict representation of the config.
+        """
+        return {
+            "model_name": self.model_name,
+            "dataset_name": self.dataset_name,
+            "metrics": self.metrics,
+            "save_dir": self.save_dir,
+            "dataset_split": self.dataset_split,
+            "n_samples": self.n_samples,
+            "run_name": self.run_name,
+            "random_state": self.random_state,
+            "use_wandb": self.use_wandb,
+            "wandb_args": self.wandb_args,
+            "config_gen_dtime": self.config_gen_dtime,
+            "local_save": self.local_save,
+            "caches": self.caches,
+        }
+
+
+class TopLevelMetricConfig(TopLevelConfig):
+
+    """Takes a YAML file or dictionary with a top level config class containing all
+    items to vary over for metric experiments, optionally producing and saving
+    individual configs for each variant.
+
+    Possible entries to vary over if multiple given:
+        - models
+        - dataset_names
+        - n_samples
+        - random_states
+
+    Args:
+        Must contain:
+        - config_type (str): which config type to generate (metrics or train)
+        - config_dir (str): where to save the generated configs to
+        - metrics (str | list[str]): (list of) metric(s) to run metric experiment on
+        - models (str | list[str]): (list of) model(s) to generate experiment configs
+                                    for
+        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+                                           configs for
+        - dataset_splits (str | list[str]): (list of) dataset split(s) to run metric
+                                            experiments on
+        - n_samples (int | list[int]): (list of) sample number(s) to generate experiment
+                                       configs for
+
+        Can also contain:
+        - random_states (int | list[int]): (list of) random state(s) to generate
+                                           experiment configs for
+        - wandb (dict | None) (optional): weights and biases arguments
+        - bask (dict | None) (optional): baskerville computational arguments
+        - use_bask (bool) (optional): flag for using and generating baskerville run
+        - caches (dict | None) (optional): caching directories for models and datasets
+        - slurm_template_path (str | None): path for setting jinja environment to look
+                                            for jobscript template
+        - slurm_template_name (str | None) (optional): path for jobscript template
+        - config_gen_dtime (str | None) (optional): config generation date-time for
+                                                    keeping track of generated configs
+    """
+
+    def __init__(
+        self,
+        config_type: str,
+        config_dir: str,
+        models: str | list[str],
+        metrics: list[str],
+        dataset_names: str | list[str],
+        dataset_splits: str | list[str],
+        n_samples: int | list[int],
+        save_dir: str | None = None,
+        random_states: int | list[int] | None = None,
+        wandb: dict | None = None,
+        bask: dict | None = None,
+        use_bask: bool = False,
+        caches: dict | None = None,
+        slurm_template_path: str | None = None,
+        slurm_template_name: str | None = None,
+        config_gen_dtime: str | None = None,
+    ) -> None:
+        super().__init__(
+            config_type,
+            config_dir,
+            models,
+            dataset_names,
+            random_states,
+            wandb,
+            bask,
+            use_bask,
+            caches,
+            slurm_template_path,
+            slurm_template_name,
+            config_gen_dtime,
+        )
+        self.metrics = metrics
+        self.dataset_splits = dataset_splits
+        self.n_samples = n_samples
+        self.save_dir = save_dir
+        self.save_dir = save_dir
+
+    @classmethod
+    def from_dict(
+        cls, config: dict, config_type: str | None = None
+    ) -> "TopLevelMetricConfig":
+        """Generate a top level metric config object from a dictionary
+
+        Args:
+            config: config dictionary, must contain:
+                    - config_type: label for type of experiment config.
+                    - config_dir: which directory to save the specific configs to.
+                    - models: which model(s) to run the fine tuning on.
+                    - dataset_names: which dataset(s) to run the fine tuning on.
+                    - slurm_template_path: where the slurm_template is
+
+                    Can also contain "random_states", "n_samples", "caches",
+                    "dataset_splits", "config_gen_dtime", "use_wandb", "wandb_args",
+                    "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
+                    set to True if "wandb" is in the config dict.
+            config_type (optional): pass the config type to the class constructor
+                                    explicitly. Defaults to None.
+
+        Returns:
+            TopLevelFineTuningConfig object
+        """
+        if config_type is not None:
+            config_type = config_type
+        else:
+            config_type = config.get("config_type")
+        return cls(
+            config_type=config_type,
+            config_dir=config["config_dir"],
+            models=config["models"],
+            dataset_names=config["dataset_names"],
+            metrics=config["metrics"],
+            save_dir=config.get("save_dir"),
+            dataset_splits=config.get("dataset_split"),
+            n_samples=config.get("n_samples"),
+            random_states=config.get("random_states"),
+            wandb=config.get("wandb"),
+            bask=config.get("bask"),
+            use_bask=config.get("use_bask"),
+            caches=config.get("caches"),
+            slurm_template_path=config.get("slurm_template_path"),
+            slurm_template_name=config.get("slurm_template_name"),
+            config_gen_dtime=config.get("config_gen_dtime"),
+        )
+
+    def parameter_sweep(self) -> list[dict]:
+        """Parameter sweep over entries with multiplicity. Returns config dictionaries
+        with single variable values for these entries.
+
+        Returns:
+            list of config dictionaries for FineTuningConfig objects.
+        """
+        sweep_dict = {}
+
+        if isinstance(self.models, list):
+            sweep_dict["model_name"] = copy(self.models)
+        else:
+            sweep_dict["model_name"] = [copy(self.models)]
+        if isinstance(self.dataset_names, list):
+            sweep_dict["dataset_name"] = copy(self.dataset_names)
+        else:
+            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
+        if isinstance(self.n_samples, list):
+            sweep_dict["n_samples"] = copy(self.n_samples)
+        else:
+            sweep_dict["n_samples"] = [copy(self.n_samples)]
+        if isinstance(self.random_states, list):
+            sweep_dict["random_state"] = copy(self.random_states)
+        else:
+            sweep_dict["random_state"] = [copy(self.random_states)]
+
+        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
+        param_sweep_dicts = [
+            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        ]
+        for pdict in param_sweep_dicts:
+            pdict["save_dir"] = self.save_dir
+            pdict["wandb_args"] = self.wandb
+            pdict["metrics"] = self.metrics
+            pdict["config_gen_dtime"] = self.config_gen_dtime
+            pdict["caches"] = self.caches
+        self.num_configs = len(param_sweep_dicts)
+        if self.num_configs > 1001:
+            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
+        return param_sweep_dicts
+
+    def generate_sub_configs(self) -> list[Config]:
+        """Generate the sub configs based on parameter_sweeps"""
+        self.sub_configs = [
+            MetricConfig.from_dict(config) for config in self.parameter_sweep()
+        ]

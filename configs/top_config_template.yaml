@@ -1,0 +1,92 @@
+# Top Level Config Template for both the training and metric experiments
+
+# Config type, this can either edited or given as an argument in the gen_configs script
+config_type: both
+
+# Where to put the subconfigs
+config_dir: configs
+
+# Where (and if) to save results locally
+save_dir: results_pets
+local_save: False
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+
+# Huggingface model names or paths to local models
+models:
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+
+# HuggingFace Datasets or paths to local datasets
+dataset_names:
+  pcuenq/oxford-pets
+
+# Random seeds to use
+random_states:
+  - 42
+  - 43
+
+# Weights and biases
+wandb:
+  entity: edable-heath
+  project: locomoset_metrics_tests
+  log_model: checkpoint
+
+# Baskerville arguments, with separate arguments available for the different experiment types
+use_bask: True
+bask:
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+  train:
+    job_name: 'locomoset_train_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+
+# Cache locations:
+caches:
+  datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
+  models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+
+# Training specific config -----------------------------------------------------------------
+
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train and evaluate on. If both are the same or val_split is
+  # not specified, the train_split will be randomly split into train and val splits.
+  train_split: train
+  val_split: train
+
+# Arguments for transformers.TrainingArguments
+training_args:
+  output_dir: output
+  overwrite_output_dir: True
+  save_strategy: "no"
+  num_train_epochs: 1
+  use_mps_device: False
+  evaluation_strategy: steps
+  eval_steps: 100
+  logging_strategy: steps
+
+# Metric Experiment specific config ---------------------------------------------------------
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+# Name of dataset split to compute metrics for (Currently must be the same for all datasets)
+dataset_split:
+  "train"
+
+# No. of images to compute the metrics with
+n_samples:
+  50
