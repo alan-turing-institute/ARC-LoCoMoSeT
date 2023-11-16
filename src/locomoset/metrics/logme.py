@@ -48,6 +48,8 @@ class LogMEMetric(TaskSpecificMetric):
             features = np.asarray(features)
         if isinstance(labels[0], str):
             labels = LabelEncoder().fit_transform(labels)
+        if not isinstance(labels, np.ndarray):
+            labels = np.asarray(labels)
         if features.shape[0] <= self.logme_bound:
             warnings.warn("LogME gives innacurate results for smaller sample sizes.")
         metric = LogME()
