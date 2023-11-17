@@ -86,12 +86,23 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     train_split = config.dataset_args["train_split"]
     val_split = config.dataset_args.get("val_split", None)
+    image_field = config.dataset_args.get("image_field", "image")
+    label_field = config.dataset_args.get("label_field", "label")
     if val_split is None or val_split == train_split:
         dataset = load_dataset(
-            config.dataset_name, split=train_split, cache_dir=config.caches["datasets"]
+            config.dataset_name,
+            split=train_split,
+            cache_dir=config.caches["datasets"],
+            image_field=image_field,
+            label_field=label_field,
         )
     else:
-        dataset = load_dataset(config.dataset_name, cache_dir=config.caches["datasets"])
+        dataset = load_dataset(
+            config.dataset_name,
+            cache_dir=config.caches["datasets"],
+            image_field=image_field,
+            label_field=label_field,
+        )
 
     train_dataset, val_dataset = prepare_training_data(
         dataset,

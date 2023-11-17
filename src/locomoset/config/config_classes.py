@@ -35,6 +35,7 @@ class Config(ABC):
         self,
         model_name: str,
         dataset_name: str,
+        dataset_args: dict | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -51,6 +52,11 @@ class Config(ABC):
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
+        self.dataset_args = dataset_args or {"train_split": "train"}
+        if "image_field" not in self.dataset_args:
+            self.dataset_args["image_field"] = "image"
+        if "label_field" not in self.dataset_args:
+            self.dataset_args["label_field"] = "label"
 
     def init_wandb(self) -> None:
         """Initialise a wandb run if the config specifies to use wandb and a run has not
@@ -174,6 +180,7 @@ class TopLevelConfig(ABC):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        dataset_args: dict | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
         bask: dict | None = None,
@@ -190,6 +197,7 @@ class TopLevelConfig(ABC):
         self.config_dir = config_dir
         self.models = models
         self.dataset_names = dataset_names
+        self.dataset_args = dataset_args
         self.random_states = random_states
         self.wandb = wandb
         self.sub_configs = []

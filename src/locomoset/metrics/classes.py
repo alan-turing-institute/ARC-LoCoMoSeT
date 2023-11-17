@@ -140,7 +140,7 @@ class MetricConfig(Config):
         dataset_name: str,
         metrics: list[str],
         save_dir: str | None = None,
-        dataset_split: str | None = None,
+        dataset_args: str | None = None,
         run_name: str | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
@@ -154,6 +154,7 @@ class MetricConfig(Config):
         super().__init__(
             model_name=model_name,
             dataset_name=dataset_name,
+            dataset_args=dataset_args,
             run_name=run_name,
             random_state=random_state,
             use_wandb=use_wandb,
@@ -163,7 +164,6 @@ class MetricConfig(Config):
         )
         self.metrics = metrics
         self.save_dir = save_dir
-        self.dataset_split = dataset_split or "train"
         self.n_samples = n_samples or 50
         self.local_save = local_save
         self.wandb_args["job_type"] = "metrics"
@@ -187,9 +187,9 @@ class MetricConfig(Config):
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
+            dataset_args=config.get("dataset_args"),
             metrics=config["metrics"],
             save_dir=config.get("save_dir"),
-            dataset_split=config.get("dataset_split"),
             n_samples=config.get("n_samples"),
             random_state=config.get("random_state"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
@@ -209,9 +209,9 @@ class MetricConfig(Config):
         return {
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
+            "dataset_args": self.dataset_args,
             "metrics": self.metrics,
             "save_dir": self.save_dir,
-            "dataset_split": self.dataset_split,
             "n_samples": self.n_samples,
             "run_name": self.run_name,
             "random_state": self.random_state,
@@ -273,7 +273,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         models: str | list[str],
         metrics: list[str],
         dataset_names: str | list[str],
-        dataset_splits: str | list[str],
+        dataset_args: str | list[str],
         n_samples: int | list[int],
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
@@ -286,11 +286,17 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_gen_dtime: str | None = None,
         inference_args: dict | None = None,
     ) -> None:
+        if dataset_args is not None and "metrics_split" not in dataset_args:
+            dataset_args["metrics_split"] = dataset_args.get("train_split", "train")
+        if dataset_args is None:
+            dataset_args = {"metrics_split": "train"}
+
         super().__init__(
             config_type,
             config_dir,
             models,
             dataset_names,
+            dataset_args,
             random_states,
             wandb,
             bask,
@@ -301,9 +307,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.metrics = metrics
-        self.dataset_splits = dataset_splits
         self.n_samples = n_samples
-        self.save_dir = save_dir
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
 
@@ -342,9 +346,9 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_dir=config["config_dir"],
             models=config["models"],
             dataset_names=config["dataset_names"],
+            dataset_args=config.get("dataset_args"),
             metrics=config["metrics"],
             save_dir=config.get("save_dir"),
-            dataset_splits=config.get("dataset_splits"),
             n_samples=config.get("n_samples"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
@@ -398,6 +402,8 @@ class TopLevelMetricConfig(TopLevelConfig):
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["device"] = device
+            pdict["dataset_args"] = self.dataset_args
+
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:
             warnings.warn("Slurm array jobs cannot exceed more than 1001!")

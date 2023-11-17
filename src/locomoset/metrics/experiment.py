@@ -75,7 +75,9 @@ class ModelMetricsExperiment:
         self.dataset_name = config["dataset_name"]
         self.dataset = load_dataset(
             self.dataset_name,
-            split=config["dataset_split"],
+            split=config["dataset_args"]["metrics_split"],
+            image_field=config["dataset_args"]["image_field"],
+            label_field=config["dataset_args"]["label_field"],
             cache_dir=self.dataset_cache,
         )
         self.n_samples = config["n_samples"]

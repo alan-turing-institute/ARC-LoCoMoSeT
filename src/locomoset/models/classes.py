@@ -34,18 +34,19 @@ class FineTuningConfig(Config):
         self,
         model_name: str,
         dataset_name: str,
+        dataset_args: dict | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
         wandb_args: dict | None = None,
         use_wandb: bool = False,
         run_name: str | None = None,
-        dataset_args: dict | None = None,
         training_args: dict | None = None,
     ) -> None:
         super().__init__(
             model_name,
             dataset_name,
+            dataset_args,
             random_state,
             config_gen_dtime,
             caches,
@@ -53,7 +54,6 @@ class FineTuningConfig(Config):
             use_wandb,
             run_name,
         )
-        self.dataset_args = dataset_args or {"train_split": "train"}
         self.training_args = training_args or {}
         self.wandb_args["job_type"] = "train"
 
@@ -73,9 +73,9 @@ class FineTuningConfig(Config):
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
+            dataset_args=config.get("dataset_args"),
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
             wandb_args=config.get("wandb_args"),
@@ -110,9 +110,9 @@ class FineTuningConfig(Config):
             "config_gen_dtime": self.config_gen_dtime,
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
+            "dataset_args": self.dataset_args,
             "run_name": self.run_name,
             "random_state": self.random_state,
-            "dataset_args": self.dataset_args,
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
@@ -160,6 +160,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         models: str | list[str],
         dataset_names: str | list[str],
         training_args: dict,
+        dataset_args: dict | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
         bask: dict | None = None,
@@ -168,13 +169,13 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
-        dataset_args: dict | None = None,
     ) -> None:
         super().__init__(
             config_type,
             config_dir,
             models,
             dataset_names,
+            dataset_args,
             random_states,
             wandb,
             bask,
@@ -184,7 +185,6 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             slurm_template_name,
             config_gen_dtime,
         )
-        self.dataset_args = dataset_args
         self.training_args = training_args
 
     @classmethod
@@ -220,13 +220,13 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_dir=config.get("config_dir"),
             models=config.get("models"),
             dataset_names=config.get("dataset_names"),
+            dataset_args=config.get("dataset_args"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),
