@@ -1,12 +1,7 @@
 import argparse
 
-import datasets
-
 from locomoset.models.classes import FineTuningConfig
 from locomoset.models.train import run_config
-
-# TODO - IMPLEMENT THIS PROPERLY
-datasets.disable_caching()
 
 
 def main() -> None:

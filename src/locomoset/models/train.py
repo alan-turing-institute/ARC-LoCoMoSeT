@@ -120,4 +120,8 @@ def run_config(config: FineTuningConfig) -> Trainer:
     if config.use_wandb:
         config.init_wandb()
 
-    return train(model, train_dataset, val_dataset, config.get_training_args())
+    trainer = train(model, train_dataset, val_dataset, config.get_training_args())
+    dataset.cleanup_cache_files()
+    train_dataset.cleanup_cache_files()
+    val_dataset.cleanup_cache_files()
+    return trainer
