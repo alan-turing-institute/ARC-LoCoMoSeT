@@ -40,6 +40,18 @@ models:
 dataset_names:
   aharley/rvl_cdip
 
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train and evaluate on. If both are the same or val_split is
+  # not specified, the train_split will be randomly split into train and val splits.
+  train_split: train
+  val_split: validation
+  # Split to use for calculating metrics
+  metrics_split: train
+  # Which fields in the dataset contain the images and labels
+  image_field: image
+  label_field: label
+
 # Random seeds to use
 random_states:
   - 42
@@ -74,13 +86,6 @@ caches:
 
 # Training specific config -----------------------------------------------------------------
 
-# dataset arguments
-dataset_args:
-  # Name of dataset splits to train and evaluate on. If both are the same or val_split is
-  # not specified, the train_split will be randomly split into train and val splits.
-  train_split: train
-  val_split: validation
-
 # Arguments for transformers.TrainingArguments
 training_args:
   output_dir: output
@@ -99,10 +104,6 @@ metrics:
   - renggli
   - n_pars
   - LogME
-
-# Name of dataset split to compute metrics for (Currently must be the same for all datasets)
-dataset_split:
-  "train"
 
 # No. of images to compute the metrics with
 n_samples:
