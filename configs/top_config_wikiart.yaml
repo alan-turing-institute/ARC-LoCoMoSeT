@@ -44,7 +44,7 @@ dataset_args:
   # Name of dataset splits to train and evaluate on. If both are the same or val_split is
   # not specified, the train_split will be randomly split into train and val splits.
   train_split: train
-  val_split: validation
+  val_split: train
   # Split to use for calculating metrics
   metrics_split: train
   # Which fields in the dataset contain the images and labels

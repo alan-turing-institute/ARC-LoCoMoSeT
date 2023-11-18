@@ -112,6 +112,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
         config.random_state,
         config.dataset_args.get("test_size"),
     )
+    del dataset
 
     model = get_model_with_dataset_labels(
         config.model_name, train_dataset, cache=config.caches["models"]

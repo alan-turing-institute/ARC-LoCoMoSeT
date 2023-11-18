@@ -36,7 +36,9 @@ def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
         ]
         return sample
 
-    processed_dataset = dataset.map(proc_sample, batched=False, remove_columns="image")
+    processed_dataset = dataset.map(
+        proc_sample, batched=False, remove_columns="image", keep_in_memory=True
+    )
     return processed_dataset.with_format("torch")
 
 
