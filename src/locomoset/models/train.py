@@ -82,6 +82,9 @@ def run_config(config: FineTuningConfig) -> Trainer:
     Returns:
         Trainer object.
     """
+    if config.use_wandb:
+        config.init_wandb()
+
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
     train_split = config.dataset_args["train_split"]
@@ -118,9 +121,4 @@ def run_config(config: FineTuningConfig) -> Trainer:
         config.model_name, train_dataset, cache=config.caches["models"]
     )
 
-    if config.use_wandb:
-        config.init_wandb()
-
-    trainer = train(model, train_dataset, val_dataset, config.get_training_args())
-
-    return trainer
+    return train(model, train_dataset, val_dataset, config.get_training_args())
