@@ -3,13 +3,8 @@ Entry point for running experiments per model for each metric stated in config.
 """
 import argparse
 
-import datasets
-
 from locomoset.metrics.classes import MetricConfig
 from locomoset.metrics.experiment import run_config
-
-# TODO - IMPLEMENT THIS PROPERLY
-datasets.disable_caching()
 
 
 def main():
