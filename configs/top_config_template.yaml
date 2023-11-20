@@ -1,8 +1,5 @@
 # Top Level Config Template for both the training and metric experiments
 
-# Config type, this can either edited or given as an argument in the gen_configs script
-config_type: both
-
 # Where to put the subconfigs
 config_dir: configs
 
