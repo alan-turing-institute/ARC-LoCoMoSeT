@@ -61,9 +61,9 @@ Both kinds of config should contain:
 - `random_state`: Seed for random number generation
 - `run_name`: Name for the wandb run
 - `save_dir`: Directory in which to save results
-- `use_wandb`: Set to `True` to log results to wandb
+- `use_wandb`: Set to `true` to log results to wandb
 
-If `use_wandb` is `True`, then under `wandb_args` the following shoud additionally be specified:
+If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
 
 - `entity`: Wandb entity name
 - `project`: Wandb project name
@@ -73,7 +73,7 @@ If `use_wandb` is `True`, then under `wandb_args` the following shoud additional
 Metrics configs should additionally contain:
 
 - `dataset_split`: A single dataset split or list of splits (`train`, `val`, or `test`) over which the metric should be computed.
-- `local_save`: Set to `True` to locally save a copy of the results
+- `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
 - `n_samples`: Number of images from the dataset to compute the metrics with
 
