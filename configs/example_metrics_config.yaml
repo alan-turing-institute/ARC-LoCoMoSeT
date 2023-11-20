@@ -1,0 +1,14 @@
+caches:
+  datasets: null
+  models: null
+dataset_name: pcuenq/oxford-pets
+dataset_split: train
+local_save: True
+metrics:
+- renggli
+- n_pars
+- LogME
+model_name: facebook/deit-tiny-patch16-224
+n_samples: 500
+random_state: 42
+save_dir: results/pets

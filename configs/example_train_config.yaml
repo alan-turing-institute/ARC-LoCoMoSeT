@@ -1,0 +1,21 @@
+caches:
+  datasets: null
+  models: null
+dataset_name: pcuenq/oxford-pets
+dataset_split: train
+local_save: True
+model_name: facebook/deit-tiny-patch16-224
+random_state: 42
+save_dir: results/pets
+dataset_args:
+  train_split: train
+  val_split: train
+training_args:
+  eval_steps: 100
+  evaluation_strategy: steps
+  logging_strategy: steps
+  num_train_epochs: 1
+  output_dir: output
+  overwrite_output_dir: true
+  save_strategy: 'no'
+  use_mps_device: true
