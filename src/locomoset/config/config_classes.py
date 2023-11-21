@@ -77,6 +77,7 @@ class Config(ABC):
         if "wandb" in self.caches:
             # where wandb artifacts will be cached
             os.environ["WANDB_CACHE_DIR"] = self.caches["wandb"]
+            os.environ["WANDB_DATA_DIR"] = self.caches["wandb"]
 
         wandb.login()
         wandb_config = copy(self.wandb_args)
