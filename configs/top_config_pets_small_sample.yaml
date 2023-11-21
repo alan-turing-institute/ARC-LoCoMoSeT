@@ -46,10 +46,10 @@ dataset_args:
   train_split: train
   val_split: train
   # Split to use for calculating metrics
-  metrics_split: train
+  # metrics_split: train
   # Which fields in the dataset contain the images and labels
-  image_field: image
-  label_field: artist
+  # image_field: image
+  # label_field: artist
 
 # Random seeds to use
 random_states:
