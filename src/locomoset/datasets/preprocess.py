@@ -155,3 +155,100 @@ def prepare_training_data(
     train_dataset = preprocess(dataset[train_split], processor)
     val_dataset = preprocess(dataset[val_split], processor)
     return train_dataset, val_dataset
+
+
+def _drop_images(
+    dataset: Dataset,
+    test_size: float,
+    seed: int | None = None,
+) -> Dataset:
+    """Randomly drops images from the dataset
+
+    Args:
+        dataset: HuggingFace Dataset to drop images from
+        test_size: Size of test set (fraction of features and labels to exclude from
+            training for evaluation).
+        seed: Seed for dropping images
+
+    Returns:
+        Original Dataset with images dropped
+    """
+    return dataset.train_test_split(
+        test_size=test_size,
+        seed=seed,
+    )["train"]
+
+
+def _drop_labels(
+    dataset: Dataset,
+    labels_to_keep: list[str],
+) -> Dataset:
+    """Drops all images with labels different to those supplied
+
+    Args:
+        dataset: HuggingFace Dataset to drop labels from
+        labels_to_keep: List of labels to keep in the Dataset or DatasetDict
+
+    Returns:
+        Original Dataset retaining all images with matching labels
+    """
+    return dataset.filter(lambda sample: sample["label"] in labels_to_keep)
+
+
+def _mutate_dataset(
+    dataset: Dataset | DatasetDict,
+    fn: callable,
+    **kwargs,
+) -> Dataset | DatasetDict:
+    """Applies a function to a HuggingFace Dataset or Datasets within a DatasetDict
+
+    Args:
+        dataset: HuggingFace Dataset or DatasetDict to apply function to
+        fn: Function to apply to Dataset or Datasets within DatasetDict
+        **kwargs: Arguments passed to fn
+
+    Returns:
+        Dataset or DatasetDict with fn applied
+    """
+    if isinstance(dataset, DatasetDict):
+        return DatasetDict({key: fn(dataset[key], **kwargs) for key in dataset})
+
+    if isinstance(dataset, Dataset):
+        return fn(dataset, **kwargs)
+
+    raise ValueError(f"dataset must be Dataset or DatasetDict, is {type(dataset)}")
+
+
+def drop_images(
+    dataset: Dataset | DatasetDict,
+    test_size: float | int,
+    seed: int | None = None,
+) -> Dataset | DatasetDict:
+    """Randomly drops images
+
+    Args:
+        dataset: HuggingFace Dataset or DatasetDict to drop images from
+        test_size: Size of test set (fraction of features and labels to exclude from
+            training for evaluation).
+        seed: Seed for dropping images
+
+    Returns:
+        Original Dataset or DatasetDict with images dropped
+    """
+    return _mutate_dataset(dataset, _drop_images, test_size, seed)
+
+
+def drop_labels(
+    dataset: Dataset | DatasetDict,
+    labels_to_keep: list[str],
+) -> Dataset | DatasetDict:
+    """Drops all images with labels different to those supplied
+
+    Args:
+        dataset: HuggingFace Dataset or DatasetDict to drop labels from
+        labels_to_keep: List of labels to keep in the Dataset or DatasetDict
+
+    Returns:
+        Original Dataset or DatasetDict retaining all images with matching labels
+    """
+    return _mutate_dataset(dataset, _drop_labels, labels_to_keep)
