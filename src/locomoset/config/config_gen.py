@@ -5,6 +5,8 @@
 import argparse
 import shutil
 
+import yaml
+
 from locomoset.config.config_classes import TopLevelConfig
 from locomoset.metrics.classes import TopLevelMetricConfig
 from locomoset.models.classes import TopLevelFineTuningConfig
@@ -39,24 +41,30 @@ def main():
         description="Compute metrics scans with various parameter values"
     )
     parser.add_argument("configfile", help="Path to config file")
-    parser.add_argument(
-        "-t",
-        "--type",
-        help="Which type of config to generate, metric or train, leave blank for both",
-    )
     args = parser.parse_args()
 
+    # Read in config from yaml, initialise alt config
+    with open(args.configfile, "r") as f:
+        config_dict = yaml.safe_load(f)
     alt_config = None
-    if args.type == "metrics":
-        config = TopLevelMetricConfig.read_yaml(args.configfile, config_type="metrics")
-    elif args.type == "train":
-        config = TopLevelFineTuningConfig.read_yaml(
-            args.configfile, config_type="train"
-        )
+
+    # Set argument type
+    if "metrics" in config_dict.keys() and "training_args" not in config_dict.keys():
+        args_type = "metrics"
+    elif "metrics" not in config_dict.keys() and "training_args" in config_dict.keys():
+        args_type = "train"
     else:
-        config = TopLevelMetricConfig.read_yaml(args.configfile, config_type="metrics")
-        alt_config = TopLevelFineTuningConfig.read_yaml(
-            args.configfile, config_type="train"
+        args_type = None
+
+    # Generate top level configs conditional on argument type
+    if args_type == "metrics":
+        config = TopLevelMetricConfig.from_dict(config_dict, config_type="metrics")
+    elif args_type == "train":
+        config = TopLevelFineTuningConfig.from_dict(config_dict, config_type="train")
+    else:
+        config = TopLevelMetricConfig.from_dict(config_dict, config_type="metrics")
+        alt_config = TopLevelFineTuningConfig.from_dict(
+            config_dict, config_type="train"
         )
 
     gen_configs(args.configfile, config, alt_config)

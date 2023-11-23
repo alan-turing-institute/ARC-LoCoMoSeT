@@ -35,14 +35,93 @@ This project is a work in progress under active development. The work packages a
 
 ### Download ImageNet
 
-ImageNet-1k is gated so you need to login with a HuggingFace token to download it (they're under <https://huggingface.co/settings/tokens> in your account settings). Once you have a token:
+ImageNet-1k is gated so you need to login with a HuggingFace token to download it (they're under <https://huggingface.co/settings/tokens> in your account settings). Log in to the HuggingFace CLI:
 
 ```bash
 huggingface-cli login
+```
+
+Once you've done this, head on over to <https://huggingface.co/datasets/imagenet-1k>, read the terms and conditions and if happy to proceed agree to them. Then run:
+
+```bash
 python -c "import datasets; datasets.load_dataset('imagenet-1k')"
 ```
 
 But note this will take a long time (hours).
+
+### Config Files
+
+To run either metrics or training in LoCoMoSeT (see below), metrics and/or training config files are required. Examples are given in [example_metrics_config.yaml](/configs/example_metrics_config.yaml) and [example_train_config.yaml](/configs/example_train_config.yaml) for metrics and training configs respectively.
+
+Both kinds of config should contain:
+
+- `caches`: Contains two entries (`models` and `datasets`) showing where to cache HuggingFace models and datasets respectively
+- `dataset_name`: Name of the dataset on HuggingFace
+- `model_name`: Name of the model to be used on HuggingFace
+- `random_state`: Seed for random number generation
+- `run_name`: Name for the wandb run
+- `save_dir`: Directory in which to save results
+- `use_wandb`: Set to `true` to log results to wandb
+
+If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
+
+- `entity`: Wandb entity name
+- `project`: Wandb project name
+- `job_type`: Job type to group wandb runs with. Should be `metrics` or `train`
+- `log_model`: How to handle model logging in wandb
+
+Metrics configs should additionally contain:
+
+- `dataset_split`: A single dataset split or list of splits (`train`, `val`, or `test`) over which the metric should be computed.
+- `local_save`: Set to `true` to locally save a copy of the results
+- `metrics`: A list of metrics implemented in src/locomost/metrics to be used
+- `n_samples`: Number of images from the dataset to compute the metrics with
+
+Train configs should additionally contain the following nested under `dataset_args`:
+
+- `train_split`: Name of the data split to train on
+- `val_split`: Name of the data split to evaluate on. If the same as `train_split`, the `train_split` will itself be randomly split for training and evaluation
+
+Along with several further arguments nested under `training_args`:
+
+- `eval_steps`: Steps between each evaluation
+- `evaluation_strategy`: HuggingFace evaluation strategy
+- `logging_strategy`: HuggingFace logging strategy
+- `num_train_epochs`: Number of epochs to train model for
+- `output_dir`: Directory to store outputs in
+- `overwrite_output_dir`: Whether to overwrite the output directory
+- `save_strategy`: HuggingFace saving strategy
+- `use_mps_device`: Whether to use MPS
+
+Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes.
+
+The additional arguments are:
+
+- `config_dir`: Location to store subconfigs
+- `slurm_template_name`: Name of the slurm template to be used. If set to `null`, it will be picked from [src/locomoset/config](/src/locomoset/config)
+- `use_bask`: Set to `True` if you wish to run the jobs on baskerville (HPC used in our research - for uses outside the Turing, this means a slurm script will be generated alongside the configs)
+
+If `use_bask` is `True`, then you should include the following additional arguments nested under `bask`. They should be further nested under `train` and/or `metrics` as required:
+
+- `job_name`: Baskerville job name
+- `walltime`: Maximum runtime for the Baskerville job. Format is dd-hh:mm:ss
+- `node_number`: Number of nodes to use
+- `gpu_number`: Number of GPUs to use
+- `cpu_per_gpu`: Number of CPUs per GPU
+
+The changes are:
+
+- `models`: Replaces `model`, contains a list of HuggingFace model names
+- `dataset_names`: Replaces `dataset_name`, contains a list of HuggingFace dataset
+- `random_states`: Replaces `random_state`, contains a list of seeds to generate scripts over.
+
+To generate configs from the top level config, run
+
+```bash
+locomoset_gen_configs <top_level_config_file_path>
+```
+
+This will generate training and/or metrics configs across all combinations of model, dataset, and random state. `locomoset_gen_configs` will automatically detect whether your top-level config contains training and/or metrics-related arguments and will generate both kinds of config accordingly.
 
 ### Run a metric scan
 
@@ -54,7 +133,17 @@ locomoset_run_metrics <config_file_path>
 
 For an example config file see [configs/config_wp1.yaml](configs/config_example.yaml).
 
-This script will compute metrics scores for all permutations of the model names, no. images, random seeds, and metric names specified. Results will be saved to the directory specified in the config file.
+This script will compute metrics scores for a given model, dataset, and random state.
+
+### Train a model
+
+With the environment activated (`poetry shell`):
+
+```bash
+locomoset_run_train <config_file_path>
+```
+
+This script will train a model for a given model name, dataset, and random state.
 
 ### Save plots
 
@@ -100,7 +189,13 @@ You can also run `locomoset_plot_vs_actual --help` to see the arguments.
    poetry install
    ```
 
-2. Install pre-commit hooks:
+2. If using LogME, NCE or LEEP clone the following repository <https://github.com/thuml/LogME> into `src`:
+
+   ```bash
+   git clone https://github.com/thuml/LogME.git src/locomoset/LogME
+   ```
+
+3. Install pre-commit hooks:
 
    ```bash
    poetry run pre-commit install --install-hooks

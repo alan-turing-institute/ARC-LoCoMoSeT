@@ -159,6 +159,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        training_args: dict,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
         bask: dict | None = None,
@@ -168,7 +169,6 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
         dataset_args: dict | None = None,
-        training_args: dict | None = None,
     ) -> None:
         super().__init__(
             config_type,
