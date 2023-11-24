@@ -11,6 +11,7 @@ from datetime import datetime
 from time import time
 from typing import Tuple
 
+import datasets
 import torch
 import wandb
 from numpy.typing import ArrayLike
@@ -35,7 +36,8 @@ class ModelMetricsExperiment:
             config: Dictionary containing the following:
                 - model_name: name of model to be computed (str)
                 - dataset_name: name of dataset to be scored by (str)
-                - dataset_split: dataset split (str)
+                - dataset_args: Dataset selection/filtering parameters, see the
+                    docstring of the base Config class.
                 - n_samples: number of samples for a metric experiment (int)
                 - random_state: random seed for variation of experiments (int)
                 - metrics: list of metrics to score (list(str))
@@ -231,6 +233,9 @@ def run_config(config: MetricConfig):
 
     if config.use_wandb:
         config.init_wandb()
+
+    if config.caches.get("preprocess_cache") == "tmp":
+        datasets.disable_caching()
 
     model_experiment = ModelMetricsExperiment(config.to_dict())
     model_experiment.run_experiment()

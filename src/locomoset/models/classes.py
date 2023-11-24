@@ -21,8 +21,8 @@ class FineTuningConfig(Config):
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
         random_state: Random state to use for train/test split and training.
-        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
-            to {"train_split": "train"}.
+        dataset_args: Dict defining dataset splits and columns, see the docstring of the
+            base Config class.
         training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
@@ -132,25 +132,22 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
-                                    for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
-                                           configs for
-        - random_states (int | list[int]): (list of) random state(s) to generate
-                                           experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models and datasets
-        - slurm_template_path (str | None): path for setting jinja environment to look
-                                            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-                                                    keeping track of generated configs
-        - dataset_args (dict | None) (optional): dataset arguments for training purposes
-        - training_args (dict | None) (optional): arguments for training
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - models: (list of) model(s) to generate experiment configs for
+        - dataset_names: (list of) dataset(s) to generate experiment configs for
+        - random_states: (list of) random state(s) to generate experiment configs for
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models and datasets
+        - slurm_template_path: path for setting jinja environment to look
+            for jobscript template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
+        - dataset_args: dataset arguments for training purposes
+        - training_args: arguments for training
     """
 
     def __init__(

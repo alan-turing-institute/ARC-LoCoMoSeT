@@ -17,7 +17,7 @@ dataset_args:
   val_split: train
 
 # Weights and Biases
-wandb:
+wandb_args:
   entity: turing-arc
   project: locomoset
   log_model: end

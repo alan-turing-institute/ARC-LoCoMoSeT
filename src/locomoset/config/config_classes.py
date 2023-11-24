@@ -23,12 +23,17 @@ class Config(ABC):
         dataset_name: Name of the HuggingFace dataset to use for fine-tuning.
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
+        dataset_args: Dict defining the splits and columns of the dataset to use,
+            optionally including the keys "train_split" (default: "train"),
+            "val_split" (default: None, in which case the validation set will be created
+            from the training split), "metrics_split" (default: value of train_split),
+            "image_field" (default: "image"), and "label_field" (default: "label").
         random_state: Random state to use for train/test split and training.
-        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
-            to {"train_split": "train"}.
         training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
-        wandb_args: Arguments to pass to wandb.init.
+        wandb_args: Arguments passed to wandb.init, as well as optionally a "log_model"
+            value which will be used to set the WANDB_LOG_MODEL environment variable
+            which controls the model artifact saving behaviour.
     """
 
     def __init__(
@@ -153,26 +158,27 @@ class TopLevelConfig(ABC):
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - models: (list of) model(s) to generate experiment configs
             for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+        - dataset_names: (list of) dataset(s) to generate experiment
             configs for
 
         Can also contain:
-        - random_states (int | list[int]): (list of) random state(s) to generate
+        - dataset_args: Dict defining the splits and columns of the dataset to use, see
+            the docstring of the Config class for details.
+        - random_states: (list of) random state(s) to generate
             experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models, datasets,
-            and wandb
-        - slurm_template_path (str | None): path for setting jinja environment to look
-            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-            keeping track of generated configs
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models, datasets, and wandb
+        - slurm_template_path: path for setting jinja environment to look for jobscript
+            template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
     """
 
     def __init__(

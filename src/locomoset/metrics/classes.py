@@ -121,14 +121,16 @@ class MetricConfig(Config):
         model_name: Name of the HuggingFace model to perform metric experiment on.
         dataset_name: Name of the HuggingFace dataset to use for metric experiment.
         metrics: Which metrics to perform the experiments on.
+        save_dir: Where to save a local copy of the results.
+        dataset_args: Dict defining the splits and columns of the dataset to use, see
+            the docstring of the base Config class for details.
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
+        n_samples: How many samples to use in the metric experiments.
         random_state: Random state to use for train/test split.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
-        n_samples: How many samples to use in the metric experiments.
         local_save: Whether to save a local copy of the results or not.
-        save_dir: Where to save a local copy of the results.
         config_gen_dtime: When the config object was generated.
         caches: Where to cache the huggingface models and datasets.
         device: Which device to run inference on
@@ -176,7 +178,7 @@ class MetricConfig(Config):
         Args:
             config: Dict that must contain "model_name" and "dataset_name" keys. Can
                 also contain "run_name", "random_state", "metrics",
-                "save_dir", "dataset_split", "n_samples", "local_save",
+                "save_dir", "dataset_args", "n_samples", "local_save",
                 "config_gen_dtime", "caches", "use_wandb" and "wandb_args" keys. If
                 "use_wandb" is not specified, it is set to True if "wandb" is in the
                 config dict.
@@ -238,32 +240,32 @@ class TopLevelMetricConfig(TopLevelConfig):
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - metrics (str | list[str]): (list of) metric(s) to run metric experiment on
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - metrics: (list of) metric(s) to run metric experiment on
+        - models: (list of) model(s) to generate experiment configs
                                     for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+        - dataset_names: (list of) dataset(s) to generate experiment
                                            configs for
-        - dataset_splits (str | list[str]): (list of) dataset split(s) to run metric
-                                            experiments on
-        - n_samples (int | list[int]): (list of) sample number(s) to generate experiment
-                                       configs for
+        - dataset_args: Optionally containing 'metrics_split', the
+            dataset split to run metrics experiments on. See the base Config class for
+            more details.
+        - n_samples: (list of) sample number(s) to generate experiment
+            configs for
 
         Can also contain:
-        - random_states (int | list[int]): (list of) random state(s) to generate
-                                           experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models and datasets
-        - slurm_template_path (str | None): path for setting jinja environment to look
-                                            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-                                                    keeping track of generated configs
-        - inference_args (dict | None) (optional): arguments required for inference in
-                                                   the metric experiments.
+        - random_states: (list of) random state(s) to generate
+            experiment configs for
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models and datasets
+        - slurm_template_path: path for setting jinja environment to look for jobscript
+            template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
+        - inference_args: arguments required for inference in the metric experiments.
     """
 
     def __init__(
@@ -326,7 +328,7 @@ class TopLevelMetricConfig(TopLevelConfig):
                     - slurm_template_path: where the slurm_template is
 
                     Can also contain "random_states", "n_samples", "caches",
-                    "dataset_splits", "config_gen_dtime", "use_wandb", "wandb_args",
+                    "dataset_args", "config_gen_dtime", "use_wandb", "wandb_args",
                     "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
                     set to True if "wandb" is in the config dict.
             config_type (optional): pass the config type to the class constructor

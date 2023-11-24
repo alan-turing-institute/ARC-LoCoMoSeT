@@ -83,6 +83,12 @@ caches:
   datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
   models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
   wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
+  # preprocess_cache: Where to cache preprocessed data (relevant for training only). Options
+  # are:
+  #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
+  #   - 'ram' - cache preprocessed data in memory
+  #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
+  preprocess_cache: ram
 
 # Training specific config -----------------------------------------------------------------
 

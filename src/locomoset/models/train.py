@@ -3,7 +3,7 @@ from typing import Callable
 import evaluate
 import numpy as np
 import wandb
-from datasets import Dataset
+from datasets import Dataset, disable_caching
 from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArguments
 
 from locomoset.datasets.load import load_dataset
@@ -85,17 +85,22 @@ def run_config(config: FineTuningConfig) -> Trainer:
     if config.use_wandb:
         config.init_wandb()
 
+    if config.caches.get("preprocess_cache") == "tmp":
+        disable_caching()
+
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
     train_split = config.dataset_args["train_split"]
     val_split = config.dataset_args.get("val_split", None)
     image_field = config.dataset_args.get("image_field", "image")
     label_field = config.dataset_args.get("label_field", "label")
+    keep_in_memory = config.caches.get("preprocess_cache") == "ram"
     if val_split is None or val_split == train_split:
         dataset = load_dataset(
             config.dataset_name,
             split=train_split,
             cache_dir=config.caches["datasets"],
+            keep_in_memory=keep_in_memory,
             image_field=image_field,
             label_field=label_field,
         )
@@ -103,6 +108,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
         dataset = load_dataset(
             config.dataset_name,
             cache_dir=config.caches["datasets"],
+            keep_in_memory=keep_in_memory,
             image_field=image_field,
             label_field=label_field,
         )
