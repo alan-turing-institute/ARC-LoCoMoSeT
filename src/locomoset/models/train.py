@@ -8,7 +8,7 @@ from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArgum
 
 from locomoset.datasets.preprocess import (
     drop_images,
-    drop_labels,
+    drop_images_by_labels,
     prepare_training_data,
 )
 from locomoset.models.classes import FineTuningConfig
@@ -101,7 +101,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
         dataset = drop_images(dataset, config["drop_obs"], config["random_state"])
 
     if config["label_set"] is not None:
-        dataset = drop_labels(dataset, config["label_set"])
+        dataset = drop_images_by_labels(dataset, config["label_set"])
 
     train_dataset, val_dataset = prepare_training_data(
         dataset,

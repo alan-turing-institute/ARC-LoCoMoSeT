@@ -179,7 +179,7 @@ def _drop_images(
     )["train"]
 
 
-def _drop_labels(
+def _drop_images_by_labels(
     dataset: Dataset,
     labels_to_keep: list[str],
 ) -> Dataset:
@@ -238,7 +238,7 @@ def drop_images(
     return _mutate_dataset(dataset, _drop_images, test_size, seed)
 
 
-def drop_labels(
+def drop_images_by_labels(
     dataset: Dataset | DatasetDict,
     labels_to_keep: list[str],
 ) -> Dataset | DatasetDict:
@@ -251,4 +251,4 @@ def drop_labels(
     Returns:
         Original Dataset or DatasetDict retaining all images with matching labels
     """
-    return _mutate_dataset(dataset, _drop_labels, labels_to_keep)
+    return _mutate_dataset(dataset, _drop_images_by_labels, labels_to_keep)
