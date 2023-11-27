@@ -17,6 +17,7 @@ from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+from locomoset.datasets.preprocess import drop_images, drop_images_by_labels
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -78,6 +79,12 @@ class ModelMetricsExperiment:
             split=config["dataset_split"],
             cache_dir=self.dataset_cache,
         )
+        if config["drop_obs"] is not None:
+            self.dataset = drop_images(
+                self.dataset, config["drop_obs"], config["random_state"]
+            )
+        if config["label_set"] is not None:
+            self.dataset = drop_images_by_labels(self.dataset, config["label_set"])
         self.n_samples = config["n_samples"]
         if self.n_samples < self.dataset.num_rows:
             self.dataset = self.dataset.train_test_split(
