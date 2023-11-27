@@ -6,7 +6,11 @@ import wandb
 from datasets import Dataset, load_dataset
 from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArguments
 
-from locomoset.datasets.preprocess import prepare_training_data
+from locomoset.datasets.preprocess import (
+    drop_images,
+    drop_labels,
+    prepare_training_data,
+)
 from locomoset.models.classes import FineTuningConfig
 from locomoset.models.load import get_model_with_dataset_labels, get_processor
 
@@ -91,6 +95,13 @@ def run_config(config: FineTuningConfig) -> Trainer:
         )
     else:
         dataset = load_dataset(config.dataset_name, cache_dir=config.caches["datasets"])
+
+    #
+    if config["drop_obs"] is not None:
+        dataset = drop_images(dataset, config["drop_obs"], config["random_state"])
+
+    if config["label_set"] is not None:
+        dataset = drop_labels(dataset, config["label_set"])
 
     train_dataset, val_dataset = prepare_training_data(
         dataset,
