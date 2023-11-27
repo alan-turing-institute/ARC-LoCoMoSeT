@@ -21,8 +21,8 @@ class FineTuningConfig(Config):
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
         random_state: Random state to use for train/test split and training.
-        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
-            to {"train_split": "train"}.
+        dataset_args: Dict defining dataset splits and columns, see the docstring of the
+            base Config class.
         training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
@@ -34,18 +34,19 @@ class FineTuningConfig(Config):
         self,
         model_name: str,
         dataset_name: str,
+        dataset_args: dict | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
         wandb_args: dict | None = None,
         use_wandb: bool = False,
         run_name: str | None = None,
-        dataset_args: dict | None = None,
         training_args: dict | None = None,
     ) -> None:
         super().__init__(
             model_name,
             dataset_name,
+            dataset_args,
             random_state,
             config_gen_dtime,
             caches,
@@ -53,7 +54,6 @@ class FineTuningConfig(Config):
             use_wandb,
             run_name,
         )
-        self.dataset_args = dataset_args or {"train_split": "train"}
         self.training_args = training_args or {}
         self.wandb_args["job_type"] = "train"
 
@@ -73,9 +73,9 @@ class FineTuningConfig(Config):
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
+            dataset_args=config.get("dataset_args"),
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
             wandb_args=config.get("wandb_args"),
@@ -110,9 +110,9 @@ class FineTuningConfig(Config):
             "config_gen_dtime": self.config_gen_dtime,
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
+            "dataset_args": self.dataset_args,
             "run_name": self.run_name,
             "random_state": self.random_state,
-            "dataset_args": self.dataset_args,
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
@@ -132,25 +132,22 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
-                                    for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
-                                           configs for
-        - random_states (int | list[int]): (list of) random state(s) to generate
-                                           experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models and datasets
-        - slurm_template_path (str | None): path for setting jinja environment to look
-                                            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-                                                    keeping track of generated configs
-        - dataset_args (dict | None) (optional): dataset arguments for training purposes
-        - training_args (dict | None) (optional): arguments for training
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - models: (list of) model(s) to generate experiment configs for
+        - dataset_names: (list of) dataset(s) to generate experiment configs for
+        - random_states: (list of) random state(s) to generate experiment configs for
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models and datasets
+        - slurm_template_path: path for setting jinja environment to look
+            for jobscript template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
+        - dataset_args: dataset arguments for training purposes
+        - training_args: arguments for training
     """
 
     def __init__(
@@ -160,6 +157,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         models: str | list[str],
         dataset_names: str | list[str],
         training_args: dict,
+        dataset_args: dict | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
         bask: dict | None = None,
@@ -168,13 +166,13 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
-        dataset_args: dict | None = None,
     ) -> None:
         super().__init__(
             config_type,
             config_dir,
             models,
             dataset_names,
+            dataset_args,
             random_states,
             wandb,
             bask,
@@ -184,7 +182,6 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             slurm_template_name,
             config_gen_dtime,
         )
-        self.dataset_args = dataset_args
         self.training_args = training_args
 
     @classmethod
@@ -220,13 +217,13 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_dir=config.get("config_dir"),
             models=config.get("models"),
             dataset_names=config.get("dataset_names"),
+            dataset_args=config.get("dataset_args"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),

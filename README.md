@@ -55,8 +55,12 @@ To run either metrics or training in LoCoMoSeT (see below), metrics and/or train
 
 Both kinds of config should contain:
 
-- `caches`: Contains two entries (`models` and `datasets`) showing where to cache HuggingFace models and datasets respectively
+- `caches`: Contains `models`, `datasets`, `wandb`, which show where to cache HuggingFace models & datasets and wandb runs & artifacts respectively. Also contains `preprocess_cache`, which can be set to `disk`, `ram`, or `tmp` to cache preprocessed data to disk (default), memory, or a temporary directory.
 - `dataset_name`: Name of the dataset on HuggingFace
+- `dataset_args`: Contains dataset split/column selection parameters:
+  - `train_split`, `val_split`: Training and validation split to use for fine-tuning
+  - `metrics_split`: Dataset split to use for computing metrics (usually should be the same as `train_split`)
+  - `image_field`, `label_field`: Dataset column containing the image and class label
 - `model_name`: Name of the model to be used on HuggingFace
 - `random_state`: Seed for random number generation
 - `run_name`: Name for the wandb run
@@ -72,7 +76,6 @@ If `use_wandb` is `true`, then under `wandb_args` the following shoud additional
 
 Metrics configs should additionally contain:
 
-- `dataset_split`: A single dataset split or list of splits (`train`, `val`, or `test`) over which the metric should be computed.
 - `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
 - `n_samples`: Number of images from the dataset to compute the metrics with

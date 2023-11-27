@@ -6,7 +6,9 @@ from transformers.image_processing_utils import BaseImageProcessor
 from transformers.image_utils import load_image
 
 
-def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
+def preprocess(
+    dataset: Dataset, processor: BaseImageProcessor, keep_in_memory: str | None = None
+) -> Dataset:
     """Convert an image dataset to RGB and run it through a pre-processor for
     compatibility with a model.
 
@@ -16,6 +18,8 @@ def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
             to RGB format and run through the processor. The processed result is saved
             under the key "pixel_values" and the "image" key is removed.
         processor: HuggingFace trained pre-processor to use.
+        keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
+            disk if True.
 
     Returns:
         Processed dataset with feature 'pixel_values' instead of 'image'.
@@ -36,7 +40,12 @@ def preprocess(dataset: Dataset, processor: BaseImageProcessor) -> Dataset:
         ]
         return sample
 
-    processed_dataset = dataset.map(proc_sample, batched=False, remove_columns="image")
+    processed_dataset = dataset.map(
+        proc_sample,
+        batched=False,
+        remove_columns="image",
+        keep_in_memory=keep_in_memory,
+    )
     return processed_dataset.with_format("torch")
 
 
@@ -121,6 +130,7 @@ def prepare_training_data(
     val_split: str = "validation",
     random_state: int | None = None,
     test_size: float | int | None = None,
+    keep_in_memory: bool | None = None,
 ) -> (Dataset, Dataset):
     """Preprocesses a dataset and splits it into train and validation sets.
 
@@ -136,6 +146,8 @@ def prepare_training_data(
             input is a single Dataset/single-entry DatasetDict.
         test_size: Size of test set (fraction of features and labels to exclude from
             training for evaluation).
+        keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
+            disk if True.
 
     Returns:
         Tuple of preprocessed train and validation datasets.
@@ -152,8 +164,12 @@ def prepare_training_data(
         train_split = "train"
         val_split = "test"
 
-    train_dataset = preprocess(dataset[train_split], processor)
-    val_dataset = preprocess(dataset[val_split], processor)
+    train_dataset = preprocess(
+        dataset[train_split], processor, keep_in_memory=keep_in_memory
+    )
+    val_dataset = preprocess(
+        dataset[val_split], processor, keep_in_memory=keep_in_memory
+    )
     return train_dataset, val_dataset
 
 
