@@ -229,6 +229,8 @@ def plot_results(
     other_label: str,
     title: str,
     save_path: str,
+    log_scale: bool = False,
+    # show_legend: bool = False,
     **scatter_args,
 ) -> Axes:
     """Make a plot of metric scores vs. another quantity.
@@ -259,13 +261,19 @@ def plot_results(
         else:
             raise ValueError(f"{metric_axis} must be 'x' or 'y'.")
 
-    ax.legend()
+    # if show_legend:
+    #     ax.legend()
+
     if metric_axis == "x":
         ax.set_xlabel(metric_label)
         ax.set_ylabel(other_label)
+        if log_scale:
+            ax.set_yscale("log")
     else:
         ax.set_xlabel(other_label)
         ax.set_ylabel(metric_label)
+        if log_scale:
+            ax.set_xscale("log")
     ax.set_title(title)
 
     fig.tight_layout()

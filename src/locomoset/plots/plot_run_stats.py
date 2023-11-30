@@ -6,6 +6,7 @@ import argparse
 import os
 
 import numpy as np
+from scipy.stats import spearmanr as spr
 
 from locomoset.plots import utils
 
@@ -13,7 +14,7 @@ from locomoset.plots import utils
 
 
 def plot_scores_vs_val(
-    metric_scores: dict, val_acc: dict, metric_name: str, title: str
+    metric_scores: dict, val_acc: dict, metric_name: str, title: str, save_path: str
 ) -> None:
     """Plot metric scores vs. validation accuracy with and without outliers
 
@@ -22,6 +23,7 @@ def plot_scores_vs_val(
         val_acc: validation accuracy dictionary
         metric_name: metric name
         title: plot title
+        save_path: path to directory for saving graphs
     """
     utils.plot_results(
         metric_scores=metric_scores,
@@ -30,6 +32,7 @@ def plot_scores_vs_val(
         metric_label=f"{metric_name} score",
         other_label="validation accuracy",
         title=title,
+        save_path=save_path + f"/{title}.png",
     )
 
     # remove outliers
@@ -46,11 +49,12 @@ def plot_scores_vs_val(
         metric_label=f"{metric_name} score",
         other_label="validation accuracy",
         title=title_without_outliers,
+        save_path=save_path + f"/{title_without_outliers}.png",
     )
 
 
 def plot_scores_vs_val_ranked(
-    metric_scores: dict, val_acc: dict, metric_name: str, title: str
+    metric_scores: dict, val_acc: dict, metric_name: str, title: str, save_path: str
 ) -> None:
     """Plot ranked metric scores vs ranked validation accuracy with and without outliers
 
@@ -59,6 +63,7 @@ def plot_scores_vs_val_ranked(
         val_acc: validation accuracy dictionary
         metric_name: metric name
         title: plot title
+        save_path: path for saving the plots
     """
     sorted_val_acc = {
         k: v for k, v in sorted(val_acc.items(), key=lambda item: item[1], reverse=True)
@@ -79,6 +84,7 @@ def plot_scores_vs_val_ranked(
         metric_label=f"ranked {metric_name} score",
         other_label="ranked validation accuracy",
         title=ranked_title,
+        save_path=save_path + f"/{ranked_title}.png",
     )
     val_acc_no_outliers = {
         k: v
@@ -116,6 +122,174 @@ def plot_scores_vs_val_ranked(
         metric_label=f"ranked {metric_name} score",
         other_label="ranked validation accuracy",
         title=ranked_no_outliers_title,
+        save_path=save_path + f"/{ranked_no_outliers_title}.png",
+    )
+
+
+def plot_score_vs_samples(
+    metric_scores: dict, val_acc: dict, metric_name: str, title: str, save_path: str
+) -> None:
+    """Plot metric score vs number of samples, for both raw scores for each metric and
+    for correlation with the validation accuracy.
+
+    Args:
+        metric_scores: metric scores dictionary with different sample number results
+        val_acc: validation accuracy
+        metric_name: which metric is being used
+        title: base title for the plot
+        save_path: path to directory for saving the plots
+    """
+    n_samps = {}
+    met_scores = {}
+    for n_samp in metric_scores.keys():
+        for model in metric_scores[n_samp]:
+            if model not in met_scores.keys():
+                met_scores[model] = []
+                n_samps[model] = []
+            met_scores[model].append(metric_scores[n_samp][model])
+            n_samps[model].append(n_samp)
+
+    utils.plot_results(
+        metric_scores=met_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"{metric_name} score",
+        other_labels="number of samples",
+        title=title,
+        save_path=save_path + f"/{title}.png",
+    )
+    log_title = title + ", logged sample number"
+    utils.plot_results(
+        metric_scores=met_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"{metric_name} score",
+        other_labels="number of samples",
+        title=log_title,
+        save_path=save_path + f"/{log_title}.png",
+        log_scale=True,
+    )
+
+    # Plot without outliers
+    val_acc_no_outliers = {
+        k: v
+        for k, v in val_acc.items()
+        if v > np.mean(list(val_acc.values())) - 3 * np.var(list(val_acc.values()))
+    }
+    n_samps = {}
+    met_scores = {}
+    for n_samp in val_acc_no_outliers.keys():
+        for model in metric_scores[n_samp]:
+            if model not in met_scores.keys():
+                met_scores[model] = []
+                n_samps[model] = []
+            met_scores[model].append(metric_scores[n_samp][model])
+            n_samps[model].append(n_samp)
+
+    title += ", no outliers"
+    utils.plot_results(
+        metric_scores=met_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"{metric_name} score",
+        other_labels="number of samples",
+        title=title + ", no outliers",
+        save_path=save_path + f"/{title}.png",
+    )
+    log_title = title + ", logged sample number"
+    utils.plot_results(
+        metric_scores=met_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"{metric_name} score",
+        other_labels="number of samples",
+        title=log_title + ", no outliers",
+        save_path=save_path + f"/{log_title}.png",
+        log_scale=True,
+    )
+
+
+def plot_correlation_vs_samples(
+    metric_scores: dict, val_acc: dict, metric_name: str, title: str, save_path: str
+) -> None:
+    """Plot the (spearmans rank) correlation between the validation accuracy and the
+
+    Args:
+        metric_scores: _description_
+        val_acc: _description_
+        metric_name: _description_
+        title: _description_
+        save_path: _description_
+    """
+    correlation_scores = {}
+    n_samps = {}
+
+    for idx, n_samp in enumerate(metric_scores.keys()):
+        correlation_scores[idx] = spr(
+            [metric_scores[n_samp][model] for model in val_acc.keys()],
+            [val_acc[model] for model in val_acc.keys()],
+        )[0]
+        n_samps[idx] = n_samp
+
+    utils.plot_results(
+        metric_scores=correlation_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"corr({metric_name}, val_acc)",
+        other_label="number of samples",
+        title=title,
+        save_path=save_path + f"/{title}.png",
+    )
+
+    log_title = title + ", log scale"
+    utils.plot_results(
+        metric_scores=correlation_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"corr({metric_name}, val_acc)",
+        other_label="number of samples",
+        title=log_title,
+        save_path=save_path + f"/{log_title}.png",
+        log_scale=True,
+    )
+
+    # remove outliers
+    val_acc_no_outliers = {
+        k: v
+        for k, v in val_acc.items()
+        if v > np.mean(list(val_acc.values())) - 3 * np.var(list(val_acc.values()))
+    }
+    correlation_scores = {}
+    n_samps = {}
+
+    for idx, n_samp in enumerate(metric_scores.keys()):
+        correlation_scores[idx] = spr(
+            [metric_scores[n_samp][model] for model in val_acc_no_outliers.keys()],
+            [val_acc_no_outliers[model] for model in val_acc_no_outliers.keys()],
+        )[0]
+        n_samps[idx] = n_samp
+
+    title += ", no outliers"
+    utils.plot_results(
+        metric_scores=correlation_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"corr({metric_name}, val_acc)",
+        other_label="number of samples",
+        title=title,
+        save_path=save_path + f"/{title}.png",
+    )
+
+    log_title = title + ", log scale"
+    utils.plot_results(
+        metric_scores=correlation_scores,
+        other_scores=n_samps,
+        metric_axis="y",
+        metric_label=f"corr({metric_name}, val_acc)",
+        other_label="number of samples",
+        title=log_title,
+        save_path=save_path + f"/{log_title}.png",
+        log_scale=True,
     )
 
 
@@ -154,8 +328,8 @@ def generate_plots(
             metric_scores = metric_res[metric][max_n_samples]
             title += f" n={max_n_samples}"
 
-        plot_scores_vs_val(metric_scores, train_res, metric, title)
-        plot_scores_vs_val_ranked(metric_scores, train_res, metric, title)
+        plot_scores_vs_val(metric_scores, train_res, metric, title, save_path)
+        plot_scores_vs_val_ranked(metric_scores, train_res, metric, title, save_path)
 
     # Image net graphs
     if imagenet_scores_path is not None:
@@ -167,6 +341,18 @@ def generate_plots(
         plot_scores_vs_val_ranked(
             imagenet_scores, train_res, metric_name="ImageNet_val_acc", title=title
         )
+
+    # Metric scores and correlation, vs n samples
+    for metric in metric_res.keys():
+        if metric == "n_pars":
+            continue
+        metric_scores = metric_res[metric]
+
+        title = f"{metric} score vs number of samples"
+        plot_score_vs_samples(metric_scores, train_res, metric, title, save_path)
+
+        title = f"Correlation of {metric} score and val acc vs number of samples"
+        plot_correlation_vs_samples(metric_scores, train_res, metric, title, save_path)
 
 
 def main() -> None:
