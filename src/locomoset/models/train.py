@@ -61,13 +61,13 @@ def train(
         compute_metrics=get_metrics_fn(),
     )
     trainer.train()
+    metrics = trainer.evaluate()
+    trainer.save_metrics("eval", metrics)
+    trainer.log_metrics("eval", metrics)
 
     if "wandb" not in training_args.report_to or wandb.run is None:
         # save results locally
         trainer.save_model()
-        metrics = trainer.evaluate()
-        trainer.save_metrics("eval", metrics)
-        trainer.log_metrics("eval", metrics)
 
     return trainer
 
