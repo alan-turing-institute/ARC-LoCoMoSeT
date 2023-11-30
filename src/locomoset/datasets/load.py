@@ -24,6 +24,8 @@ def load_dataset(
         HuggingFace Dataset (if a split was defined) or DatasetDict (if no split was
             defined).
     """
+    print("DEBUG datasets.is_caching_enabled", datasets.is_caching_enabled())
+    print("DEBUG keep_in_memory", keep_in_memory)
     dataset = datasets.load_dataset(
         dataset_name, split=split, cache_dir=cache_dir, keep_in_memory=keep_in_memory
     )
