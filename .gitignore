@@ -176,3 +176,6 @@ output/*
 
 # Ignore local analysis
 local_analysis/*
+
+# Ignore results
+results/*

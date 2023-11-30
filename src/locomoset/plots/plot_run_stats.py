@@ -10,8 +10,6 @@ from scipy.stats import spearmanr as spr
 
 from locomoset.plots import utils
 
-# from pathlib import Path
-
 
 def plot_scores_vs_val(
     metric_scores: dict, val_acc: dict, metric_name: str, title: str, save_path: str
@@ -28,11 +26,11 @@ def plot_scores_vs_val(
     utils.plot_results(
         metric_scores=metric_scores,
         other_scores=val_acc,
-        metric_axis="y",
+        metric_axis="x",
         metric_label=f"{metric_name} score",
         other_label="validation accuracy",
         title=title,
-        save_path=save_path + f"/{title}.png",
+        save_path=save_path + f"/{str(title).replace(' ', '-')}.png",
     )
 
     # remove outliers
@@ -41,15 +39,18 @@ def plot_scores_vs_val(
         for k, v in val_acc.items()
         if v > np.mean(list(val_acc.values())) - 3 * np.var(list(val_acc.values()))
     }
+    metric_scores_no_outliers = {
+        model: metric_scores[model] for model in val_acc_no_outliers.keys()
+    }
     title_without_outliers = title + ", no outliers"
     utils.plot_results(
-        metric_scores=metric_scores,
+        metric_scores=metric_scores_no_outliers,
         other_scores=val_acc_no_outliers,
-        metric_axis="y",
+        metric_axis="x",
         metric_label=f"{metric_name} score",
         other_label="validation accuracy",
         title=title_without_outliers,
-        save_path=save_path + f"/{title_without_outliers}.png",
+        save_path=save_path + f"/{str(title_without_outliers).replace(' ', '-')}.png",
     )
 
 
@@ -80,11 +81,11 @@ def plot_scores_vs_val_ranked(
     utils.plot_results(
         metric_scores=metric_rank,
         other_scores=val_acc_rank,
-        metric_axis="y",
+        metric_axis="x",
         metric_label=f"ranked {metric_name} score",
         other_label="ranked validation accuracy",
         title=ranked_title,
-        save_path=save_path + f"/{ranked_title}.png",
+        save_path=save_path + f"/{str(ranked_title).replace(' ', '-')}.png",
     )
     val_acc_no_outliers = {
         k: v
@@ -118,11 +119,11 @@ def plot_scores_vs_val_ranked(
     utils.plot_results(
         metric_scores=metric_rank_no_outliers,
         other_scores=val_acc_rank_no_outliers,
-        metric_axis="y",
+        metric_axis="x",
         metric_label=f"ranked {metric_name} score",
         other_label="ranked validation accuracy",
         title=ranked_no_outliers_title,
-        save_path=save_path + f"/{ranked_no_outliers_title}.png",
+        save_path=save_path + f"/{str(ranked_no_outliers_title).replace(' ', '-')}.png",
     )
 
 
@@ -154,9 +155,9 @@ def plot_score_vs_samples(
         other_scores=n_samps,
         metric_axis="y",
         metric_label=f"{metric_name} score",
-        other_labels="number of samples",
+        other_label="number of samples",
         title=title,
-        save_path=save_path + f"/{title}.png",
+        save_path=save_path + f"/{str(title).replace(' ', '-')}.png",
     )
     log_title = title + ", logged sample number"
     utils.plot_results(
@@ -164,9 +165,9 @@ def plot_score_vs_samples(
         other_scores=n_samps,
         metric_axis="y",
         metric_label=f"{metric_name} score",
-        other_labels="number of samples",
+        other_label="number of samples",
         title=log_title,
-        save_path=save_path + f"/{log_title}.png",
+        save_path=save_path + f"/{str(log_title).replace(' ', '-')}.png",
         log_scale=True,
     )
 
@@ -178,8 +179,8 @@ def plot_score_vs_samples(
     }
     n_samps = {}
     met_scores = {}
-    for n_samp in val_acc_no_outliers.keys():
-        for model in metric_scores[n_samp]:
+    for n_samp in metric_scores.keys():
+        for model in val_acc_no_outliers.keys():
             if model not in met_scores.keys():
                 met_scores[model] = []
                 n_samps[model] = []
@@ -192,9 +193,9 @@ def plot_score_vs_samples(
         other_scores=n_samps,
         metric_axis="y",
         metric_label=f"{metric_name} score",
-        other_labels="number of samples",
+        other_label="number of samples",
         title=title + ", no outliers",
-        save_path=save_path + f"/{title}.png",
+        save_path=save_path + f"/{str(title).replace(' ', '-')}.png",
     )
     log_title = title + ", logged sample number"
     utils.plot_results(
@@ -202,9 +203,9 @@ def plot_score_vs_samples(
         other_scores=n_samps,
         metric_axis="y",
         metric_label=f"{metric_name} score",
-        other_labels="number of samples",
+        other_label="number of samples",
         title=log_title + ", no outliers",
-        save_path=save_path + f"/{log_title}.png",
+        save_path=save_path + f"/{str(log_title).replace(' ', '-')}.png",
         log_scale=True,
     )
 
@@ -238,7 +239,7 @@ def plot_correlation_vs_samples(
         metric_label=f"corr({metric_name}, val_acc)",
         other_label="number of samples",
         title=title,
-        save_path=save_path + f"/{title}.png",
+        save_path=save_path + f"/{str(title).replace(' ', '-')}.png",
     )
 
     log_title = title + ", log scale"
@@ -249,7 +250,7 @@ def plot_correlation_vs_samples(
         metric_label=f"corr({metric_name}, val_acc)",
         other_label="number of samples",
         title=log_title,
-        save_path=save_path + f"/{log_title}.png",
+        save_path=save_path + f"/{str(log_title).replace(' ', '-')}.png",
         log_scale=True,
     )
 
@@ -277,7 +278,7 @@ def plot_correlation_vs_samples(
         metric_label=f"corr({metric_name}, val_acc)",
         other_label="number of samples",
         title=title,
-        save_path=save_path + f"/{title}.png",
+        save_path=save_path + f"/{str(title).replace(' ', '-')}.png",
     )
 
     log_title = title + ", log scale"
@@ -288,7 +289,7 @@ def plot_correlation_vs_samples(
         metric_label=f"corr({metric_name}, val_acc)",
         other_label="number of samples",
         title=log_title,
-        save_path=save_path + f"/{log_title}.png",
+        save_path=save_path + f"/{str(log_title).replace(' ', '-')}.png",
         log_scale=True,
     )
 
@@ -328,18 +329,38 @@ def generate_plots(
             metric_scores = metric_res[metric][max_n_samples]
             title += f" n={max_n_samples}"
 
-        plot_scores_vs_val(metric_scores, train_res, metric, title, save_path)
-        plot_scores_vs_val_ranked(metric_scores, train_res, metric, title, save_path)
+        plot_scores_vs_val(
+            metric_scores=metric_scores,
+            val_acc=train_res,
+            metric_name=metric,
+            title=title,
+            save_path=save_path,
+        )
+        plot_scores_vs_val_ranked(
+            metric_scores=metric_scores,
+            val_acc=train_res,
+            metric_name=metric,
+            title=title,
+            save_path=save_path,
+        )
 
     # Image net graphs
     if imagenet_scores_path is not None:
         imagenet_scores = utils.load_imagenet_acc(imagenet_scores_path)
         title = "ImageNet validation accuracy vs validation accuracy"
         plot_scores_vs_val(
-            imagenet_scores, train_res, metric_name="ImageNet_val_acc", title=title
+            imagenet_scores,
+            train_res,
+            metric_name="ImageNet_val_acc",
+            title=title,
+            save_path=save_path,
         )
         plot_scores_vs_val_ranked(
-            imagenet_scores, train_res, metric_name="ImageNet_val_acc", title=title
+            imagenet_scores,
+            train_res,
+            metric_name="ImageNet_val_acc",
+            title=title,
+            save_path=save_path,
         )
 
     # Metric scores and correlation, vs n samples
@@ -349,19 +370,31 @@ def generate_plots(
         metric_scores = metric_res[metric]
 
         title = f"{metric} score vs number of samples"
-        plot_score_vs_samples(metric_scores, train_res, metric, title, save_path)
+        plot_score_vs_samples(
+            metric_scores=metric_scores,
+            val_acc=train_res,
+            metric_name=metric,
+            title=title,
+            save_path=save_path,
+        )
 
         title = f"Correlation of {metric} score and val acc vs number of samples"
-        plot_correlation_vs_samples(metric_scores, train_res, metric, title, save_path)
+        plot_correlation_vs_samples(
+            metric_scores=metric_scores,
+            val_acc=train_res,
+            metric_name=metric,
+            title=title,
+            save_path=save_path,
+        )
 
 
 def main() -> None:
     desc1 = "Create a collection of plots of metric scores vs. other quantities from a"
     desc2 = " weights and biases group name"
     parser = argparse.ArgumentParser(description=desc1 + desc2)
-    parser.add_argument("wanbd_group_name", help="Weights and biases group name")
+    parser.add_argument("wandb_group_name", help="Weights and biases group name")
     parser.add_argument("imagenet_scores_path", help="Path to ImageNet accuracy scores")
     args = parser.parse_args()
-    save_path = f"results/{args.wandb_group_name}"
-    os.mkdir(save_path)
+    save_path = f"results/{str(args.wandb_group_name).replace('/','-')}"
+    os.makedirs(save_path, exist_ok=True)
     generate_plots(args.wandb_group_name, save_path, args.imagenet_scores_path)
