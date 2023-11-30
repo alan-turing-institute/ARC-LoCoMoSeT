@@ -11,12 +11,13 @@ from datetime import datetime
 from time import time
 from typing import Tuple
 
+import datasets
 import torch
 import wandb
-from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+from locomoset.datasets.load import load_dataset
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -35,7 +36,8 @@ class ModelMetricsExperiment:
             config: Dictionary containing the following:
                 - model_name: name of model to be computed (str)
                 - dataset_name: name of dataset to be scored by (str)
-                - dataset_split: dataset split (str)
+                - dataset_args: Dataset selection/filtering parameters, see the
+                    docstring of the base Config class.
                 - n_samples: number of samples for a metric experiment (int)
                 - random_state: random seed for variation of experiments (int)
                 - metrics: list of metrics to score (list(str))
@@ -75,7 +77,9 @@ class ModelMetricsExperiment:
         self.dataset_name = config["dataset_name"]
         self.dataset = load_dataset(
             self.dataset_name,
-            split=config["dataset_split"],
+            split=config["dataset_args"]["metrics_split"],
+            image_field=config["dataset_args"]["image_field"],
+            label_field=config["dataset_args"]["label_field"],
             cache_dir=self.dataset_cache,
         )
         self.n_samples = config["n_samples"]
@@ -229,6 +233,9 @@ def run_config(config: MetricConfig):
 
     if config.use_wandb:
         config.init_wandb()
+
+    if config.caches.get("preprocess_cache") == "tmp":
+        datasets.disable_caching()
 
     model_experiment = ModelMetricsExperiment(config.to_dict())
     model_experiment.run_experiment()

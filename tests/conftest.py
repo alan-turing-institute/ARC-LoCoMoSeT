@@ -108,7 +108,7 @@ def dummy_metric_config(
         "config_gen_dtime": dummy_config_gen_dtime,
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
-        "dataset_split": dummy_split,
+        "dataset_args": {"metrics_split": dummy_split},
         "local_save": False,
         "save_dir": "results",
         "metrics": ["renggli"],
