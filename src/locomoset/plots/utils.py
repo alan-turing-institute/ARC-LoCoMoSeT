@@ -5,11 +5,11 @@
 import json
 import os
 from glob import glob
-from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import wandb
+import yaml
 from matplotlib.axes import Axes
 
 
@@ -40,7 +40,7 @@ def load_results(file_paths: list[str], n_samples=None) -> (list[dict], str):
     return results, save_dir
 
 
-def load_results_wandb(group_name: str) -> Tuple(pd.DataFrame, pd.DataFrame):
+def load_results_wandb(group_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load results from weights and biases into dataframes for metric and train
     experiments for plotting and analysis.
 
@@ -92,13 +92,13 @@ def load_results_wandb(group_name: str) -> Tuple(pd.DataFrame, pd.DataFrame):
         {"summary": summary_metrics, "config": config_metrics, "name": name_metrics}
     )
 
-    return train_df, metrics_df
+    return metrics_df, train_df
 
 
 def parse_results_dataframes(
     metrics_df: pd.DataFrame | None = None,
     train_df: pd.DataFrame | None = None,
-) -> Tuple[dict, dict]:
+) -> tuple[dict[str, dict], dict[str, dict]]:
     """Parse a results dataframe into a dictionaries for plotting and analysis.
 
     Args:
@@ -109,7 +109,16 @@ def parse_results_dataframes(
 
     Returns:
         tuple of dictionaries containing metric and training results for analysis and
-        plotting, (metric_results, training_results)
+        plotting, (metric_results, training_results), with structures:
+
+        metric_results = {
+            task_specific_metric: {n_samples: {model: score}},
+            task_agnostic_metric: {model: score}
+        }
+
+        train_results = {
+            model: validation_accuracy
+        }
     """
     train_results = {}
     if train_df is not None:
@@ -163,6 +172,19 @@ def parse_results_dataframes(
                             ] = row.summary["metric_scores"][met]["score"]
 
     return metric_results, train_results
+
+
+def load_imagenet_acc(path: str) -> dict[str, float]:
+    """Load the imagenet accuracy for a collection of models from a yaml.
+
+    Args:
+        path: path to imagenet accuracy yaml
+
+    Returns:
+        dictionary of imagenet accuracy, {model: validation_accuracy}
+    """
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
 
 
 def parse_results(results: list[dict], actuals: dict | None = None) -> dict[str, dict]:
