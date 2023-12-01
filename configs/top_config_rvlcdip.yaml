@@ -78,7 +78,7 @@ bask:
     gpu_number: 1
     cpu_per_gpu': 36
 
-# Cache locations:
+# Cache locations and arguments:
 caches:
   datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
   models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
@@ -88,7 +88,13 @@ caches:
   #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
   #   - 'ram' - cache preprocessed data in memory
   #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
-  preprocess_cache: ram
+  preprocess_cache: tmp
+  # Sets the TMPDIR environment variable (usually only relevant if preprocess_cache is tmp, and
+  # should only be set if the default TMPDIR is not large enough)
+  tmp_dir: /scratch-global/slurm-jobs/vjgo8416-locomoset
+  # How many images to cache in memory before writing to disk during preprocessing (relevant if
+  # preprocess_cache is disk or tmp)
+  writer_batch_size: 100
 
 # Training specific config -----------------------------------------------------------------
 
