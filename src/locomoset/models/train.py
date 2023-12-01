@@ -1,4 +1,5 @@
 import os
+import tempfile
 from typing import Callable
 
 import evaluate
@@ -95,6 +96,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
     if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
         print("DEBUG tmp_dir", config.caches["tmp_dir"])
         os.environ["TMPDIR"] = config.caches["tmp_dir"]
+        tempfile.tempdir = config.caches["tmp_dir"]
 
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
