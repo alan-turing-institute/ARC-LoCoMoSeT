@@ -89,12 +89,10 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     if config.caches.get("preprocess_cache") == "tmp":
         disable_caching()
-    print(
-        "DEBUG tmp_dir in config.caches and config.caches[tmp_dir] is not None",
-        "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None,
-    )
+
     if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
-        print("DEBUG tmp_dir", config.caches["tmp_dir"])
+        # This is a workaround for overwriting the default path for tmp dirs,
+        # see https://github.com/alan-turing-institute/ARC-LoCoMoSeT/issues/93
         os.environ["TMPDIR"] = config.caches["tmp_dir"]
         tempfile.tempdir = config.caches["tmp_dir"]
 

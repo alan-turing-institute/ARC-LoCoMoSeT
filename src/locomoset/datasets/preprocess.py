@@ -1,8 +1,6 @@
 """
 Helper functions for preprocessing datasets.
 """
-import tempfile
-
 from datasets import ClassLabel, Dataset, DatasetDict
 from transformers.image_processing_utils import BaseImageProcessor
 from transformers.image_utils import load_image
@@ -161,7 +159,6 @@ def prepare_training_data(
     Returns:
         Tuple of preprocessed train and validation datasets.
     """
-    print("DEBUG tempfile.gettempdir", tempfile.gettempdir())
     dataset = encode_labels(dataset)
 
     if isinstance(dataset, DatasetDict) and len(dataset) == 1:
