@@ -40,7 +40,6 @@ def preprocess(
         ]
         return sample
 
-    print("DEBUG set writer_batch_size to 100")
     processed_dataset = dataset.map(
         proc_sample,
         batched=False,
