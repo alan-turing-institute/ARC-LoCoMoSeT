@@ -88,7 +88,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     if config.caches.get("preprocess_cache") == "tmp":
         disable_caching()
+    print(
+        "DEBUG tmp_dir in config.caches and config.caches[tmp_dir] is not None",
+        "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None,
+    )
     if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
+        print("DEBUG tmp_dir", config.caches["tmp_dir"])
         os.environ["TMPDIR"] = config.caches["tmp_dir"]
 
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
