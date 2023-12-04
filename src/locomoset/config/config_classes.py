@@ -29,7 +29,6 @@ class Config(ABC):
             from the training split), "metrics_split" (default: value of train_split),
             "image_field" (default: "image"), and "label_field" (default: "label").
         random_state: Random state to use for train/test split and training.
-        training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments passed to wandb.init, as well as optionally a "log_model"
             value which will be used to set the WANDB_LOG_MODEL environment variable
