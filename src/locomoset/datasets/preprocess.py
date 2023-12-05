@@ -46,10 +46,7 @@ def _drop_images(
     Returns:
         Original Dataset with images dropped
     """
-    return dataset.train_test_split(
-        test_size=drop_size,
-        seed=seed,
-    )["train"]
+    return dataset.train_test_split(test_size=drop_size, seed=seed)
 
 
 def drop_images(
