@@ -57,7 +57,7 @@ class Config(ABC):
         self.caches = caches
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
-        self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
+        self.run_name = run_name
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.n_samples = n_samples
         if "image_field" not in self.dataset_args:
@@ -97,12 +97,34 @@ class Config(ABC):
 
         # set default names for any that haven't been specified
         if "name" not in wandb_config:
-            wandb_config["name"] = self.run_name
+            if self.run_name is not None:
+                wandb_config["name"] = self.run_name
+            else:
+                if len(self.dataset_name) > 64:
+                    run_name = f"{self.dataset_name[-25:]}_{self.model_name}".replace(
+                        "/", "-"
+                    )
+                    wandb_config["name"] = run_name
+                else:
+                    run_name = f"{self.dataset_name}_{self.model_name}".replace(
+                        "/", "-"
+                    )
+                    wandb_config["name"] = run_name
         if "group" not in wandb_config:
             if self.config_gen_dtime is not None:
-                wandb_config["group"] = f"{self.dataset_name}_{self.config_gen_dtime}"
+                if len(self.dataset_name) > 64:
+                    wandb_config[
+                        "group"
+                    ] = f"{self.dataset_name[-25:]}_{self.config_gen_dtime}"
+                else:
+                    wandb_config[
+                        "group"
+                    ] = f"{self.dataset_name}_{self.config_gen_dtime}"
             else:
-                wandb_config["group"] = f"{self.dataset_name}"
+                if len(self.dataset_name) > 64:
+                    wandb_config["group"] = f"{self.dataset_name[-25:]}"
+                else:
+                    wandb_config["group"] = f"{self.dataset_name}"
         if "job_type" not in wandb_config:
             raise ValueError("No Job type given")
 

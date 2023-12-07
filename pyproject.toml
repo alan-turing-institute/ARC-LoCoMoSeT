@@ -48,6 +48,7 @@ locomoset_run_train = 'locomoset.run.run_train:main'
 locomoset_plot_vs_actual = 'locomoset.plots.plot_vs_actual:main'
 locomoset_plot_vs_samples = 'locomoset.plots.plot_vs_samples:main'
 locomoset_gen_configs = 'locomoset.config.config_gen:main'
+locomoset_gen_bin_datasets = 'locomoset.datasets.create_bin_dataset:main'
 
 [tool.black]
 line-length = 88

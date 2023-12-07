@@ -30,7 +30,10 @@ def load_dataset(
             keep_labels was defined).
     """
     dataset = datasets.load_dataset(
-        dataset_name, split=split, cache_dir=cache_dir, keep_in_memory=keep_in_memory
+        dataset_name,
+        split=split,
+        cache_dir=cache_dir,
+        keep_in_memory=keep_in_memory,
     )
 
     if image_field != "image":
