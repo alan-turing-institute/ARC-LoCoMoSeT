@@ -129,9 +129,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
         dataset,
         processor,
         config.dataset_args["train_split"],
-        config.dataset_args["test_split"],
-        config.random_state,
-        config.dataset_args.get("test_size"),
+        config.dataset_args["val_split"],
     )
     del dataset
 

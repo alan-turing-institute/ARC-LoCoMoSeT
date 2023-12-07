@@ -310,17 +310,27 @@ def _create_data_splits(
                 }
             )
 
-        train_and_val = train_and_test["train"].train_test_split(
-            stratify_by_column="label",
-            test_size=val_size,
-            seed=random_state,
-        )
-        return DatasetDict(
-            {
-                train_split: train_and_val["train"],
-                val_split: train_and_val["test"],
-                test_split: dataset[test_split],
-            }
+        if test_split in dataset.keys():
+            train_and_val = train_and_test["train"].train_test_split(
+                stratify_by_column="label",
+                test_size=val_size,
+                seed=random_state,
+            )
+            return DatasetDict(
+                {
+                    train_split: train_and_val["train"],
+                    val_split: train_and_val["test"],
+                    test_split: dataset[test_split],
+                }
+            )
+
+        raise ValueError(
+            (
+                "One of val_split or test_split should exist in the dataset dict. "
+                f"val_split was {val_split}. "
+                f"test_split was {test_split}. "
+                f"DatasetDict keys were {dataset.keys()}"
+            )
         )
 
     # Scenario 3: a dataset dict w/ all three splits already
@@ -360,12 +370,10 @@ def create_data_splits(
 
 
 def prepare_training_data(
-    dataset: Dataset | DatasetDict,
+    dataset: DatasetDict,
     processor: BaseImageProcessor,
     train_split: str = "train",
     val_split: str = "validation",
-    random_state: int | None = None,
-    test_size: float | int | None = None,
     keep_in_memory: bool | None = None,
 ) -> (Dataset, Dataset):
     """Preprocesses a dataset and splits it into train and validation sets.
@@ -378,25 +386,12 @@ def prepare_training_data(
             DatasetDict with more than one split.
         val_split: Name of the split to use for validation. Only used if input is a
             DatasetDict with more than one split.
-        random_state: Random state to use for the train/test split. Only used if the
-            input is a single Dataset/single-entry DatasetDict.
-        test_size: Size of test set (fraction of features and labels to exclude from
-            training for evaluation).
         keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
             disk if True.
 
     Returns:
         Tuple of preprocessed train and validation datasets.
     """
-    if isinstance(dataset, DatasetDict) and len(dataset) == 1:
-        dataset = dataset[list(dataset.keys())[0]]
-
-    if isinstance(dataset, Dataset):
-        dataset = dataset.train_test_split(
-            stratify_by_column="label", seed=random_state, test_size=test_size
-        )
-        train_split = "train"
-        val_split = "test"
 
     train_dataset = preprocess(
         dataset[train_split], processor, keep_in_memory=keep_in_memory
