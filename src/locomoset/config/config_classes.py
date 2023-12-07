@@ -40,6 +40,8 @@ class Config(ABC):
         model_name: str,
         dataset_name: str,
         dataset_args: dict | None = None,
+        keep_labels: list[str] | list[int] | None = None,
+        keep_size: int | float | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -57,6 +59,8 @@ class Config(ABC):
         self.wandb_args = wandb_args or {}
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
         self.dataset_args = dataset_args or {"train_split": "train"}
+        self.dataset_args["keep_size"] = keep_size
+        self.dataset_args["keep_labels"] = keep_labels
         if "image_field" not in self.dataset_args:
             self.dataset_args["image_field"] = "image"
         if "label_field" not in self.dataset_args:
@@ -151,7 +155,7 @@ class TopLevelConfig(ABC):
 
     Possible entries to vary over if multiple given:
         - models
-        - dataset_names
+        - dataset_name
         - n_samples
         - random_states
 
@@ -161,7 +165,7 @@ class TopLevelConfig(ABC):
         - config_dir: where to save the generated configs to
         - models: (list of) model(s) to generate experiment configs
             for
-        - dataset_names: (list of) dataset(s) to generate experiment
+        - dataset_name: (list of) dataset(s) to generate experiment
             configs for
 
         Can also contain:
@@ -185,8 +189,10 @@ class TopLevelConfig(ABC):
         config_type: str,
         config_dir: str,
         models: str | list[str],
-        dataset_names: str | list[str],
+        dataset_name: str | list[str],
         dataset_args: dict | None = None,
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
+        keep_sizes: list[int] | list[float] | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
         bask: dict | None = None,
@@ -202,8 +208,10 @@ class TopLevelConfig(ABC):
         )
         self.config_dir = config_dir
         self.models = models
-        self.dataset_names = dataset_names
+        self.dataset_name = dataset_name
         self.dataset_args = dataset_args
+        self.keep_labels = keep_labels
+        self.keep_sizes = keep_sizes
         self.random_states = random_states
         self.wandb = wandb
         self.sub_configs = []

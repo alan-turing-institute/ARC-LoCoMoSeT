@@ -143,6 +143,8 @@ class MetricConfig(Config):
         metrics: list[str],
         save_dir: str | None = None,
         dataset_args: str | None = None,
+        keep_labels: list[str] | list[int] | None = None,
+        keep_size: int | float | None = None,
         run_name: str | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
@@ -157,6 +159,8 @@ class MetricConfig(Config):
             model_name=model_name,
             dataset_name=dataset_name,
             dataset_args=dataset_args,
+            keep_labels=keep_labels,
+            keep_size=keep_size,
             run_name=run_name,
             random_state=random_state,
             use_wandb=use_wandb,
@@ -190,6 +194,8 @@ class MetricConfig(Config):
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
+            keep_labels=config["keep_labels"],
+            keep_size=config["keep_size"],
             metrics=config["metrics"],
             save_dir=config.get("save_dir"),
             n_samples=config.get("n_samples"),
@@ -278,9 +284,11 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         metrics: list[str],
+        n_samples: int | list[int],
         dataset_names: str | list[str],
         dataset_args: str | list[str],
-        n_samples: int | list[int],
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
+        keep_sizes: list[int] | list[float] | None = None,
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
         wandb: dict | None = None,
@@ -303,6 +311,8 @@ class TopLevelMetricConfig(TopLevelConfig):
             models,
             dataset_names,
             dataset_args,
+            keep_labels,
+            keep_sizes,
             random_states,
             wandb,
             bask,
@@ -353,9 +363,11 @@ class TopLevelMetricConfig(TopLevelConfig):
             models=config["models"],
             dataset_names=config["dataset_names"],
             dataset_args=config.get("dataset_args"),
+            keep_labels=config["keep_labels"],
+            keep_sizes=config["keep_sizes"],
             metrics=config["metrics"],
-            save_dir=config.get("save_dir"),
             n_samples=config.get("n_samples"),
+            save_dir=config.get("save_dir"),
             random_states=config.get("random_states"),
             wandb=config.get("wandb"),
             bask=config.get("bask"),
@@ -380,10 +392,10 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["model_name"] = copy(self.models)
         else:
             sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_names, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_names)
+        if isinstance(self.dataset_name, list):
+            sweep_dict["dataset_name"] = copy(self.dataset_name)
         else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
+            sweep_dict["dataset_name"] = [copy(self.dataset_name)]
         if isinstance(self.n_samples, list):
             sweep_dict["n_samples"] = copy(self.n_samples)
         else:
@@ -392,6 +404,14 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["random_state"] = copy(self.random_states)
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
+        if isinstance(self.keep_labels, list):
+            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
+        else:
+            sweep_dict["keep_labels"] = copy(self.keep_labels)
+        if isinstance(self.keep_sizes, list):
+            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
+        else:
+            sweep_dict["keep_size"] = copy(self.keep_sizes)
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [
@@ -402,6 +422,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         device = self.inference_args.get("device")
 
         for pdict in param_sweep_dicts:
+            pdict["dataset_name"] = self.dataset_name
             pdict["save_dir"] = self.save_dir
             pdict["wandb_args"] = self.wandb
             pdict["metrics"] = self.metrics
