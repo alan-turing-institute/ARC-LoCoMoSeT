@@ -291,7 +291,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         keep_sizes: list[int] | list[float] | None = None,
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -314,7 +314,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             keep_labels,
             keep_sizes,
             random_states,
-            wandb,
+            wandb_args,
             bask,
             use_bask,
             caches,
@@ -369,7 +369,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             n_samples=config.get("n_samples"),
             save_dir=config.get("save_dir"),
             random_states=config.get("random_states"),
-            wandb=config.get("wandb"),
+            wandb_args=config.get("wandb_args"),
             bask=config.get("bask"),
             use_bask=config.get("use_bask"),
             caches=config.get("caches"),
@@ -424,7 +424,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         for pdict in param_sweep_dicts:
             pdict["dataset_name"] = self.dataset_name
             pdict["save_dir"] = self.save_dir
-            pdict["wandb_args"] = self.wandb
+            pdict["wandb_args"] = self.wandb_args
             pdict["metrics"] = self.metrics
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches

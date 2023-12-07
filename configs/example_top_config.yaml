@@ -25,7 +25,7 @@ random_states:
   - 43
 
 # Weights and biases
-wandb:
+wandb_args:
   entity: arc
   project: locomoset_metrics_tests
   log_model: checkpoint

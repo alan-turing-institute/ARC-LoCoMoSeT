@@ -167,7 +167,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         keep_labels: list[list[str]] | list[list[int]] | None = None,
         keep_sizes: list[int] | list[float] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -184,7 +184,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             keep_labels,
             keep_sizes,
             random_states,
-            wandb,
+            wandb_args,
             bask,
             use_bask,
             caches,
@@ -231,7 +231,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             keep_labels=config["keep_labels"],
             keep_sizes=config["keep_sizes"],
             random_states=config.get("random_states"),
-            wandb=config.get("wandb"),
+            wandb_args=config.get("wandb_args"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
@@ -276,7 +276,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
         ]
         for pdict in param_sweep_dicts:
-            pdict["wandb_args"] = self.wandb
+            pdict["wandb_args"] = self.wandb_args
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["dataset_args"] = self.dataset_args
