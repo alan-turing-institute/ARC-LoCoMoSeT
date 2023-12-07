@@ -18,7 +18,7 @@ from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.datasets.load import load_dataset
-from locomoset.datasets.preprocess import drop_images, drop_images_by_labels
+from locomoset.datasets.preprocess import apply_dataset_mutations, create_data_splits
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -83,12 +83,28 @@ class ModelMetricsExperiment:
             label_field=config["dataset_args"]["label_field"],
             cache_dir=self.dataset_cache,
         )
-        if config["drop_obs"] is not None:
-            self.dataset = drop_images(
-                self.dataset, config["drop_obs"], config["random_state"]
-            )
-        if config["label_set"] is not None:
-            self.dataset = drop_images_by_labels(self.dataset, config["label_set"])
+
+        # Prepare splits
+        self.dataset = create_data_splits(
+            self.dataset,
+            train_split=config.dataset_args["train_split"],
+            val_split=config.dataset_args["val_split"],
+            test_split=config.dataset_args["test_split"],
+            random_state=config.random_state,
+            val_size=config.dataset_args["val_size"],
+            test_size=config.dataset_args["test_size"],
+            remove_test=True,
+        )
+
+        # Mutate dataset
+        self.dataset = apply_dataset_mutations(
+            self.dataset,
+            keep_labels=config.dataset_args["keep_labels"],
+            keep_size=config.dataset_args["keep_size"],
+        )
+
+        # Flatten?
+
         self.n_samples = config["n_samples"]
         if self.n_samples < self.dataset.num_rows:
             self.dataset = self.dataset.train_test_split(

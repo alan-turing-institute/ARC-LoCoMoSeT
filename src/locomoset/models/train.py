@@ -8,8 +8,8 @@ from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArgum
 
 from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import (
-    drop_images,
-    drop_images_by_labels,
+    apply_dataset_mutations,
+    create_data_splits,
     prepare_training_data,
 )
 from locomoset.models.classes import FineTuningConfig
@@ -94,41 +94,42 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
-    train_split = config.dataset_args["train_split"]
-    val_split = config.dataset_args.get("val_split", None)
-    image_field = config.dataset_args.get("image_field", "image")
-    label_field = config.dataset_args.get("label_field", "label")
     keep_in_memory = config.caches.get("preprocess_cache") == "ram"
-    if val_split is None or val_split == train_split:
-        dataset = load_dataset(
-            config.dataset_name,
-            split=train_split,
-            cache_dir=config.caches["datasets"],
-            keep_in_memory=keep_in_memory,
-            image_field=image_field,
-            label_field=label_field,
-        )
-    else:
-        dataset = load_dataset(
-            config.dataset_name,
-            cache_dir=config.caches["datasets"],
-            keep_in_memory=keep_in_memory,
-            image_field=image_field,
-            label_field=label_field,
-        )
 
-    #
-    if config["drop_obs"] is not None:
-        dataset = drop_images(dataset, config["drop_obs"], config["random_state"])
+    # Load Dataset
+    dataset = load_dataset(
+        config.dataset_name,
+        cache_dir=config.caches["datasets"],
+        keep_in_memory=keep_in_memory,
+        image_field=config.dataset_args["image_field"],
+        label_field=config.dataset_args["label_field"],
+    )
 
-    if config["label_set"] is not None:
-        dataset = drop_images_by_labels(dataset, config["label_set"])
+    # Prepare splits
+    dataset = create_data_splits(
+        dataset,
+        train_split=config.dataset_args["train_split"],
+        val_split=config.dataset_args["val_split"],
+        test_split=config.dataset_args["test_split"],
+        random_state=config.random_state,
+        val_size=config.dataset_args["val_size"],
+        test_size=config.dataset_args["test_size"],
+        remove_test=True,
+    )
 
+    # Mutate dataset
+    dataset = apply_dataset_mutations(
+        dataset,
+        keep_labels=config.dataset_args["keep_labels"],
+        keep_size=config.dataset_args["keep_size"],
+    )
+
+    # Prepare train and test data
     train_dataset, val_dataset = prepare_training_data(
         dataset,
         processor,
-        train_split,
-        val_split,
+        config.dataset_args["train_split"],
+        config.dataset_args["test_split"],
         config.random_state,
         config.dataset_args.get("test_size"),
     )
