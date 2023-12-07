@@ -32,7 +32,7 @@ def _mutate_dataset(
 
 def _drop_images(
     dataset: Dataset,
-    drop_size: float,
+    keep_size: float,
     seed: int | None = None,
 ) -> Dataset:
     """Randomly drops images from the dataset
@@ -46,12 +46,14 @@ def _drop_images(
     Returns:
         Original Dataset with images dropped
     """
-    return dataset.train_test_split(test_size=drop_size, seed=seed)
+    return dataset.train_test_split(
+        train_size=keep_size, seed=seed, stratify_by_column="label"
+    )["train"]
 
 
 def drop_images(
     dataset: Dataset | DatasetDict,
-    drop_size: float | int,
+    keep_size: float | int,
     seed: int | None = None,
 ) -> Dataset | DatasetDict:
     """Randomly drops images
@@ -65,12 +67,12 @@ def drop_images(
     Returns:
         Original Dataset or DatasetDict with images dropped
     """
-    return _mutate_dataset(dataset, _drop_images, drop_size, seed)
+    return _mutate_dataset(dataset, _drop_images, keep_size, seed)
 
 
 def _drop_images_by_labels(
     dataset: Dataset,
-    labels_to_keep: list[str] | list[int],
+    keep_labels: list[str] | list[int],
     str_input: bool,
 ) -> Dataset:
     """Drops all images with labels different to those supplied
@@ -83,25 +85,49 @@ def _drop_images_by_labels(
         Original Dataset retaining all images with matching labels
     """
     if str_input:
-        labels_to_keep = dataset.features["label"].str2int(labels_to_keep)
-    return dataset.filter(lambda sample: sample["label"] in labels_to_keep)
+        keep_labels = dataset.features["label"].str2int(keep_labels)
+    return dataset.filter(lambda sample: sample["label"] in keep_labels)
 
 
 def drop_images_by_labels(
     dataset: Dataset | DatasetDict,
-    labels_to_keep: list[str] | list[int],
+    keep_labels: list[str] | list[int],
 ) -> Dataset | DatasetDict:
     """Drops all images with labels different to those supplied
 
     Args:
         dataset: HuggingFace Dataset or DatasetDict to drop labels from
-        labels_to_keep: List of labels to keep in the Dataset or DatasetDict
+        keep_labels: List of labels to keep in the Dataset or DatasetDict
 
     Returns:
         Original Dataset or DatasetDict retaining all images with matching labels
     """
-    str_input = type(labels_to_keep[0]) is str
-    return _mutate_dataset(dataset, _drop_images_by_labels, labels_to_keep, str_input)
+    str_input = type(keep_labels[0]) is str
+    return _mutate_dataset(dataset, _drop_images_by_labels, keep_labels, str_input)
+
+
+def apply_dataset_mutations(
+    dataset: Dataset | DatasetDict,
+    keep_labels: list[str] | list[int] | None,
+    keep_size: int | float | None,
+) -> Dataset | DatasetDict:
+    """_summary_
+
+    Args:
+        dataset (Dataset | DatasetDict): _description_
+        keep_labels (list[str] | list[int] | None): _description_
+        keep_size (int | float | None): _description_
+
+    Returns:
+        Dataset | DatasetDict: _description_
+    """
+    if keep_labels is not None:
+        dataset = drop_images_by_labels(dataset, keep_labels)
+
+    if keep_size is not None:
+        dataset = drop_images(dataset, keep_size)
+
+    return dataset
 
 
 def preprocess(
@@ -230,14 +256,14 @@ def _percent_to_size(
     return size
 
 
-def create_data_splits(
+def _create_data_splits(
     dataset: Dataset | DatasetDict,
-    train_split: str = "train",
-    val_split: str = "validation",
-    test_split: str = "test",
-    random_state: int | None = None,
-    val_size: float | int = 0.15,
-    test_size: float | int = 0.15,
+    train_split: str,
+    val_split: str,
+    test_split: str,
+    random_state: int | None,
+    val_size: float | int,
+    test_size: float | int,
 ) -> DatasetDict:
     # Encode labels
     dataset = encode_labels(dataset)
@@ -298,6 +324,38 @@ def create_data_splits(
         )
 
     # Scenario 3: a dataset dict w/ all three splits already
+    return dataset
+
+
+def create_data_splits(
+    dataset: Dataset | DatasetDict,
+    train_split: str = "train",
+    val_split: str = "validation",
+    test_split: str = "test",
+    random_state: int | None = None,
+    val_size: float | int = 0.15,
+    test_size: float | int = 0.15,
+    remove_test: bool = False,
+) -> DatasetDict:
+    dataset = create_data_splits(
+        dataset=dataset,
+        train_split=train_split,
+        val_split=val_split,
+        test_split=test_split,
+        random_state=random_state,
+        val_size=val_size,
+        test_size=test_size,
+    )
+    if remove_test:
+        return DatasetDict(
+            {
+                dataset[key]
+                for key in [
+                    train_split,
+                    val_split,
+                ]
+            }
+        )
     return dataset
 
 
