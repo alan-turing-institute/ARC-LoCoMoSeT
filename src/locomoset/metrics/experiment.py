@@ -30,7 +30,7 @@ class ModelMetricsExperiment:
     which takes arguments: (model_input, dataset_input).
     """
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: MetricConfig) -> None:
         """Initialise model experiment class.
 
         Args:
@@ -48,39 +48,38 @@ class ModelMetricsExperiment:
                 - (Optional) device: which device to use for inference
         """
         # Parse model/seed config
-        self.model_name = config["model_name"]
-        self.random_state = config["random_state"]
+        self.model_name = config.model_name
+        self.random_state = config.random_state
 
         # Initialise metrics
-        metric_kwargs_dict = config.get("metric_kwargs", {})
+        metric_kwargs_dict = {}  # config.metric_kwargs
         self.metrics = {
             metric: METRICS[metric](
                 random_state=self.random_state, **metric_kwargs_dict.get(metric, {})
             )
-            for metric in config["metrics"]
+            for metric in config.metrics
         }
         self.inference_types = list(
             set(metric.inference_type for metric in self.metrics.values())
         )
 
         # Caches
-        if config["caches"] is not None:
-            self.dataset_cache = config["caches"]["datasets"]
-            self.model_cache = config["caches"]["models"]
+        if config.caches is not None:
+            self.dataset_cache = config.caches["datasets"]
+            self.model_cache = config.caches["models"]
 
         # Set up device
-        self.device = config.get("device")
+        self.device = config.device
         if self.device == "cuda":
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load/generate dataset
         print("Generating data sample...")
-        self.dataset_name = config["dataset_name"]
+        self.dataset_name = config.dataset_name
         self.dataset = load_dataset(
             self.dataset_name,
-            split=config["dataset_args"]["metrics_split"],
-            image_field=config["dataset_args"]["image_field"],
-            label_field=config["dataset_args"]["label_field"],
+            image_field=config.dataset_args["image_field"],
+            label_field=config.dataset_args["label_field"],
             cache_dir=self.dataset_cache,
         )
 
@@ -103,9 +102,15 @@ class ModelMetricsExperiment:
             keep_size=config.dataset_args["keep_size"],
         )
 
-        # Flatten?
+        # Flatten
+        self.dataset = datasets.concatenate_datasets(
+            [
+                self.dataset[config.dataset_args["train_split"]],
+                self.dataset[config.dataset_args["val_split"]],
+            ]
+        )
 
-        self.n_samples = config["n_samples"]
+        self.n_samples = config.n_samples
         if self.n_samples < self.dataset.num_rows:
             self.dataset = self.dataset.train_test_split(
                 train_size=self.n_samples, shuffle=True, seed=self.random_state
@@ -113,10 +118,9 @@ class ModelMetricsExperiment:
         self.labels = self.dataset["label"]
 
         # Initialise results dict
+        config.init_results()
         self.results = config
-        self.results["inference_times"] = {}
-        self.results["metric_scores"] = {}
-        self.save_dir = config.get("save_dir", "results")
+        self.save_dir = config.save_dir
         os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
@@ -205,7 +209,7 @@ class ModelMetricsExperiment:
             print(f"Computing metrics with inference type {inference_type}")
             print("Running inference")
             model_input, inference_time = self.perform_inference(inference_type)
-            self.results["inference_times"][inference_type] = inference_time
+            self.results.inference_times[inference_type] = inference_time
 
             test_metrics = [
                 metric_name
@@ -214,19 +218,19 @@ class ModelMetricsExperiment:
             ]
             for metric in test_metrics:
                 print(f"Computing metric score for {metric}")
-                self.results["metric_scores"][metric] = {}
+                self.results.metric_scores[metric] = {}
                 score, metric_time = self.compute_metric_score(
                     self.metrics[metric],
                     model_input,
                     self.labels,
                 )
-                self.results["metric_scores"][metric]["score"] = score
-                self.results["metric_scores"][metric]["time"] = metric_time
+                self.results.metric_scores[metric]["score"] = score
+                self.results.metric_scores[metric]["time"] = metric_time
 
     def save_results(self) -> None:
         """Save the experiment results to self.save_path."""
         with open(self.save_path, "w") as f:
-            json.dump(self.results, f, default=float)
+            json.dump(self.results.to_dict(), f, default=float)
         print(f"Results saved to {self.save_path}")
 
     def log_wandb_results(self) -> None:
@@ -260,7 +264,7 @@ def run_config(config: MetricConfig):
     if config.caches.get("preprocess_cache") == "tmp":
         datasets.disable_caching()
 
-    model_experiment = ModelMetricsExperiment(config.to_dict())
+    model_experiment = ModelMetricsExperiment(config)
     model_experiment.run_experiment()
 
     if config.local_save:

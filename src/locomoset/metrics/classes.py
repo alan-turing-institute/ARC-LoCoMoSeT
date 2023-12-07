@@ -225,6 +225,10 @@ class MetricConfig(Config):
             "device": self.device,
         }
 
+    def init_results(self) -> None:
+        self.inference_times = {}
+        self.metric_scores = {}
+
 
 class TopLevelMetricConfig(TopLevelConfig):
 

@@ -337,7 +337,7 @@ def create_data_splits(
     test_size: float | int = 0.15,
     remove_test: bool = False,
 ) -> DatasetDict:
-    dataset = create_data_splits(
+    dataset = _create_data_splits(
         dataset=dataset,
         train_split=train_split,
         val_split=val_split,
@@ -349,7 +349,7 @@ def create_data_splits(
     if remove_test:
         return DatasetDict(
             {
-                dataset[key]
+                key: dataset[key]
                 for key in [
                     train_split,
                     val_split,
