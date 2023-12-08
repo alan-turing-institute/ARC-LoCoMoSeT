@@ -7,7 +7,10 @@ from transformers.image_utils import load_image
 
 
 def preprocess(
-    dataset: Dataset, processor: BaseImageProcessor, keep_in_memory: str | None = None
+    dataset: Dataset,
+    processor: BaseImageProcessor,
+    keep_in_memory: str | None = None,
+    writer_batch_size: int | None = 1000,
 ) -> Dataset:
     """Convert an image dataset to RGB and run it through a pre-processor for
     compatibility with a model.
@@ -20,6 +23,7 @@ def preprocess(
         processor: HuggingFace trained pre-processor to use.
         keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
             disk if True.
+        writer_batch_size: How many samples to keep in RAM before writing to disk.
 
     Returns:
         Processed dataset with feature 'pixel_values' instead of 'image'.
@@ -45,6 +49,7 @@ def preprocess(
         batched=False,
         remove_columns="image",
         keep_in_memory=keep_in_memory,
+        writer_batch_size=writer_batch_size,
     )
     return processed_dataset.with_format("torch")
 
@@ -131,6 +136,7 @@ def prepare_training_data(
     random_state: int | None = None,
     test_size: float | int | None = None,
     keep_in_memory: bool | None = None,
+    writer_batch_size: int | None = 1000,
 ) -> (Dataset, Dataset):
     """Preprocesses a dataset and splits it into train and validation sets.
 
@@ -148,6 +154,7 @@ def prepare_training_data(
             training for evaluation).
         keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
             disk if True.
+        writer_batch_size: How many samples to keep in RAM before writing to disk.
 
     Returns:
         Tuple of preprocessed train and validation datasets.
@@ -165,9 +172,15 @@ def prepare_training_data(
         val_split = "test"
 
     train_dataset = preprocess(
-        dataset[train_split], processor, keep_in_memory=keep_in_memory
+        dataset[train_split],
+        processor,
+        keep_in_memory=keep_in_memory,
+        writer_batch_size=writer_batch_size,
     )
     val_dataset = preprocess(
-        dataset[val_split], processor, keep_in_memory=keep_in_memory
+        dataset[val_split],
+        processor,
+        keep_in_memory=keep_in_memory,
+        writer_batch_size=writer_batch_size,
     )
     return train_dataset, val_dataset

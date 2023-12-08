@@ -1,3 +1,5 @@
+import os
+import tempfile
 from typing import Callable
 
 import evaluate
@@ -88,6 +90,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
     if config.caches.get("preprocess_cache") == "tmp":
         disable_caching()
 
+    if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
+        # This is a workaround for overwriting the default path for tmp dirs,
+        # see https://github.com/alan-turing-institute/ARC-LoCoMoSeT/issues/93
+        os.environ["TMPDIR"] = config.caches["tmp_dir"]
+        tempfile.tempdir = config.caches["tmp_dir"]
+
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
     train_split = config.dataset_args["train_split"]
@@ -116,10 +124,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
     train_dataset, val_dataset = prepare_training_data(
         dataset,
         processor,
-        train_split,
-        val_split,
-        config.random_state,
-        config.dataset_args.get("test_size"),
+        train_split=train_split,
+        val_split=val_split,
+        random_state=config.random_state,
+        test_size=config.dataset_args.get("test_size"),
+        keep_in_memory=keep_in_memory,
+        writer_batch_size=config.caches.get("writer_batch_size", 1000),
     )
     del dataset
 

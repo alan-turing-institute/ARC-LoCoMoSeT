@@ -55,7 +55,11 @@ To run either metrics or training in LoCoMoSeT (see below), metrics and/or train
 
 Both kinds of config should contain:
 
-- `caches`: Contains `models`, `datasets`, `wandb`, which show where to cache HuggingFace models & datasets and wandb runs & artifacts respectively. Also contains `preprocess_cache`, which can be set to `disk`, `ram`, or `tmp` to cache preprocessed data to disk (default), memory, or a temporary directory.
+- `caches`: Contains cache locations and extra caching related arguments:
+  - `models`, `datasets`, `wandb`:  Where to cache HuggingFace models & datasets and wandb runs & artifacts respectively.
+  - `preprocess_cache`: Set to `disk`, `ram`, or `tmp` to cache preprocessed data to disk (default), memory, or a temporary directory.
+  - `tmp_dir`: Overwrites the location of the temporary directory (usually only relevant if `preprocess_cache` is `tmp`, and generally should only be set if the default tmp dir for the OS is not large enough, e.g. on Baskerville this can be set to a path in `/scratch-global` if you need more disk quota than what's available in `/tmp`).
+  - `writer_batch_size`: How many images to cache in memory before writing to disk. during preprocessing (relevant if `preprocess_cache` is `disk` or `tmp`)
 - `dataset_name`: Name of the dataset on HuggingFace
 - `dataset_args`: Contains dataset split/column selection parameters:
   - `train_split`, `val_split`: Training and validation split to use for fine-tuning
@@ -85,7 +89,7 @@ Train configs should additionally contain the following nested under `dataset_ar
 - `train_split`: Name of the data split to train on
 - `val_split`: Name of the data split to evaluate on. If the same as `train_split`, the `train_split` will itself be randomly split for training and evaluation
 
-Along with several further arguments nested under `training_args`:
+Along with any further `training_args`, which are all directly passed to HuggingFace `TrainingArguments`, for example:
 
 - `eval_steps`: Steps between each evaluation
 - `evaluation_strategy`: HuggingFace evaluation strategy
