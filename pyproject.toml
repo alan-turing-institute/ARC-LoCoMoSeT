@@ -5,6 +5,16 @@ description = "Low-Cost Model Selection for Transformers"
 authors = ["Applied Research Centre, The Alan Turing Institute <arc@turing.ac.uk>"]
 readme = "README.md"
 
+[[tool.poetry.source]]
+name = "natten"
+url = "https://shi-labs.com/natten/wheels/cu117/torch2.0.0"
+priority = "primary"
+
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
