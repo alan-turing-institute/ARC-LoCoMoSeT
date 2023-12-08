@@ -1,0 +1,21 @@
+models:
+  - apple/mobilevit-xx-small
+  - apple/mobilevit-small
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+  - facebook/deit-base-patch16-224
+  - facebook/deit-base-patch16-384
+  - facebook/dinov2-small-imagenet1k-1-layer
+  - facebook/dinov2-base-imagenet1k-1-layer
+  - google/vit-base-patch16-384
+  - google/vit-large-patch16-224
+  - microsoft/beit-base-patch16-224
+  - microsoft/beit-base-patch16-384
+  - microsoft/beit-large-patch16-512
+  - microsoft/cvt-13
+  - microsoft/cvt-21-384
+  - microsoft/swin-base-patch4-window12-384
+  - microsoft/swin-large-patch4-window12-384-in22k
+  - microsoft/swinv2-base-patch4-window8-256
+  - shi-labs/dinat-large-11x11-in22k-in1k-384
+  - Zetatech/pvt-large-224

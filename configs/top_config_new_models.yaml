@@ -1,0 +1,104 @@
+# Top Level Config Template for both the training and metric experiments
+
+# Config type, this can either edited or given as an argument in the gen_configs script
+config_type: both
+
+# Where to put the subconfigs
+config_dir: configs
+
+# Where (and if) to save results locally
+save_dir: results
+local_save: False
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+
+# Huggingface model names or paths to local models
+models:
+  - microsoft/cvt-21-384
+  - shi-labs/dinat-large-11x11-in22k-in1k-384
+  - Zetatech/pvt-large-224
+
+# HuggingFace Datasets or paths to local datasets
+dataset_names:
+  pcuenq/oxford-pets
+
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train and evaluate on. If both are the same or val_split is
+  # not specified, the train_split will be randomly split into train and val splits.
+  train_split: train
+  val_split: train
+  # Split to use for calculating metrics
+  metrics_split: train
+  # Which fields in the dataset contain the images and labels
+  image_field: image
+  label_field: label
+
+# Random seeds to use
+random_states:
+  - 42
+
+# Weights and biases
+wandb:
+  entity: turing-arc
+  project: locomoset
+  log_model: end
+
+# Baskerville arguments, with separate arguments available for the different experiment types
+use_bask: True
+bask:
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-1:0:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+  train:
+    job_name: 'locomoset_train_experiment'
+    walltime: '0-4:0:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+
+# Cache locations:
+caches:
+  datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
+  models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+  wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
+  # preprocess_cache: Where to cache preprocessed data (relevant for training only). Options
+  # are:
+  #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
+  #   - 'ram' - cache preprocessed data in memory
+  #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
+  preprocess_cache: ram
+
+# Training specific config -----------------------------------------------------------------
+
+# Arguments for transformers.TrainingArguments
+training_args:
+  output_dir: output
+  overwrite_output_dir: True
+  save_strategy: "no"
+  num_train_epochs: 1
+  evaluation_strategy: steps
+  eval_steps: 0.02
+  logging_strategy: steps
+  logging_steps: 0.02
+
+# Metric Experiment specific config ---------------------------------------------------------
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+# No. of images to compute the metrics with
+n_samples:
+  - 1000
+
+# Arguments required for inference
+inference_args:
+  device: cuda

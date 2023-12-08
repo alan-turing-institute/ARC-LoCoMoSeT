@@ -15,3 +15,7 @@ apple/mobilevit-xx-small: 69.0
 microsoft/beit-large-patch16-512: 88.60
 microsoft/swin-large-patch4-window12-384-in22k: 87.3
 facebook/levit-128S: 76.6
+microsoft/cvt-21-384: 83.3
+microsoft/beit-base-patch16-384: 86.8
+shi-labs/dinat-large-11x11-in22k-in1k-384: 87.5
+Zetatech/pvt-large-224: 81.7
