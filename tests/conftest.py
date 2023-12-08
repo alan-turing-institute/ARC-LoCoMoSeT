@@ -108,7 +108,15 @@ def dummy_metric_config(
         "config_gen_dtime": dummy_config_gen_dtime,
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
-        "dataset_args": {"metrics_split": dummy_split},
+        "dataset_args": {
+            "train_split": "train",
+            "val_split": "val_split",
+            "test_split": "test",
+            "val_size": 0.15,
+            "test_size": 0.15,
+        },
+        "keep_labels": None,
+        "keep_size": None,
         "local_save": False,
         "save_dir": "results",
         "metrics": ["renggli"],
@@ -132,6 +140,8 @@ def dummy_fine_tuning_config(
         "dataset_name": dummy_dataset_name,
         "random_state": test_seed,
         "dataset_args": {"train_split": "train"},
+        "keep_labels": None,
+        "keep_size": None,
         "training_args": {
             "output_dir": "tmp",
             "num_train_epochs": 1,
@@ -188,9 +198,9 @@ def dummy_top_level_config(
         "slurm_template_path": "./tests/data/",
         "slurm_template_name": "dummy_jinja_editable_script.yaml",
         "models": dummy_model_name,
-        "dataset_names": dummy_dataset_name,
+        "dataset_name": dummy_dataset_name,
         "random_states": [test_seed, test_seed + 1],
-        "wandb": {"entity": "test_entity", "project": "test_project"},
+        "wandb_args": {"entity": "test_entity", "project": "test_project"},
         "use_bask": True,
         "bask": {
             "metrics": {
@@ -212,7 +222,15 @@ def dummy_top_level_config(
             "datasets": "./.cache/huggingface/datasets",
             "models": "./.cache/huggingface/models",
         },
-        "dataset_args": {"train_split": "train", "val_split": "train"},
+        "dataset_args": {
+            "train_split": "train",
+            "val_split": "val",
+            "test_split": "test",
+            "val_size": 0.15,
+            "test_size": 0.15,
+        },
+        "keep_labels": None,
+        "keep_sizes": None,
         "training_args": {
             "training_args": {
                 "output_dir": "tmp",

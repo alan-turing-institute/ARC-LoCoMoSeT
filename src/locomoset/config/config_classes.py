@@ -194,7 +194,7 @@ class TopLevelConfig(ABC):
         keep_labels: list[list[str]] | list[list[int]] | None = None,
         keep_sizes: list[int] | list[float] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -213,7 +213,7 @@ class TopLevelConfig(ABC):
         self.keep_labels = keep_labels
         self.keep_sizes = keep_sizes
         self.random_states = random_states
-        self.wandb = wandb
+        self.wandb_args = wandb_args
         self.sub_configs = []
         self.num_configs = 0
         self.bask = bask

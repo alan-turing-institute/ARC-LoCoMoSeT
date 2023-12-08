@@ -263,13 +263,13 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
         if isinstance(self.keep_labels, list):
-            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-        else:
             sweep_dict["keep_labels"] = copy(self.keep_labels)
-        if isinstance(self.keep_sizes, list):
-            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
         else:
+            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
+        if isinstance(self.keep_sizes, list):
             sweep_dict["keep_size"] = copy(self.keep_sizes)
+        else:
+            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [

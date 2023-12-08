@@ -4,6 +4,8 @@ image_size: 10
 num_channels: 3
 img_bits: 8
 n_classes: 3
+keep_labels: null
+keep_size: null
 do_resize: false
 resample: false
 do_rescale: false

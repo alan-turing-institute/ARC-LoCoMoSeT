@@ -2,9 +2,9 @@ import numpy as np
 from datasets import ClassLabel, Dataset, DatasetDict
 
 from locomoset.datasets.preprocess import (
+    _encode_labels_dict,
+    _encode_labels_single,
     encode_labels,
-    encode_labels_dict,
-    encode_labels_single,
     prepare_training_data,
     preprocess,
 )
@@ -30,17 +30,17 @@ def test_encode_labels_single(dummy_dataset):
     Test the encode_labels_single function correctly encodes labels
     """
     # if dataset labels are already a ClassLabel, return the dataset unchanged
-    assert encode_labels_single(dummy_dataset) == dummy_dataset
+    assert _encode_labels_single(dummy_dataset) == dummy_dataset
 
     # if labels are strings and no class labels given, automatically create an encoding
     test_data = Dataset.from_dict({"label": ["a", "b", "c", "a"]})
-    enc_data = encode_labels_single(test_data)
+    enc_data = _encode_labels_single(test_data)
     assert enc_data["label"] == [0, 1, 2, 0]
     assert enc_data.features["label"].names == ["a", "b", "c"]
 
     # if a ClassLabel encoding is provided, use it
     test_labels = ClassLabel(names=["c", "b", "a"])
-    enc_data = encode_labels_single(test_data, test_labels)
+    enc_data = _encode_labels_single(test_data, test_labels)
     assert enc_data["label"] == [2, 1, 0, 2]
     assert enc_data.features["label"].names == ["c", "b", "a"]
 
@@ -54,7 +54,7 @@ def test_encode_labels_dict():
             "val": Dataset.from_dict({"label": ["b", "c"]}),
         }
     )
-    test_data_dict = encode_labels_dict(test_data_dict)
+    test_data_dict = _encode_labels_dict(test_data_dict)
     assert test_data_dict["train"].features["label"].names == ["a", "b", "c"]
     assert test_data_dict["val"].features["label"].names == ["a", "b", "c"]
 
@@ -66,7 +66,7 @@ def test_encode_labels_dict():
             "long": Dataset.from_dict({"label": ["a", "b", "c", "a"]}),
         }
     )
-    test_data_dict = encode_labels_dict(test_data_dict)
+    test_data_dict = _encode_labels_dict(test_data_dict)
     assert test_data_dict["long"].features["label"].names == ["a", "b", "c"]
     assert test_data_dict["short"].features["label"].names == ["a", "b", "c"]
 
@@ -77,7 +77,7 @@ def test_encode_labels_dict():
             "split2": Dataset.from_dict({"label": ["a", "b", "b", "b"]}),
         }
     )
-    test_data_dict = encode_labels_dict(test_data_dict, encoding_split="split1")
+    test_data_dict = _encode_labels_dict(test_data_dict, encoding_split="split1")
     assert test_data_dict["split1"].features["label"].names == ["a", "b", "c"]
     assert test_data_dict["split2"].features["label"].names == ["a", "b", "c"]
 
@@ -85,7 +85,7 @@ def test_encode_labels_dict():
 def test_encode_labels():
     test_data = Dataset.from_dict({"label": ["a", "b", "c", "a"]})
     encoded_a = encode_labels(test_data)
-    encoded_b = encode_labels_single(test_data)
+    encoded_b = _encode_labels_single(test_data)
     assert encoded_a["label"] == encoded_b["label"]
     assert encoded_a.features == encoded_b.features
 
@@ -95,7 +95,7 @@ def test_encode_labels():
             "val": Dataset.from_dict({"label": ["a", "b", "b", "b"]}),
         }
     )
-    assert encode_labels(test_data_dict) == encode_labels_dict(test_data_dict)
+    assert encode_labels(test_data_dict) == _encode_labels_dict(test_data_dict)
 
 
 def test_prepare_training_data(dummy_dataset, dummy_processor):

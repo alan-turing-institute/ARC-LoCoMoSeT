@@ -361,22 +361,22 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_type=config_type,
             config_dir=config["config_dir"],
             models=config["models"],
-            dataset_names=config["dataset_names"],
-            dataset_args=config.get("dataset_args"),
+            dataset_names=config["dataset_name"],
+            dataset_args=config["dataset_args"],
             keep_labels=config["keep_labels"],
             keep_sizes=config["keep_sizes"],
             metrics=config["metrics"],
-            n_samples=config.get("n_samples"),
-            save_dir=config.get("save_dir"),
-            random_states=config.get("random_states"),
-            wandb_args=config.get("wandb_args"),
-            bask=config.get("bask"),
-            use_bask=config.get("use_bask"),
-            caches=config.get("caches"),
-            slurm_template_path=config.get("slurm_template_path"),
-            slurm_template_name=config.get("slurm_template_name"),
-            config_gen_dtime=config.get("config_gen_dtime"),
-            inference_args=config.get("inference_args"),
+            n_samples=config["n_samples"],
+            save_dir=config["save_dir"],
+            random_states=config["random_states"],
+            wandb_args=config["wandb_args"],
+            bask=config["bask"],
+            use_bask=config["use_bask"],
+            caches=config["caches"],
+            slurm_template_path=config["slurm_template_path"],
+            slurm_template_name=config["slurm_template_name"],
+            config_gen_dtime=config["config_gen_dtime"],
+            inference_args=config["inference_args"],
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -392,10 +392,6 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["model_name"] = copy(self.models)
         else:
             sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_name, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_name)
-        else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_name)]
         if isinstance(self.n_samples, list):
             sweep_dict["n_samples"] = copy(self.n_samples)
         else:
@@ -405,13 +401,13 @@ class TopLevelMetricConfig(TopLevelConfig):
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
         if isinstance(self.keep_labels, list):
-            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-        else:
             sweep_dict["keep_labels"] = copy(self.keep_labels)
-        if isinstance(self.keep_sizes, list):
-            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
         else:
+            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
+        if isinstance(self.keep_sizes, list):
             sweep_dict["keep_size"] = copy(self.keep_sizes)
+        else:
+            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [
@@ -429,6 +425,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["device"] = device
+            pdict["dataset_name"] = self.dataset_name
             pdict["dataset_args"] = self.dataset_args
 
         self.num_configs = len(param_sweep_dicts)
