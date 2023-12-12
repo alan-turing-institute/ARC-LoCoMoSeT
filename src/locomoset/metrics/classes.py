@@ -121,6 +121,8 @@ class MetricConfig(Config):
         model_name: Name of the HuggingFace model to perform metric experiment on.
         dataset_name: Name of the HuggingFace dataset to use for metric experiment.
         metrics: Which metrics to perform the experiments on.
+        metric_kwargs: dictionary of entries
+            {metric_name: **metric_kwargs} containing parameters for each metric
         save_dir: Where to save a local copy of the results.
         dataset_args: Dict defining the splits and columns of the dataset to use, see
             the docstring of the base Config class for details.
@@ -141,6 +143,7 @@ class MetricConfig(Config):
         model_name: str,
         dataset_name: str,
         metrics: list[str],
+        metric_kwargs: dict,
         save_dir: str | None = None,
         dataset_args: str | None = None,
         keep_labels: list[str] | list[int] | None = None,
@@ -169,6 +172,7 @@ class MetricConfig(Config):
             caches=caches,
         )
         self.metrics = metrics
+        self.metric_kwargs = metric_kwargs if metric_kwargs is not None else {}
         self.save_dir = save_dir
         self.n_samples = n_samples or 50
         self.local_save = local_save
@@ -197,6 +201,7 @@ class MetricConfig(Config):
             keep_labels=config["keep_labels"],
             keep_size=config["keep_size"],
             metrics=config["metrics"],
+            metric_kwargs=config["metric_kwargs"],
             save_dir=config.get("save_dir"),
             n_samples=config.get("n_samples"),
             random_state=config.get("random_state"),
@@ -284,6 +289,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         metrics: list[str],
+        metric_kwargs: dict,
         n_samples: int | list[int],
         dataset_names: str | list[str],
         dataset_args: str | list[str],
@@ -323,6 +329,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.metrics = metrics
+        self.metric_kwargs = (metric_kwargs,)
         self.n_samples = n_samples
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
@@ -342,9 +349,10 @@ class TopLevelMetricConfig(TopLevelConfig):
                     - slurm_template_path: where the slurm_template is
 
                     Can also contain "random_states", "n_samples", "caches",
-                    "dataset_args", "config_gen_dtime", "use_wandb", "wandb_args",
-                    "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
-                    set to True if "wandb" is in the config dict.
+                    "metric_kwargs", "dataset_args", "config_gen_dtime",
+                    "use_wandb", "wandb_args", "use_bask", and "bask" keys. If
+                    "use_wandb" is not specified, it is set to True if "wandb"
+                    is in the config dict.
             config_type (optional): pass the config type to the class constructor
                                     explicitly. Defaults to None.
             inference_args (optional): pass inference specific arguments to the metric
@@ -366,6 +374,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             keep_labels=config["keep_labels"],
             keep_sizes=config["keep_sizes"],
             metrics=config["metrics"],
+            metric_kwargs=config["metric_kwargs"],
             n_samples=config["n_samples"],
             save_dir=config["save_dir"],
             random_states=config["random_states"],
@@ -422,6 +431,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             pdict["save_dir"] = self.save_dir
             pdict["wandb_args"] = self.wandb_args
             pdict["metrics"] = self.metrics
+            pdict["metric_kwargs"] = self.metric_kwargs
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["device"] = device

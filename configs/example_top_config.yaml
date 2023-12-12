@@ -97,6 +97,9 @@ metrics:
   - n_pars
   - LogME
 
+# kwargs to metrics - if not null, nested list of metric_name: kwarg1: value
+metric_kwargs: null
+
 # Name of dataset split to compute metrics for (Currently must be the same for all datasets)
 dataset_splits:
   "train"

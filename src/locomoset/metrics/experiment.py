@@ -52,7 +52,7 @@ class ModelMetricsExperiment:
         self.random_state = config.random_state
 
         # Initialise metrics
-        metric_kwargs_dict = {}  # config.metric_kwargs
+        metric_kwargs_dict = config.metric_kwargs
         self.metrics = {
             metric: METRICS[metric](
                 random_state=self.random_state, **metric_kwargs_dict.get(metric, {})
