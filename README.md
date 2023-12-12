@@ -58,14 +58,16 @@ Both kinds of config should contain:
 - `caches`: Contains `models`, `datasets`, `wandb`, which show where to cache HuggingFace models & datasets and wandb runs & artifacts respectively. Also contains `preprocess_cache`, which can be set to `disk`, `ram`, or `tmp` to cache preprocessed data to disk (default), memory, or a temporary directory.
 - `dataset_name`: Name of the dataset on HuggingFace
 - `dataset_args`: Contains dataset split/column selection parameters:
-  - `train_split`, `val_split`: Training and validation split to use for fine-tuning
-  - `metrics_split`: Dataset split to use for computing metrics (usually should be the same as `train_split`)
+  - `train_split`, `val_split`, `test_split`: Training, validation, and test_split names. Should either already exist or they will be generated. Should NOT be the same
+  - `val_size`, `test_size`: Percentages (0.-1.) or integers denoting the size of the validation and test sets (if a percentage, as a percentage of the WHOLE dataset) to be generated. Can be `null` (`None`) if the corresponding split already exists
   - `image_field`, `label_field`: Dataset column containing the image and class label
 - `model_name`: Name of the model to be used on HuggingFace
 - `random_state`: Seed for random number generation
 - `run_name`: Name for the wandb run
 - `save_dir`: Directory in which to save results
 - `use_wandb`: Set to `true` to log results to wandb
+- `keep_size`: A percentage (0.-1.) denoting how many observations to keep in the train and validation splits. Can be `null` to keep all
+- `keep_labels`: A list of labels denoting which labels to keep - all images corresponding to other labels are dropped. Can be `null` to keep all
 
 If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
 
@@ -79,13 +81,9 @@ Metrics configs should additionally contain:
 - `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
 - `n_samples`: Number of images from the dataset to compute the metrics with
+- `metric_kwargs`: A list of the pattern `metric_name: kwarg_1: value` of kwargs to be passed to each metric if desired. Note that every metric used does not need to exist in this
 
-Train configs should additionally contain the following nested under `dataset_args`:
-
-- `train_split`: Name of the data split to train on
-- `val_split`: Name of the data split to evaluate on. If the same as `train_split`, the `train_split` will itself be randomly split for training and evaluation
-
-Along with several further arguments nested under `training_args`:
+Train configs should additionally contain the following nested under `training_args`:
 
 - `eval_steps`: Steps between each evaluation
 - `evaluation_strategy`: HuggingFace evaluation strategy
@@ -96,7 +94,7 @@ Along with several further arguments nested under `training_args`:
 - `save_strategy`: HuggingFace saving strategy
 - `use_mps_device`: Whether to use MPS
 
-Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes.
+Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes. An example is given in [example_top_config.yaml](/configs/example_top_config.yaml)
 
 The additional arguments are:
 
@@ -115,8 +113,9 @@ If `use_bask` is `True`, then you should include the following additional argume
 The changes are:
 
 - `models`: Replaces `model`, contains a list of HuggingFace model names
-- `dataset_names`: Replaces `dataset_name`, contains a list of HuggingFace dataset
 - `random_states`: Replaces `random_state`, contains a list of seeds to generate scripts over.
+- `keep_sizes`: A list of lists of `keep_size` to generate scripts over
+- `keep_labels`: Now a list of lists to generate scripts over
 
 To generate configs from the top level config, run
 
