@@ -24,7 +24,13 @@ def test_get_metrics_fn():
 
 
 def test_train(dummy_model_name, dummy_dataset, dummy_processor):
-    train_dataset, val_dataset = prepare_training_data(dummy_dataset, dummy_processor)
+    dataset_dict = dummy_dataset.train_test_split(test_size=10)
+    train_dataset, val_dataset = prepare_training_data(
+        dataset_dict,
+        dummy_processor,
+        train_split="train",
+        val_split="test",
+    )
     model = get_model_with_dataset_labels(dummy_model_name, train_dataset)
     training_args = TrainingArguments(
         output_dir="tmp",

@@ -99,15 +99,12 @@ def test_encode_labels():
 
 
 def test_prepare_training_data(dummy_dataset, dummy_processor):
-    train_dataset, val_dataset = prepare_training_data(dummy_dataset, dummy_processor)
-    assert train_dataset.num_rows == 0.75 * dummy_dataset.num_rows
-    assert val_dataset.num_rows == 0.25 * dummy_dataset.num_rows
-    assert "pixel_values" in train_dataset.features
-    assert "pixel_values" in val_dataset.features
-
     dataset_dict = dummy_dataset.train_test_split(test_size=5)
     train_dataset, val_dataset = prepare_training_data(
-        dataset_dict, dummy_processor, val_split="test"
+        dataset_dict,
+        dummy_processor,
+        train_split="train",
+        val_split="test",
     )
     assert val_dataset.num_rows == 5
     assert train_dataset.num_rows == dummy_dataset.num_rows - 5

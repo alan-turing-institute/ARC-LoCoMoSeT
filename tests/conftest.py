@@ -139,7 +139,13 @@ def dummy_fine_tuning_config(
         "model_name": dummy_model_name,
         "dataset_name": dummy_dataset_name,
         "random_state": test_seed,
-        "dataset_args": {"train_split": "train"},
+        "dataset_args": {
+            "train_split": "train",
+            "val_split": "val_split",
+            "test_split": "test",
+            "val_size": 0.15,
+            "test_size": 0.15,
+        },
         "keep_labels": None,
         "keep_size": None,
         "training_args": {
