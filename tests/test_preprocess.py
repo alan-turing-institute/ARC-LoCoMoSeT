@@ -138,6 +138,12 @@ def test_encode_labels():
     assert encode_labels(test_data_dict) == _encode_labels_dict(test_data_dict)
 
 
+def _test_data_split(data_dict, train_split, val_split, test_split, size, n):
+    assert data_dict[train_split].num_rows == (n - size * 2)
+    assert data_dict[val_split].num_rows == size
+    assert data_dict[test_split].num_rows == size
+
+
 def test_create_data_splits(dummy_dataset):
     # Constants
     train_split = "train"
@@ -145,6 +151,8 @@ def test_create_data_splits(dummy_dataset):
     test_split = "test"
     p = 0.15
     size = 15
+    n = dummy_dataset.num_rows
+    seed = 42
 
     # Scenario 1: one dataset into 3
     data_dict = create_data_splits(
@@ -154,11 +162,10 @@ def test_create_data_splits(dummy_dataset):
         test_split=test_split,
         val_size=p,
         test_size=p,
+        random_state=42,
     )
 
-    assert data_dict[train_split].num_rows == (dummy_dataset.num_rows - size * 2)
-    assert data_dict[val_split].num_rows == size
-    assert data_dict[test_split].num_rows == size
+    _test_data_split(data_dict, train_split, val_split, test_split, size, n)
 
     # Scenario 2a: data dict of 2 datasets into 3
     data_dict = DatasetDict(
@@ -177,11 +184,10 @@ def test_create_data_splits(dummy_dataset):
         test_split=test_split,
         val_size=p,
         test_size=None,
+        random_state=seed,
     )
 
-    assert data_dict[train_split].num_rows == (dummy_dataset.num_rows - size * 2)
-    assert data_dict[val_split].num_rows == size
-    assert data_dict[test_split].num_rows == size
+    _test_data_split(data_dict, train_split, val_split, test_split, size, n)
 
     # Scenario 2b: data dict of 2 datasets into 3
     data_dict = DatasetDict(
@@ -200,11 +206,10 @@ def test_create_data_splits(dummy_dataset):
         test_split=test_split,
         val_size=None,
         test_size=p,
+        random_state=seed,
     )
 
-    assert data_dict[train_split].num_rows == (dummy_dataset.num_rows - size * 2)
-    assert data_dict[val_split].num_rows == size
-    assert data_dict[test_split].num_rows == size
+    _test_data_split(data_dict, train_split, val_split, test_split, size, n)
 
 
 def test_prepare_training_data(dummy_dataset, dummy_processor):

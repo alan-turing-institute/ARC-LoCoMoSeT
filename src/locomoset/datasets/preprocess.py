@@ -39,8 +39,7 @@ def _drop_images(
 
     Args:
         dataset: HuggingFace Dataset to drop images from
-        drop_size: Size of images to drop (fraction or number of images to exclude from
-                   the dataset).
+        keep_size: Percentage of images to keep
         seed: Seed for dropping images
 
     Returns:
@@ -53,15 +52,14 @@ def _drop_images(
 
 def drop_images(
     dataset: Dataset | DatasetDict,
-    keep_size: float | int,
+    keep_size: float,
     seed: int | None = None,
 ) -> Dataset | DatasetDict:
     """Randomly drops images
 
     Args:
         dataset: HuggingFace Dataset or DatasetDict to drop images from
-        drop_size: Size of images to drop (fraction or number of images to exclude from
-                   the dataset).
+        keep_size: Percentage of images to keep
         seed: Seed for dropping images
 
     Returns:
@@ -111,7 +109,7 @@ def drop_images_by_labels(
 def apply_dataset_mutations(
     dataset: Dataset | DatasetDict,
     keep_labels: list[str] | list[int] | None,
-    keep_size: int | float | None,
+    keep_size: float | None,
     seed: int | None = None,
 ) -> Dataset | DatasetDict:
     """
@@ -125,8 +123,7 @@ def apply_dataset_mutations(
     Args:
         dataset: HuggingFace Dataset or DatasetDict to mutate
         keep_labels: List of labels to keep in the Dataset or DatasetDict
-        drop_size: Size of images to drop (fraction or number of images to exclude from
-                   the dataset).
+        keep_size: Percentage of images to keep
         seed: Seed for dropping images
 
     Returns:
