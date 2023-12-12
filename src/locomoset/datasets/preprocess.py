@@ -112,22 +112,31 @@ def apply_dataset_mutations(
     dataset: Dataset | DatasetDict,
     keep_labels: list[str] | list[int] | None,
     keep_size: int | float | None,
+    seed: int | None = None,
 ) -> Dataset | DatasetDict:
-    """_summary_
+    """
+    Takes a Dataset or DatasetDict, and applies label drops and random drops
+    stratified by label in that order.
+
+    If keep_labels is None, no images will be dropped by label.
+
+    If keep_size is None, no images will be randomly dropped.
 
     Args:
-        dataset (Dataset | DatasetDict): _description_
-        keep_labels (list[str] | list[int] | None): _description_
-        keep_size (int | float | None): _description_
+        dataset: HuggingFace Dataset or DatasetDict to mutate
+        keep_labels: List of labels to keep in the Dataset or DatasetDict
+        drop_size: Size of images to drop (fraction or number of images to exclude from
+                   the dataset).
+        seed: Seed for dropping images
 
     Returns:
-        Dataset | DatasetDict: _description_
+        The mutated dataset
     """
     if keep_labels is not None:
         dataset = drop_images_by_labels(dataset, keep_labels)
 
     if keep_size is not None:
-        dataset = drop_images(dataset, keep_size)
+        dataset = drop_images(dataset, keep_size, seed)
 
     return dataset
 
@@ -253,12 +262,17 @@ def _percent_to_size(
     size: float | int,
     n: int,
 ) -> float:
+    """
+    Converts requested percentages into sizes. This is helpful for when we need to
+    split a dataset into 3 parts, as dataset.train_test_split only lets us split one
+    at a time. Using sizes ensures a % corresponds to % of the overall dataset
+    """
     if isinstance(size, float):
         size = round(n * size)
     return size
 
 
-def _create_data_splits(
+def create_data_splits(
     dataset: Dataset | DatasetDict,
     train_split: str,
     val_split: str,
@@ -267,6 +281,36 @@ def _create_data_splits(
     val_size: float | int | None,
     test_size: float | int | None,
 ) -> DatasetDict:
+    """
+    Takes a Dataset or DatasetDict, and transforms it into a DatasetDict with
+    exactly three splits.
+
+    If a Dataset (or DatasetDict with only one split), will split into three,
+    using train_split, val_split, and test_split as the split names.
+
+    If a two split DatasetDict (NOTE train_split must always be one of them), will
+    turn into a three split DatasetDict. Note 'size' as a percentage will always
+    correspond to the whole dataset (i.e. train + val + test), so 0.15 is 15% of the
+    whole. The new split is always created from train. The remaining split should
+    already exist in the dataset.
+
+    If three splits already exist, returns the original DatasetDict.
+
+    Args:
+        dataset: Dataset or DatasetDict to produce a train/val/split from
+        train_split: Name of the training split to use/generate
+        val_split: Name of the training split to use/generate
+        test_split: Name of the training split to use/generate
+        random_state: Seed for splitting
+        val_size: Percentage or size of the val set. Is ignored/can be None if
+            val_split is in dataset
+        test_size: Percentage or size of the test set. Is ignored/can be None if
+            test_split is in dataset
+
+    Returns:
+        A DatasetDict with three splits, with names corresponding to those
+        passed in
+    """
     # Encode labels
     dataset = encode_labels(dataset)
 
@@ -345,36 +389,11 @@ def _create_data_splits(
     return dataset
 
 
-def create_data_splits(
-    dataset: Dataset | DatasetDict,
-    train_split: str = "train",
-    val_split: str = "validation",
-    test_split: str = "test",
-    random_state: int | None = None,
-    val_size: float | int = 0.15,
-    test_size: float | int = 0.15,
-    remove_test: bool = False,
+def select_data_splits(
+    dataset: DatasetDict,
+    keys: list[str],
 ) -> DatasetDict:
-    dataset = _create_data_splits(
-        dataset=dataset,
-        train_split=train_split,
-        val_split=val_split,
-        test_split=test_split,
-        random_state=random_state,
-        val_size=val_size,
-        test_size=test_size,
-    )
-    if remove_test:
-        return DatasetDict(
-            {
-                key: dataset[key]
-                for key in [
-                    train_split,
-                    val_split,
-                ]
-            }
-        )
-    return dataset
+    return DatasetDict({key: dataset[key] for key in keys})
 
 
 def prepare_training_data(
@@ -387,13 +406,11 @@ def prepare_training_data(
     """Preprocesses a dataset and splits it into train and validation sets.
 
     Args:
-        dataset: HuggingFace Dataset or DatasetDict to process and split. Each Dataset
+        dataset: HuggingFace DatasetDict to process and split. Each Dataset
             split is expected to have 'image' and 'label' columns.
         processor: HuggingFace pre-trained image pre-processor to use.
-        train_split: Name of the split to use for training. Only used if input is a
-            DatasetDict with more than one split.
-        val_split: Name of the split to use for validation. Only used if input is a
-            DatasetDict with more than one split.
+        train_split: Name of the split to use for training
+        val_split: Name of the split to use for validation
         keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
             disk if True.
 

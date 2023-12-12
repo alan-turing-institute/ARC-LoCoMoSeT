@@ -11,6 +11,7 @@ from locomoset.datasets.preprocess import (
     apply_dataset_mutations,
     create_data_splits,
     prepare_training_data,
+    select_data_splits,
 )
 from locomoset.models.classes import FineTuningConfig
 from locomoset.models.load import get_model_with_dataset_labels, get_processor
@@ -114,24 +115,29 @@ def run_config(config: FineTuningConfig) -> Trainer:
         random_state=config.random_state,
         val_size=config.dataset_args["val_size"],
         test_size=config.dataset_args["test_size"],
-        remove_test=True,
+    )
+
+    train_and_val = select_data_splits(
+        dataset, [config.dataset_args["train_split"], config.dataset_args["val_split"]]
     )
 
     # Mutate dataset
-    dataset = apply_dataset_mutations(
-        dataset,
+    train_and_val = apply_dataset_mutations(
+        train_and_val,
         keep_labels=config.dataset_args["keep_labels"],
         keep_size=config.dataset_args["keep_size"],
+        seed=config.random_state,
     )
 
     # Prepare train and test data
     train_dataset, val_dataset = prepare_training_data(
-        dataset,
+        train_and_val,
         processor,
         config.dataset_args["train_split"],
         config.dataset_args["val_split"],
     )
     del dataset
+    del train_and_val
 
     model = get_model_with_dataset_labels(
         config.model_name, train_dataset, cache=config.caches["models"]

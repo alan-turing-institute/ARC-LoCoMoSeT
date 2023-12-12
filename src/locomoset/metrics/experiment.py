@@ -18,7 +18,11 @@ from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.datasets.load import load_dataset
-from locomoset.datasets.preprocess import apply_dataset_mutations, create_data_splits
+from locomoset.datasets.preprocess import (
+    apply_dataset_mutations,
+    create_data_splits,
+    select_data_splits,
+)
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -76,7 +80,7 @@ class ModelMetricsExperiment:
         # Load/generate dataset
         print("Generating data sample...")
         self.dataset_name = config.dataset_name
-        self.dataset = load_dataset(
+        dataset = load_dataset(
             self.dataset_name,
             image_field=config.dataset_args["image_field"],
             label_field=config.dataset_args["label_field"],
@@ -84,35 +88,41 @@ class ModelMetricsExperiment:
         )
 
         # Prepare splits
-        self.dataset = create_data_splits(
-            self.dataset,
+        dataset = create_data_splits(
+            dataset,
             train_split=config.dataset_args["train_split"],
             val_split=config.dataset_args["val_split"],
             test_split=config.dataset_args["test_split"],
             random_state=config.random_state,
             val_size=config.dataset_args["val_size"],
             test_size=config.dataset_args["test_size"],
-            remove_test=True,
+        )
+
+        # Grab train and val
+        dataset = select_data_splits(
+            dataset,
+            [config.dataset_args["train_split"], config.dataset_args["val_split"]],
         )
 
         # Mutate dataset
-        self.dataset = apply_dataset_mutations(
-            self.dataset,
+        dataset = apply_dataset_mutations(
+            dataset,
             keep_labels=config.dataset_args["keep_labels"],
             keep_size=config.dataset_args["keep_size"],
+            seed=config.random_state,
         )
 
         # Flatten
-        self.dataset = datasets.concatenate_datasets(
+        dataset = datasets.concatenate_datasets(
             [
-                self.dataset[config.dataset_args["train_split"]],
-                self.dataset[config.dataset_args["val_split"]],
+                dataset[config.dataset_args["train_split"]],
+                dataset[config.dataset_args["val_split"]],
             ]
         )
 
         self.n_samples = config.n_samples
-        if self.n_samples < self.dataset.num_rows:
-            self.dataset = self.dataset.train_test_split(
+        if self.n_samples < dataset.num_rows:
+            self.dataset = dataset.train_test_split(
                 train_size=self.n_samples, shuffle=True, seed=self.random_state
             )["train"]
         self.labels = self.dataset["label"]
