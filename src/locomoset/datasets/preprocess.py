@@ -67,7 +67,7 @@ def drop_images(
     Returns:
         Original Dataset or DatasetDict with images dropped
     """
-    return _mutate_dataset(dataset, _drop_images, keep_size, seed)
+    return _mutate_dataset(dataset, _drop_images, keep_size=keep_size, seed=seed)
 
 
 def _drop_images_by_labels(
@@ -103,7 +103,9 @@ def drop_images_by_labels(
         Original Dataset or DatasetDict retaining all images with matching labels
     """
     str_input = type(keep_labels[0]) is str
-    return _mutate_dataset(dataset, _drop_images_by_labels, keep_labels, str_input)
+    return _mutate_dataset(
+        dataset, _drop_images_by_labels, keep_labels=keep_labels, str_input=str_input
+    )
 
 
 def apply_dataset_mutations(
@@ -262,8 +264,8 @@ def _create_data_splits(
     val_split: str,
     test_split: str,
     random_state: int | None,
-    val_size: float | int,
-    test_size: float | int,
+    val_size: float | int | None,
+    test_size: float | int | None,
 ) -> DatasetDict:
     # Encode labels
     dataset = encode_labels(dataset)
@@ -297,7 +299,10 @@ def _create_data_splits(
     if len(dataset) == 2:
         # Assume either val split or test split is missing: create the other accordingly
         if val_split in dataset.keys():
-            train_and_test = dataset.train_test_split(
+            test_size = _percent_to_size(
+                test_size, dataset[train_split].num_rows + dataset[val_split].num_rows
+            )
+            train_and_test = dataset["train"].train_test_split(
                 stratify_by_column="label",
                 test_size=test_size,
                 seed=random_state,
@@ -311,7 +316,10 @@ def _create_data_splits(
             )
 
         if test_split in dataset.keys():
-            train_and_val = train_and_test["train"].train_test_split(
+            val_size = _percent_to_size(
+                val_size, dataset[train_split].num_rows + dataset[test_split].num_rows
+            )
+            train_and_val = dataset["train"].train_test_split(
                 stratify_by_column="label",
                 test_size=val_size,
                 seed=random_state,
