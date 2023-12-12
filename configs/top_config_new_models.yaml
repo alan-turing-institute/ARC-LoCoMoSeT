@@ -17,7 +17,7 @@ slurm_template_name: 'jobscript_template.sh'
 # Huggingface model names or paths to local models
 models:
   - microsoft/cvt-21-384
-  - shi-labs/dinat-large-11x11-in22k-in1k-384
+  - microsoft/swinv2-large-patch4-window12to16-192to256-22kto1k-ft
   - Zetatech/pvt-large-224
 
 # HuggingFace Datasets or paths to local datasets
