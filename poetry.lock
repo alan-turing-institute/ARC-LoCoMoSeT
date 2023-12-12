@@ -2382,23 +2382,6 @@ files = [
 ]
 
 [[package]]
-name = "natten"
-version = "0.14.6"
-description = "Neighborhood Attention Extension."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "natten-0.14.6.tar.gz", hash = "sha256:7047ece081992c56f18a23cef777ff1bff0219e9711fd2b3428f45ec0f5e1f1e"},
-]
-
-[package.dependencies]
-packaging = "*"
-
-[package.extras]
-all = ["fvcore (>=0.1.5,<0.1.6)"]
-dev = ["fvcore (>=0.1.5,<0.1.6)"]
-
-[[package]]
 name = "nbclient"
 version = "0.9.0"
 description = "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
@@ -5476,4 +5459,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "501ff08a56da829771a11b40ff8d811c9e06d293b93c0977e7f1583ef490e79f"
+content-hash = "2e7820d79fddee3e4f4cc95703dfcc78944c14ceddaa5a7a41fbe1fac3c81569"
