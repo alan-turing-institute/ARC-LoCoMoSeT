@@ -7,7 +7,6 @@ from datasets import ClassLabel, Dataset, DatasetDict, concatenate_datasets
 from locomoset.datasets.preprocess import (
     _encode_labels_dict,
     _encode_labels_single,
-    apply_dataset_mutations,
     create_data_splits,
     drop_images,
     drop_images_by_labels,
@@ -111,15 +110,6 @@ def test_drop_images_by_labels(dummy_dataset):
     new_dataset = drop_images_by_labels(dummy_dataset, keep_labels=keeps)
     assert all([x in new_dataset["label"] for x in keeps])
     assert 2 not in new_dataset["label"]
-
-
-def test_apply_dataset_mutations(dummy_dataset):
-    s = 40
-    keeps = [0, 2]
-    new_dataset = apply_dataset_mutations(dummy_dataset, keep_labels=keeps, keep_size=s)
-    assert new_dataset.num_rows == s
-    assert all([x in new_dataset["label"] for x in keeps])
-    assert 1 not in new_dataset["label"]
 
 
 def test_encode_labels():

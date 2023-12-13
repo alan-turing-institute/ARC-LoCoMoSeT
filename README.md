@@ -70,7 +70,9 @@ Both kinds of config should contain:
 - `run_name`: Name for the wandb run
 - `save_dir`: Directory in which to save results
 - `use_wandb`: Set to `true` to log results to wandb
-- `keep_size`: A percentage (0.-1.) denoting how many observations to keep in the train and validation splits. Can be `null` to keep all
+- `n_samples`: Main argument to control dataset size, can be `null` to use the whole dataset. Slightly different meaninig for metrics and training jobs:
+  - Metrics jobs: How many samples to compute the metrics with.
+  - Training jobs - How many samples in the training set.
 - `keep_labels`: A list of labels denoting which labels to keep - all images corresponding to other labels are dropped. Can be `null` to keep all
 
 If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
@@ -84,7 +86,6 @@ Metrics configs should additionally contain:
 
 - `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
-- `n_samples`: Number of images from the dataset to compute the metrics with
 - `metric_kwargs`: A list of the pattern `metric_name: kwarg_1: value` of kwargs to be passed to each metric if desired. Note that every metric used does not need to exist in this
 
 Train configs should additionally contain the following nested under `dataset_args`:
@@ -123,7 +124,6 @@ The changes are:
 
 - `models`: Replaces `model`, contains a list of HuggingFace model names
 - `random_states`: Replaces `random_state`, contains a list of seeds to generate scripts over.
-- `keep_sizes`: A list of lists of `keep_size` to generate scripts over
 - `keep_labels`: Now a list of lists to generate scripts over
 
 To generate configs from the top level config, run

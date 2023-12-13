@@ -148,7 +148,7 @@ def dummy_fine_tuning_config(
             "test_size": 0.15,
         },
         "keep_labels": None,
-        "keep_size": None,
+        "n_samples": None,
         "training_args": {
             "output_dir": "tmp",
             "num_train_epochs": 1,

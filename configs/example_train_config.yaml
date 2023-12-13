@@ -14,7 +14,7 @@ dataset_args:
   val_size: 0.15
   test_size: 0.15
 keep_labels: null
-keep_size: null
+n_samples: null
 training_args:
   eval_steps: 100
   evaluation_strategy: steps

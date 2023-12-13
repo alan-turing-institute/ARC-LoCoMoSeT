@@ -32,19 +32,25 @@ def _mutate_dataset(
 
 def _drop_images(
     dataset: Dataset,
-    keep_size: float,
+    keep_size: float | int,
     seed: int | None = None,
 ) -> Dataset:
     """Randomly drops images from the dataset
 
     Args:
         dataset: HuggingFace Dataset to drop images from
-        keep_size: Percentage of images to keep
+        keep_size: Percentage or number of images to keep
         seed: Seed for dropping images
 
     Returns:
         Original Dataset with images dropped
     """
+    if keep_size == dataset.num_rows:
+        return dataset
+    if keep_size > dataset.num_rows:
+        raise ValueError(
+            f"keep_size ({keep_size}) is less than dataset size ({dataset.num_rows})"
+        )
     return dataset.train_test_split(
         train_size=keep_size, seed=seed, stratify_by_column="label"
     )["train"]
@@ -52,19 +58,21 @@ def _drop_images(
 
 def drop_images(
     dataset: Dataset | DatasetDict,
-    keep_size: float,
+    keep_size: float | int | None,
     seed: int | None = None,
 ) -> Dataset | DatasetDict:
     """Randomly drops images
 
     Args:
         dataset: HuggingFace Dataset or DatasetDict to drop images from
-        keep_size: Percentage of images to keep
+        keep_size: Percentage or number of images to keep (or all if None)
         seed: Seed for dropping images
 
     Returns:
         Original Dataset or DatasetDict with images dropped
     """
+    if keep_size is None:
+        return dataset
     return _mutate_dataset(dataset, _drop_images, keep_size=keep_size, seed=seed)
 
 
@@ -104,38 +112,6 @@ def drop_images_by_labels(
     return _mutate_dataset(
         dataset, _drop_images_by_labels, keep_labels=keep_labels, str_input=str_input
     )
-
-
-def apply_dataset_mutations(
-    dataset: Dataset | DatasetDict,
-    keep_labels: list[str] | list[int] | None,
-    keep_size: float | None,
-    seed: int | None = None,
-) -> Dataset | DatasetDict:
-    """
-    Takes a Dataset or DatasetDict, and applies label drops and random drops
-    stratified by label in that order.
-
-    If keep_labels is None, no images will be dropped by label.
-
-    If keep_size is None, no images will be randomly dropped.
-
-    Args:
-        dataset: HuggingFace Dataset or DatasetDict to mutate
-        keep_labels: List of labels to keep in the Dataset or DatasetDict
-        keep_size: Percentage of images to keep
-        seed: Seed for dropping images
-
-    Returns:
-        The mutated dataset
-    """
-    if keep_labels is not None:
-        dataset = drop_images_by_labels(dataset, keep_labels)
-
-    if keep_size is not None:
-        dataset = drop_images(dataset, keep_size, seed)
-
-    return dataset
 
 
 def preprocess(
@@ -313,9 +289,6 @@ def create_data_splits(
         A DatasetDict with three splits, with names corresponding to those
         passed in
     """
-    # Encode labels
-    dataset = encode_labels(dataset)
-
     # Scenario 1: a dataset or dataset dict w/ only one split
     if isinstance(dataset, DatasetDict) and len(dataset) == 1:
         dataset = dataset[list(dataset.keys())[0]]

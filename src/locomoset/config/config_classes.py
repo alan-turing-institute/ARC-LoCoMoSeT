@@ -41,7 +41,7 @@ class Config(ABC):
         dataset_name: str,
         dataset_args: dict | None = None,
         keep_labels: list[str] | list[int] | None = None,
-        keep_size: int | float | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -59,7 +59,7 @@ class Config(ABC):
         self.wandb_args = wandb_args or {}
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
         self.dataset_args = dataset_args or {"train_split": "train"}
-        self.dataset_args["keep_size"] = keep_size
+        self.n_samples = n_samples
         self.dataset_args["keep_labels"] = keep_labels
         if "image_field" not in self.dataset_args:
             self.dataset_args["image_field"] = "image"
@@ -190,9 +190,9 @@ class TopLevelConfig(ABC):
         config_dir: str,
         models: str | list[str],
         dataset_name: str | list[str],
+        n_samples: int | list[int],
         dataset_args: dict | None = None,
         keep_labels: list[list[str]] | list[list[int]] | None = None,
-        keep_sizes: list[int] | list[float] | None = None,
         random_states: int | list[int] | None = None,
         wandb_args: dict | None = None,
         bask: dict | None = None,
@@ -211,7 +211,7 @@ class TopLevelConfig(ABC):
         self.dataset_name = dataset_name
         self.dataset_args = dataset_args
         self.keep_labels = keep_labels
-        self.keep_sizes = keep_sizes
+        self.n_samples = n_samples
         self.random_states = random_states
         self.wandb_args = wandb_args
         self.sub_configs = []

@@ -36,7 +36,7 @@ class FineTuningConfig(Config):
         dataset_name: str,
         dataset_args: dict | None = None,
         keep_labels: list[str] | list[int] | None = None,
-        keep_size: int | float | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -50,7 +50,7 @@ class FineTuningConfig(Config):
             dataset_name,
             dataset_args,
             keep_labels,
-            keep_size,
+            n_samples,
             random_state,
             config_gen_dtime,
             caches,
@@ -79,7 +79,7 @@ class FineTuningConfig(Config):
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
             keep_labels=config["keep_labels"],
-            keep_size=config["keep_size"],
+            n_samples=config["n_samples"],
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
             training_args=config.get("training_args"),
@@ -117,6 +117,7 @@ class FineTuningConfig(Config):
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
             "dataset_args": self.dataset_args,
+            "n_samples": self.n_samples,
             "run_name": self.run_name,
             "random_state": self.random_state,
             "training_args": self.training_args,
@@ -162,10 +163,10 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         dataset_name: str | list[str],
+        n_samples: int | list[int],
         training_args: dict,
         dataset_args: dict | None = None,
         keep_labels: list[list[str]] | list[list[int]] | None = None,
-        keep_sizes: list[int] | list[float] | None = None,
         random_states: int | list[int] | None = None,
         wandb_args: dict | None = None,
         bask: dict | None = None,
@@ -180,9 +181,9 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_dir,
             models,
             dataset_name,
+            n_samples,
             dataset_args,
             keep_labels,
-            keep_sizes,
             random_states,
             wandb_args,
             bask,
@@ -227,9 +228,9 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_dir=config.get("config_dir"),
             models=config.get("models"),
             dataset_name=config.get("dataset_name"),
+            n_samples=config["n_samples"],
             dataset_args=config.get("dataset_args"),
             keep_labels=config["keep_labels"],
-            keep_sizes=config["keep_sizes"],
             random_states=config.get("random_states"),
             wandb_args=config.get("wandb_args"),
             config_gen_dtime=config.get("config_gen_dtime"),
@@ -266,10 +267,10 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             sweep_dict["keep_labels"] = copy(self.keep_labels)
         else:
             sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-        if isinstance(self.keep_sizes, list):
-            sweep_dict["keep_size"] = copy(self.keep_sizes)
+        if isinstance(self.n_samples, list):
+            sweep_dict["n_samples"] = copy(self.n_samples)
         else:
-            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
+            sweep_dict["n_samples"] = [copy(self.n_samples)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [

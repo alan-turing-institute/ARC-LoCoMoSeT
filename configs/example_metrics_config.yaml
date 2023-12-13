@@ -10,7 +10,6 @@ dataset_args:
   val_size: 0.15
   test_size: 0.15
 keep_labels: null
-keep_size: null
 local_save: True
 metrics:
 - renggli

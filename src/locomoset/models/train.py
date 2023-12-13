@@ -10,8 +10,8 @@ from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArgum
 
 from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import (
-    apply_dataset_mutations,
     create_data_splits,
+    drop_images,
     preprocess_dataset_splits,
 )
 from locomoset.models.classes import FineTuningConfig
@@ -118,6 +118,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
         keep_in_memory=keep_in_memory,
         image_field=config.dataset_args["image_field"],
         label_field=config.dataset_args["label_field"],
+        keep_labels=config.dataset_args["keep_labels"],
     )
 
     # Prepare splits
@@ -131,11 +132,22 @@ def run_config(config: FineTuningConfig) -> Trainer:
         test_size=config.dataset_args["test_size"],
     )
 
-    # Mutate dataset
-    dataset = apply_dataset_mutations(
-        dataset,
-        keep_labels=config.dataset_args["keep_labels"],
-        keep_size=config.dataset_args["keep_size"],
+    # Subset datasets:
+    # train: down to requested n_samples
+    dataset[config.dataset_args["train_split"]] = drop_images(
+        dataset[config.dataset_args["train_split"]],
+        keep_size=config.n_samples,
+        seed=config.random_state,
+    )
+    if config.n_samples is None:
+        config.n_samples = dataset[config.dataset_args["train_split"]].num_rows
+
+    # val: down to n_samples or whole val dataset, whichever is smaller
+    dataset[config.dataset_args["val_split"]] = drop_images(
+        dataset[config.dataset_args["val_split"]],
+        keep_size=min(
+            (config.n_samples, dataset[config.dataset_args["val_split"]].num_rows)
+        ),
         seed=config.random_state,
     )
 

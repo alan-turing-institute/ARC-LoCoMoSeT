@@ -147,7 +147,6 @@ class MetricConfig(Config):
         save_dir: str | None = None,
         dataset_args: str | None = None,
         keep_labels: list[str] | list[int] | None = None,
-        keep_size: int | float | None = None,
         run_name: str | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
@@ -163,7 +162,7 @@ class MetricConfig(Config):
             dataset_name=dataset_name,
             dataset_args=dataset_args,
             keep_labels=keep_labels,
-            keep_size=keep_size,
+            n_samples=n_samples,
             run_name=run_name,
             random_state=random_state,
             use_wandb=use_wandb,
@@ -199,7 +198,6 @@ class MetricConfig(Config):
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
             keep_labels=config["keep_labels"],
-            keep_size=config["keep_size"],
             metrics=config["metrics"],
             metric_kwargs=config["metric_kwargs"],
             save_dir=config.get("save_dir"),
@@ -294,7 +292,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         dataset_names: str | list[str],
         dataset_args: str | list[str],
         keep_labels: list[list[str]] | list[list[int]] | None = None,
-        keep_sizes: list[int] | list[float] | None = None,
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
         wandb_args: dict | None = None,
@@ -316,9 +313,9 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_dir,
             models,
             dataset_names,
+            n_samples,
             dataset_args,
             keep_labels,
-            keep_sizes,
             random_states,
             wandb_args,
             bask,
@@ -330,7 +327,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         )
         self.metrics = metrics
         self.metric_kwargs = (metric_kwargs,)
-        self.n_samples = n_samples
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
 
@@ -372,7 +368,6 @@ class TopLevelMetricConfig(TopLevelConfig):
             dataset_names=config["dataset_name"],
             dataset_args=config["dataset_args"],
             keep_labels=config["keep_labels"],
-            keep_sizes=config["keep_sizes"],
             metrics=config["metrics"],
             metric_kwargs=config["metric_kwargs"],
             n_samples=config["n_samples"],
@@ -413,10 +408,6 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["keep_labels"] = copy(self.keep_labels)
         else:
             sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-        if isinstance(self.keep_sizes, list):
-            sweep_dict["keep_size"] = copy(self.keep_sizes)
-        else:
-            sweep_dict["keep_size"] = [copy(self.keep_sizes)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [
