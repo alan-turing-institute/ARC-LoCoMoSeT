@@ -1,3 +1,5 @@
+import os
+import tempfile
 from typing import Callable
 
 import evaluate
@@ -66,13 +68,13 @@ def train(
         compute_metrics=get_metrics_fn(),
     )
     trainer.train()
+    metrics = trainer.evaluate()
+    trainer.save_metrics("eval", metrics)
+    trainer.log_metrics("eval", metrics)
 
     if "wandb" not in training_args.report_to or wandb.run is None:
         # save results locally
         trainer.save_model()
-        metrics = trainer.evaluate()
-        trainer.save_metrics("eval", metrics)
-        trainer.log_metrics("eval", metrics)
 
     return trainer
 
@@ -92,6 +94,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     if config.caches.get("preprocess_cache") == "tmp":
         disable_caching()
+
+    if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
+        # This is a workaround for overwriting the default path for tmp dirs,
+        # see https://github.com/alan-turing-institute/ARC-LoCoMoSeT/issues/93
+        os.environ["TMPDIR"] = config.caches["tmp_dir"]
+        tempfile.tempdir = config.caches["tmp_dir"]
 
     processor = get_processor(config.model_name, cache=config.caches["datasets"])
 
@@ -133,8 +141,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
     train_dataset, val_dataset = prepare_training_data(
         train_and_val,
         processor,
-        config.dataset_args["train_split"],
-        config.dataset_args["val_split"],
+        train_split=config.dataset_args["train_split"],
+        val_split=config.dataset_args["val_split"],
+        random_state=config.random_state,
+        test_size=config.dataset_args.get("test_size"),
+        keep_in_memory=keep_in_memory,
+        writer_batch_size=config.caches.get("writer_batch_size", 1000),
     )
     del dataset
     del train_and_val
