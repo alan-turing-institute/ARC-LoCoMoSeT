@@ -45,6 +45,7 @@ def train(
     model: PreTrainedModel,
     train_dataset: Dataset,
     val_dataset: Dataset,
+    test_dataset: Dataset,
     training_args: TrainingArguments,
 ) -> Trainer:
     """Train a model on a dataset and evaluate it on a validation set and save the
@@ -55,6 +56,7 @@ def train(
             labels and the class labels set to be compatible with the training dataset.
         train_dataset: Preprocessed dataset to train on.
         val_dataset: Preprocessed dataset to evaluate on.
+        test_dataset: Preprocessed dataset to test on.
         training_args: TrainingArguments to use for training.
 
     Returns:
@@ -68,9 +70,13 @@ def train(
         compute_metrics=get_metrics_fn(),
     )
     trainer.train()
-    metrics = trainer.evaluate()
-    trainer.save_metrics("eval", metrics)
-    trainer.log_metrics("eval", metrics)
+    val_metrics = trainer.evaluate()
+    trainer.save_metrics("eval", val_metrics)
+    trainer.log_metrics("eval", val_metrics)
+
+    test_metrics = trainer.evaluate(test_dataset)
+    trainer.save_metrics("test", test_metrics)
+    trainer.log_metrics("test", test_metrics)
 
     if "wandb" not in training_args.report_to or wandb.run is None:
         # save results locally
@@ -138,11 +144,12 @@ def run_config(config: FineTuningConfig) -> Trainer:
     )
 
     # Prepare train and test data
-    train_dataset, val_dataset = prepare_training_data(
+    train_dataset, val_dataset, test_dataset = prepare_training_data(
         train_and_val,
         processor,
         train_split=config.dataset_args["train_split"],
         val_split=config.dataset_args["val_split"],
+        test_split=config.dataset_args["test_split"],
         random_state=config.random_state,
         test_size=config.dataset_args.get("test_size"),
         keep_in_memory=keep_in_memory,
@@ -155,4 +162,6 @@ def run_config(config: FineTuningConfig) -> Trainer:
         config.model_name, train_dataset, cache=config.caches["models"]
     )
 
-    return train(model, train_dataset, val_dataset, config.get_training_args())
+    return train(
+        model, train_dataset, val_dataset, test_dataset, config.get_training_args()
+    )

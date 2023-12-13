@@ -403,10 +403,11 @@ def prepare_training_data(
     processor: BaseImageProcessor,
     train_split: str = "train",
     val_split: str = "validation",
+    test_split: str | None = "test",
     keep_in_memory: bool | None = None,
     writer_batch_size: int | None = 1000,
 ) -> (Dataset, Dataset):
-    """Preprocesses a dataset and splits it into train and validation sets.
+    """Preprocesses a dataset and splits it into train, validation, and test sets.
 
     Args:
         dataset: HuggingFace DatasetDict to process and split. Each Dataset
@@ -414,6 +415,7 @@ def prepare_training_data(
         processor: HuggingFace pre-trained image pre-processor to use.
         train_split: Name of the split to use for training
         val_split: Name of the split to use for validation
+        test_split: Name of the split to use for testing (or None if no test split)
         keep_in_memory: Cache the dataset and any preprocessed files to RAM rather than
             disk if True.
         writer_batch_size: How many samples to keep in RAM before writing to disk.
@@ -434,4 +436,10 @@ def prepare_training_data(
         keep_in_memory=keep_in_memory,
         writer_batch_size=writer_batch_size,
     )
-    return train_dataset, val_dataset
+    if test_split is None:
+        return train_dataset, val_dataset
+
+    test_dataset = preprocess(
+        dataset[test_split], processor, keep_in_memory=keep_in_memory
+    )
+    return train_dataset, val_dataset, test_dataset
