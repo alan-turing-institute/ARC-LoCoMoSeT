@@ -18,11 +18,7 @@ from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
 from locomoset.datasets.load import load_dataset
-from locomoset.datasets.preprocess import (
-    create_data_splits,
-    drop_images,
-    select_data_splits,
-)
+from locomoset.datasets.preprocess import create_data_splits, drop_images
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -99,19 +95,8 @@ class ModelMetricsExperiment:
             test_size=config.dataset_args["test_size"],
         )
 
-        # Grab train and val
-        self.dataset = select_data_splits(
-            self.dataset,
-            [config.dataset_args["train_split"], config.dataset_args["val_split"]],
-        )
-
-        # Flatten
-        self.dataset = datasets.concatenate_datasets(
-            [
-                self.dataset[config.dataset_args["train_split"]],
-                self.dataset[config.dataset_args["val_split"]],
-            ]
-        )
+        # Grab train split
+        self.dataset = self.dataset[config.dataset_args["train_split"]]
 
         # Subset dataset
         self.n_samples = config.n_samples
