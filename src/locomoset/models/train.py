@@ -142,11 +142,14 @@ def run_config(config: FineTuningConfig) -> Trainer:
     if config.n_samples is None:
         config.n_samples = dataset[config.dataset_args["train_split"]].num_rows
 
-    # val: down to n_samples or whole val dataset, whichever is smaller
+    # val: down to 0.25 * n_samples or whole val dataset, whichever is smaller
     dataset[config.dataset_args["val_split"]] = drop_images(
         dataset[config.dataset_args["val_split"]],
         keep_size=min(
-            (config.n_samples, dataset[config.dataset_args["val_split"]].num_rows)
+            (
+                0.25 * config.n_samples,
+                dataset[config.dataset_args["val_split"]].num_rows,
+            )
         ),
         seed=config.random_state,
     )
