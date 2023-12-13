@@ -125,6 +125,13 @@ class ModelMetricsExperiment:
             self.dataset = dataset.train_test_split(
                 train_size=self.n_samples, shuffle=True, seed=self.random_state
             )["train"]
+        elif self.n_samples == dataset.num_rows:
+            self.dataset = dataset
+        else:
+            raise ValueError(
+                f"n_samples ({self.n_samples}) is larger than the dataset size "
+                f"({dataset.num_rows})"
+            )
         self.labels = self.dataset["label"]
 
         # Initialise results dict
