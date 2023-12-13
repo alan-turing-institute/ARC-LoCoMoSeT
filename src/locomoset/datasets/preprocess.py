@@ -403,7 +403,7 @@ def prepare_training_data(
     processor: BaseImageProcessor,
     train_split: str = "train",
     val_split: str = "validation",
-    test_split: str | None = "test",
+    test_split: str | None = None,
     keep_in_memory: bool | None = None,
     writer_batch_size: int | None = 1000,
 ) -> (Dataset, Dataset):

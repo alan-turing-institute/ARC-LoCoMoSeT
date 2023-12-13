@@ -13,7 +13,6 @@ from locomoset.datasets.preprocess import (
     apply_dataset_mutations,
     create_data_splits,
     prepare_training_data,
-    select_data_splits,
 )
 from locomoset.models.classes import FineTuningConfig
 from locomoset.models.load import get_model_with_dataset_labels, get_processor
@@ -45,8 +44,8 @@ def train(
     model: PreTrainedModel,
     train_dataset: Dataset,
     val_dataset: Dataset,
-    test_dataset: Dataset,
     training_args: TrainingArguments,
+    test_dataset: Dataset | None = None,
 ) -> Trainer:
     """Train a model on a dataset and evaluate it on a validation set and save the
     results either locally or to wandb.
@@ -74,9 +73,10 @@ def train(
     trainer.save_metrics("eval", val_metrics)
     trainer.log_metrics("eval", val_metrics)
 
-    test_metrics = trainer.evaluate(test_dataset)
-    trainer.save_metrics("test", test_metrics)
-    trainer.log_metrics("test", test_metrics)
+    if test_dataset is not None:
+        test_metrics = trainer.evaluate(test_dataset)
+        trainer.save_metrics("test", test_metrics)
+        trainer.log_metrics("test", test_metrics)
 
     if "wandb" not in training_args.report_to or wandb.run is None:
         # save results locally
@@ -131,13 +131,9 @@ def run_config(config: FineTuningConfig) -> Trainer:
         test_size=config.dataset_args["test_size"],
     )
 
-    train_and_val = select_data_splits(
-        dataset, [config.dataset_args["train_split"], config.dataset_args["val_split"]]
-    )
-
     # Mutate dataset
     train_and_val = apply_dataset_mutations(
-        train_and_val,
+        dataset,
         keep_labels=config.dataset_args["keep_labels"],
         keep_size=config.dataset_args["keep_size"],
         seed=config.random_state,
@@ -145,13 +141,11 @@ def run_config(config: FineTuningConfig) -> Trainer:
 
     # Prepare train and test data
     train_dataset, val_dataset, test_dataset = prepare_training_data(
-        train_and_val,
+        dataset,
         processor,
         train_split=config.dataset_args["train_split"],
         val_split=config.dataset_args["val_split"],
         test_split=config.dataset_args["test_split"],
-        random_state=config.random_state,
-        test_size=config.dataset_args.get("test_size"),
         keep_in_memory=keep_in_memory,
         writer_batch_size=config.caches.get("writer_batch_size", 1000),
     )
@@ -163,5 +157,9 @@ def run_config(config: FineTuningConfig) -> Trainer:
     )
 
     return train(
-        model, train_dataset, val_dataset, test_dataset, config.get_training_args()
+        model=model,
+        train_dataset=train_dataset,
+        val_dataset=val_dataset,
+        training_args=config.get_training_args(),
+        test_dataset=test_dataset,
     )
