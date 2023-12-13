@@ -123,7 +123,9 @@ class ModelMetricsExperiment:
         self.n_samples = config.n_samples
         if self.n_samples < dataset.num_rows:
             self.dataset = dataset.train_test_split(
-                train_size=self.n_samples, shuffle=True, seed=self.random_state
+                train_size=self.n_samples,
+                seed=self.random_state,
+                stratify_by_column="label",
             )["train"]
         elif self.n_samples == dataset.num_rows:
             self.dataset = dataset

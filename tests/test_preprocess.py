@@ -12,8 +12,8 @@ from locomoset.datasets.preprocess import (
     drop_images,
     drop_images_by_labels,
     encode_labels,
-    prepare_training_data,
     preprocess,
+    preprocess_dataset_splits,
 )
 
 
@@ -212,9 +212,9 @@ def test_create_data_splits(dummy_dataset):
     _test_data_split(data_dict, train_split, val_split, test_split, size, n)
 
 
-def test_prepare_training_data(dummy_dataset, dummy_processor):
+def test_preprocess_dataset_splits(dummy_dataset, dummy_processor):
     dataset_dict = dummy_dataset.train_test_split(test_size=5)
-    train_dataset, val_dataset = prepare_training_data(
+    train_dataset, val_dataset = preprocess_dataset_splits(
         dataset_dict,
         dummy_processor,
         train_split="train",

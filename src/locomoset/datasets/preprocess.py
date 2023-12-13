@@ -391,15 +391,12 @@ def create_data_splits(
     return dataset
 
 
-def select_data_splits(
-    dataset: DatasetDict,
-    keys: list[str],
-) -> DatasetDict:
+def select_data_splits(dataset: DatasetDict, keys: list[str]) -> DatasetDict:
     return DatasetDict({key: dataset[key] for key in keys})
 
 
-def prepare_training_data(
-    dataset: DatasetDict,
+def preprocess_dataset_splits(
+    dataset_dict: DatasetDict,
     processor: BaseImageProcessor,
     train_split: str = "train",
     val_split: str = "validation",
@@ -410,7 +407,7 @@ def prepare_training_data(
     """Preprocesses a dataset and splits it into train, validation, and test sets.
 
     Args:
-        dataset: HuggingFace DatasetDict to process and split. Each Dataset
+        dataset_dict: HuggingFace DatasetDict to process and split. Each Dataset
             split is expected to have 'image' and 'label' columns.
         processor: HuggingFace pre-trained image pre-processor to use.
         train_split: Name of the split to use for training
@@ -425,13 +422,13 @@ def prepare_training_data(
     """
 
     train_dataset = preprocess(
-        dataset[train_split],
+        dataset_dict[train_split],
         processor,
         keep_in_memory=keep_in_memory,
         writer_batch_size=writer_batch_size,
     )
     val_dataset = preprocess(
-        dataset[val_split],
+        dataset_dict[val_split],
         processor,
         keep_in_memory=keep_in_memory,
         writer_batch_size=writer_batch_size,
@@ -440,6 +437,6 @@ def prepare_training_data(
         return train_dataset, val_dataset
 
     test_dataset = preprocess(
-        dataset[test_split], processor, keep_in_memory=keep_in_memory
+        dataset_dict[test_split], processor, keep_in_memory=keep_in_memory
     )
     return train_dataset, val_dataset, test_dataset

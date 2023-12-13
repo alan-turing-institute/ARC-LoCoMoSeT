@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from transformers import EvalPrediction, TrainingArguments
 
-from locomoset.datasets.preprocess import prepare_training_data
+from locomoset.datasets.preprocess import preprocess_dataset_splits
 from locomoset.models.load import get_model_with_dataset_labels
 from locomoset.models.train import FineTuningConfig, get_metrics_fn, run_config, train
 
@@ -25,7 +25,7 @@ def test_get_metrics_fn():
 
 def test_train(dummy_model_name, dummy_dataset, dummy_processor):
     dataset_dict = dummy_dataset.train_test_split(test_size=10)
-    train_dataset, val_dataset = prepare_training_data(
+    train_dataset, val_dataset = preprocess_dataset_splits(
         dataset_dict,
         dummy_processor,
         train_split="train",
