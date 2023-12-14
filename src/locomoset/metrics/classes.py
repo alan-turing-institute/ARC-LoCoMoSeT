@@ -254,9 +254,7 @@ class TopLevelMetricConfig(TopLevelConfig):
                                     for
         - dataset_names: (list of) dataset(s) to generate experiment
                                            configs for
-        - dataset_args: Optionally containing 'metrics_split', the
-            dataset split to run metrics experiments on. See the base Config class for
-            more details.
+        - dataset_args: See the base Config class for more details.
         - n_samples: (list of) sample number(s) to generate experiment
             configs for
 
@@ -297,11 +295,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_gen_dtime: str | None = None,
         inference_args: dict | None = None,
     ) -> None:
-        if dataset_args is not None and "metrics_split" not in dataset_args:
-            dataset_args["metrics_split"] = dataset_args.get("train_split", "train")
-        if dataset_args is None:
-            dataset_args = {"metrics_split": "train"}
-
         super().__init__(
             config_type,
             config_dir,

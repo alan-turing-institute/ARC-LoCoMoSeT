@@ -26,8 +26,8 @@ class Config(ABC):
         dataset_args: Dict defining the splits and columns of the dataset to use,
             optionally including the keys "train_split" (default: "train"),
             "val_split" (default: None, in which case the validation set will be created
-            from the training split), "metrics_split" (default: value of train_split),
-            "image_field" (default: "image"), and "label_field" (default: "label").
+            from the training split), "image_field" (default: "image"), and
+            "label_field" (default: "label").
         random_state: Random state to use for train/test split and training.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments passed to wandb.init, as well as optionally a "log_model"
