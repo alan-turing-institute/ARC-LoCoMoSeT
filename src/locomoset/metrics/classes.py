@@ -146,7 +146,6 @@ class MetricConfig(Config):
         metric_kwargs: dict,
         save_dir: str | None = None,
         dataset_args: str | None = None,
-        keep_labels: list[str] | list[int] | None = None,
         run_name: str | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
@@ -161,7 +160,6 @@ class MetricConfig(Config):
             model_name=model_name,
             dataset_name=dataset_name,
             dataset_args=dataset_args,
-            keep_labels=keep_labels,
             n_samples=n_samples,
             run_name=run_name,
             random_state=random_state,
@@ -197,7 +195,6 @@ class MetricConfig(Config):
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
-            keep_labels=config["keep_labels"],
             metrics=config["metrics"],
             metric_kwargs=config["metric_kwargs"],
             save_dir=config.get("save_dir"),
@@ -222,6 +219,7 @@ class MetricConfig(Config):
             "dataset_name": self.dataset_name,
             "dataset_args": self.dataset_args,
             "metrics": self.metrics,
+            "metric_kwargs": self.metric_kwargs,
             "save_dir": self.save_dir,
             "n_samples": self.n_samples,
             "run_name": self.run_name,
@@ -233,10 +231,6 @@ class MetricConfig(Config):
             "caches": self.caches,
             "device": self.device,
         }
-
-    def init_results(self) -> None:
-        self.inference_times = {}
-        self.metric_scores = {}
 
 
 class TopLevelMetricConfig(TopLevelConfig):
@@ -326,7 +320,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.metrics = metrics
-        self.metric_kwargs = (metric_kwargs,)
+        self.metric_kwargs = metric_kwargs
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
 
@@ -365,7 +359,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_type=config_type,
             config_dir=config["config_dir"],
             models=config["models"],
-            dataset_names=config["dataset_name"],
+            dataset_names=config["dataset_names"],
             dataset_args=config["dataset_args"],
             keep_labels=config["keep_labels"],
             metrics=config["metrics"],
@@ -396,6 +390,10 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["model_name"] = copy(self.models)
         else:
             sweep_dict["model_name"] = [copy(self.models)]
+        if isinstance(self.dataset_names, list):
+            sweep_dict["dataset_name"] = copy(self.dataset_names)
+        else:
+            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
         if isinstance(self.n_samples, list):
             sweep_dict["n_samples"] = copy(self.n_samples)
         else:
@@ -418,7 +416,6 @@ class TopLevelMetricConfig(TopLevelConfig):
         device = self.inference_args.get("device")
 
         for pdict in param_sweep_dicts:
-            pdict["dataset_name"] = self.dataset_name
             pdict["save_dir"] = self.save_dir
             pdict["wandb_args"] = self.wandb_args
             pdict["metrics"] = self.metrics
@@ -426,8 +423,8 @@ class TopLevelMetricConfig(TopLevelConfig):
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["device"] = device
-            pdict["dataset_name"] = self.dataset_name
             pdict["dataset_args"] = self.dataset_args
+            pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
 
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:

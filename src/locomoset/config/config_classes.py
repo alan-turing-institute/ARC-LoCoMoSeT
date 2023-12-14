@@ -40,7 +40,6 @@ class Config(ABC):
         model_name: str,
         dataset_name: str,
         dataset_args: dict | None = None,
-        keep_labels: list[str] | list[int] | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
@@ -60,7 +59,6 @@ class Config(ABC):
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.n_samples = n_samples
-        self.dataset_args["keep_labels"] = keep_labels
         if "image_field" not in self.dataset_args:
             self.dataset_args["image_field"] = "image"
         if "label_field" not in self.dataset_args:
@@ -189,7 +187,7 @@ class TopLevelConfig(ABC):
         config_type: str,
         config_dir: str,
         models: str | list[str],
-        dataset_name: str | list[str],
+        dataset_names: str | list[str],
         n_samples: int | list[int],
         dataset_args: dict | None = None,
         keep_labels: list[list[str]] | list[list[int]] | None = None,
@@ -208,7 +206,7 @@ class TopLevelConfig(ABC):
         )
         self.config_dir = config_dir
         self.models = models
-        self.dataset_name = dataset_name
+        self.dataset_names = dataset_names
         self.dataset_args = dataset_args
         self.keep_labels = keep_labels
         self.n_samples = n_samples

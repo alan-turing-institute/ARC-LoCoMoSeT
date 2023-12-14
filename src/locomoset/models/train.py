@@ -69,18 +69,19 @@ def train(
         compute_metrics=get_metrics_fn(),
     )
     trainer.train()
-    val_metrics = trainer.evaluate()
-    trainer.save_metrics("eval", val_metrics)
-    trainer.log_metrics("eval", val_metrics)
 
     if test_dataset is not None:
-        test_metrics = trainer.evaluate(test_dataset)
-        trainer.save_metrics("test", test_metrics)
-        trainer.log_metrics("test", test_metrics)
+        test_metrics = trainer.evaluate(test_dataset, metric_key_prefix="test")
 
     if "wandb" not in training_args.report_to or wandb.run is None:
         # save results locally
         trainer.save_model()
+        val_metrics = trainer.evaluate()
+        trainer.save_metrics("eval", val_metrics)
+        trainer.log_metrics("eval", val_metrics)
+        if test_dataset is not None:
+            trainer.save_metrics("test", test_metrics)
+            trainer.log_metrics("test", test_metrics)
 
     return trainer
 
@@ -143,11 +144,14 @@ def run_config(config: FineTuningConfig) -> Trainer:
         config.n_samples = dataset[config.dataset_args["train_split"]].num_rows
 
     # val: down to 0.25 * n_samples or whole val dataset, whichever is smaller
+    # also try to make sure that there are at least as many images as there are classes
+    # in the val set, as required for stratified sampling
+    n_classes = dataset[config.dataset_args["val_split"]].features["label"].num_classes
     dataset[config.dataset_args["val_split"]] = drop_images(
         dataset[config.dataset_args["val_split"]],
         keep_size=min(
             (
-                0.25 * config.n_samples,
+                max((round(0.25 * config.n_samples), n_classes)),
                 dataset[config.dataset_args["val_split"]].num_rows,
             )
         ),

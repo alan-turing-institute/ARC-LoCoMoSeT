@@ -35,7 +35,6 @@ class FineTuningConfig(Config):
         model_name: str,
         dataset_name: str,
         dataset_args: dict | None = None,
-        keep_labels: list[str] | list[int] | None = None,
         n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
@@ -49,7 +48,6 @@ class FineTuningConfig(Config):
             model_name,
             dataset_name,
             dataset_args,
-            keep_labels,
             n_samples,
             random_state,
             config_gen_dtime,
@@ -78,7 +76,6 @@ class FineTuningConfig(Config):
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
-            keep_labels=config["keep_labels"],
             n_samples=config["n_samples"],
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
@@ -162,7 +159,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         config_type: str,
         config_dir: str,
         models: str | list[str],
-        dataset_name: str | list[str],
+        dataset_names: str | list[str],
         n_samples: int | list[int],
         training_args: dict,
         dataset_args: dict | None = None,
@@ -180,7 +177,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_type,
             config_dir,
             models,
-            dataset_name,
+            dataset_names,
             n_samples,
             dataset_args,
             keep_labels,
@@ -227,7 +224,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_type=config_type,
             config_dir=config.get("config_dir"),
             models=config.get("models"),
-            dataset_name=config.get("dataset_name"),
+            dataset_names=config["dataset_names"],
             n_samples=config["n_samples"],
             dataset_args=config.get("dataset_args"),
             keep_labels=config["keep_labels"],
@@ -255,10 +252,10 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             sweep_dict["model_name"] = copy(self.models)
         else:
             sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_name, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_name)
+        if isinstance(self.dataset_names, list):
+            sweep_dict["dataset_name"] = copy(self.dataset_names)
         else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_name)]
+            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
         if isinstance(self.random_states, list):
             sweep_dict["random_state"] = copy(self.random_states)
         else:
@@ -282,6 +279,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             pdict["caches"] = self.caches
             pdict["dataset_args"] = self.dataset_args
             pdict["training_args"] = self.training_args
+            pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:
             warnings.warn("Slurm array jobs cannot exceed more than 1001!")

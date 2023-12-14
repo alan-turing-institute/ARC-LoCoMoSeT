@@ -109,8 +109,10 @@ class ModelMetricsExperiment:
         self.labels = self.dataset["label"]
 
         # Initialise results dict
-        config.init_results()
-        self.results = config
+        self.results = config.to_dict()
+        self.results["inference_times"] = {}
+        self.results["metric_scores"] = {}
+
         self.save_dir = config.save_dir
         os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
@@ -200,7 +202,7 @@ class ModelMetricsExperiment:
             print(f"Computing metrics with inference type {inference_type}")
             print("Running inference")
             model_input, inference_time = self.perform_inference(inference_type)
-            self.results.inference_times[inference_type] = inference_time
+            self.results["inference_times"][inference_type] = inference_time
 
             test_metrics = [
                 metric_name
@@ -209,19 +211,19 @@ class ModelMetricsExperiment:
             ]
             for metric in test_metrics:
                 print(f"Computing metric score for {metric}")
-                self.results.metric_scores[metric] = {}
+                self.results["metric_scores"][metric] = {}
                 score, metric_time = self.compute_metric_score(
                     self.metrics[metric],
                     model_input,
                     self.labels,
                 )
-                self.results.metric_scores[metric]["score"] = score
-                self.results.metric_scores[metric]["time"] = metric_time
+                self.results["metric_scores"][metric]["score"] = score
+                self.results["metric_scores"][metric]["time"] = metric_time
 
     def save_results(self) -> None:
         """Save the experiment results to self.save_path."""
         with open(self.save_path, "w") as f:
-            json.dump(self.results.to_dict(), f, default=float)
+            json.dump(self.results, f, default=float)
         print(f"Results saved to {self.save_path}")
 
     def log_wandb_results(self) -> None:

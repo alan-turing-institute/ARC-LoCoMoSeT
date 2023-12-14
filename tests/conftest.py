@@ -114,9 +114,8 @@ def dummy_metric_config(
             "test_split": "test",
             "val_size": 0.15,
             "test_size": 0.15,
+            "keep_labels": None,
         },
-        "keep_labels": None,
-        "keep_size": None,
         "local_save": False,
         "save_dir": "results",
         "metrics": ["renggli"],
@@ -146,8 +145,8 @@ def dummy_fine_tuning_config(
             "test_split": "test",
             "val_size": 0.15,
             "test_size": 0.15,
+            "keep_labels": None,
         },
-        "keep_labels": None,
         "n_samples": None,
         "training_args": {
             "output_dir": "tmp",
@@ -205,7 +204,7 @@ def dummy_top_level_config(
         "slurm_template_path": "./tests/data/",
         "slurm_template_name": "dummy_jinja_editable_script.yaml",
         "models": dummy_model_name,
-        "dataset_name": dummy_dataset_name,
+        "dataset_names": dummy_dataset_name,
         "random_states": [test_seed, test_seed + 1],
         "wandb_args": {"entity": "test_entity", "project": "test_project"},
         "use_bask": True,
@@ -237,7 +236,6 @@ def dummy_top_level_config(
             "test_size": 0.15,
         },
         "keep_labels": None,
-        "keep_sizes": None,
         "training_args": {
             "training_args": {
                 "output_dir": "tmp",

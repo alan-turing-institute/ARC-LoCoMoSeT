@@ -2,14 +2,11 @@
 
 # Where to put the subconfigs
 config_dir: configs
+config_gen_dtime: null
 
 # Where (and if) to save results locally
-save_dir: results_pets
+save_dir: results
 local_save: False
-
-# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
-# slurm_template_path: None
-slurm_template_name: 'jobscript_template.sh'
 
 # Huggingface model names or paths to local models
 models:
@@ -26,9 +23,9 @@ random_states:
 
 # Weights and biases
 wandb_args:
-  entity: arc
+  entity: turing-arc
   project: locomoset_metrics_tests
-  log_model: checkpoint
+  log_model: "false"
 
 # Baskerville arguments, with separate arguments available for the different experiment types
 use_bask: False
@@ -45,6 +42,11 @@ bask:
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+slurm_template_path: null
 
 # Cache locations:
 caches:
@@ -84,10 +86,10 @@ training_args:
   overwrite_output_dir: True
   save_strategy: "no"
   num_train_epochs: 1
-  use_mps_device: False
   evaluation_strategy: steps
-  eval_steps: 100
+  eval_steps: 0.25
   logging_strategy: steps
+  logging_steps: 0.25
 
 # Metric Experiment specific config ---------------------------------------------------------
 
