@@ -49,7 +49,7 @@ def _drop_images(
         return dataset
     if keep_size > dataset.num_rows:
         raise ValueError(
-            f"keep_size ({keep_size}) is less than dataset size ({dataset.num_rows})"
+            f"keep_size ({keep_size}) is greater than dataset size ({dataset.num_rows})"
         )
     return dataset.train_test_split(
         train_size=keep_size, seed=seed, stratify_by_column="label"
