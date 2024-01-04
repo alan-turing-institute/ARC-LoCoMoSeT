@@ -49,7 +49,7 @@ def _drop_images(
         return dataset
     if keep_size > dataset.num_rows:
         raise ValueError(
-            f"keep_size ({keep_size}) is less than dataset size ({dataset.num_rows})"
+            f"keep_size ({keep_size}) is greater than dataset size ({dataset.num_rows})"
         )
     return dataset.train_test_split(
         train_size=keep_size, seed=seed, stratify_by_column="label"
@@ -165,7 +165,7 @@ def preprocess(
 def _encode_labels_single(
     dataset: Dataset, class_labels: ClassLabel | None = None
 ) -> Dataset:
-    """Check if dataset labels are strings and encode them as ClassLabel if necessary.
+    """Check if dataset labels are ClassLabel and encode them if not.
 
     Args:
         dataset: HuggingFace dataset to check. Expected to have the key "label".
@@ -174,8 +174,8 @@ def _encode_labels_single(
     Returns:
         Dataset with labels converted to datasets.ClassLabel if necessary.
     """
-    # only attempt to encode string labels
-    if dataset.features["label"].dtype != "string":
+    # don't attempt to encode if labels are already ClassLabel
+    if isinstance(dataset.features["label"], ClassLabel):
         return dataset
 
     if class_labels is not None:
