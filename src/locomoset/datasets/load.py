@@ -36,6 +36,12 @@ def load_dataset(
         keep_in_memory=keep_in_memory,
     )
 
+    # remove corrupted file in rvl_cdip
+    if dataset_name == "aharley/rvl_cdip":
+        dataset["test"] = dataset["test"].select(
+            [i for i in range(len(dataset["test"])) if i != 33669]
+        )
+
     if image_field != "image":
         dataset = dataset.rename_column(image_field, "image")
     if label_field != "label":
