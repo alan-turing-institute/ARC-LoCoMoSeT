@@ -165,7 +165,7 @@ def preprocess(
 def _encode_labels_single(
     dataset: Dataset, class_labels: ClassLabel | None = None
 ) -> Dataset:
-    """Check if dataset labels are strings and encode them as ClassLabel if necessary.
+    """Check if dataset labels are ClassLabel and encode them if not.
 
     Args:
         dataset: HuggingFace dataset to check. Expected to have the key "label".
@@ -174,8 +174,8 @@ def _encode_labels_single(
     Returns:
         Dataset with labels converted to datasets.ClassLabel if necessary.
     """
-    # only attempt to encode string labels
-    if dataset.features["label"].dtype != "string":
+    # don't attempt to encode if labels are already ClassLabel
+    if isinstance(dataset.features["label"], ClassLabel):
         return dataset
 
     if class_labels is not None:
