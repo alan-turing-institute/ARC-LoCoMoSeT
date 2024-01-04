@@ -96,8 +96,7 @@ class FineTuningConfig(Config):
         training_args["seed"] = self.random_state
         training_args["run_name"] = self.run_name
         training_args["report_to"] = "wandb" if self.use_wandb else "none"
-        if training_args["report_to"] == "none":
-            training_args["output_dir"] += f"/{self.run_name}"
+        training_args["output_dir"] += f"/{self.run_name}"
         return TrainingArguments(**training_args)
 
     def to_dict(self) -> dict:
