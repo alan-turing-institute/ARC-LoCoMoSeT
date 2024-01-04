@@ -26,10 +26,9 @@ class Config(ABC):
         dataset_args: Dict defining the splits and columns of the dataset to use,
             optionally including the keys "train_split" (default: "train"),
             "val_split" (default: None, in which case the validation set will be created
-            from the training split), "metrics_split" (default: value of train_split),
-            "image_field" (default: "image"), and "label_field" (default: "label").
+            from the training split), "image_field" (default: "image"), and
+            "label_field" (default: "label").
         random_state: Random state to use for train/test split and training.
-        training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments passed to wandb.init, as well as optionally a "log_model"
             value which will be used to set the WANDB_LOG_MODEL environment variable
@@ -41,6 +40,7 @@ class Config(ABC):
         model_name: str,
         dataset_name: str,
         dataset_args: dict | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -58,6 +58,7 @@ class Config(ABC):
         self.wandb_args = wandb_args or {}
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
         self.dataset_args = dataset_args or {"train_split": "train"}
+        self.n_samples = n_samples
         if "image_field" not in self.dataset_args:
             self.dataset_args["image_field"] = "image"
         if "label_field" not in self.dataset_args:
@@ -152,7 +153,7 @@ class TopLevelConfig(ABC):
 
     Possible entries to vary over if multiple given:
         - models
-        - dataset_names
+        - dataset_name
         - n_samples
         - random_states
 
@@ -162,7 +163,7 @@ class TopLevelConfig(ABC):
         - config_dir: where to save the generated configs to
         - models: (list of) model(s) to generate experiment configs
             for
-        - dataset_names: (list of) dataset(s) to generate experiment
+        - dataset_name: (list of) dataset(s) to generate experiment
             configs for
 
         Can also contain:
@@ -187,9 +188,11 @@ class TopLevelConfig(ABC):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        n_samples: int | list[int],
         dataset_args: dict | None = None,
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -205,8 +208,10 @@ class TopLevelConfig(ABC):
         self.models = models
         self.dataset_names = dataset_names
         self.dataset_args = dataset_args
+        self.keep_labels = keep_labels
+        self.n_samples = n_samples
         self.random_states = random_states
-        self.wandb = wandb
+        self.wandb_args = wandb_args
         self.sub_configs = []
         self.num_configs = 0
         self.bask = bask

@@ -121,6 +121,8 @@ class MetricConfig(Config):
         model_name: Name of the HuggingFace model to perform metric experiment on.
         dataset_name: Name of the HuggingFace dataset to use for metric experiment.
         metrics: Which metrics to perform the experiments on.
+        metric_kwargs: dictionary of entries
+            {metric_name: **metric_kwargs} containing parameters for each metric
         save_dir: Where to save a local copy of the results.
         dataset_args: Dict defining the splits and columns of the dataset to use, see
             the docstring of the base Config class for details.
@@ -141,6 +143,7 @@ class MetricConfig(Config):
         model_name: str,
         dataset_name: str,
         metrics: list[str],
+        metric_kwargs: dict,
         save_dir: str | None = None,
         dataset_args: str | None = None,
         run_name: str | None = None,
@@ -157,6 +160,7 @@ class MetricConfig(Config):
             model_name=model_name,
             dataset_name=dataset_name,
             dataset_args=dataset_args,
+            n_samples=n_samples,
             run_name=run_name,
             random_state=random_state,
             use_wandb=use_wandb,
@@ -165,6 +169,7 @@ class MetricConfig(Config):
             caches=caches,
         )
         self.metrics = metrics
+        self.metric_kwargs = metric_kwargs if metric_kwargs is not None else {}
         self.save_dir = save_dir
         self.n_samples = n_samples or 50
         self.local_save = local_save
@@ -191,6 +196,7 @@ class MetricConfig(Config):
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
             metrics=config["metrics"],
+            metric_kwargs=config["metric_kwargs"],
             save_dir=config.get("save_dir"),
             n_samples=config.get("n_samples"),
             random_state=config.get("random_state"),
@@ -213,6 +219,7 @@ class MetricConfig(Config):
             "dataset_name": self.dataset_name,
             "dataset_args": self.dataset_args,
             "metrics": self.metrics,
+            "metric_kwargs": self.metric_kwargs,
             "save_dir": self.save_dir,
             "n_samples": self.n_samples,
             "run_name": self.run_name,
@@ -247,9 +254,7 @@ class TopLevelMetricConfig(TopLevelConfig):
                                     for
         - dataset_names: (list of) dataset(s) to generate experiment
                                            configs for
-        - dataset_args: Optionally containing 'metrics_split', the
-            dataset split to run metrics experiments on. See the base Config class for
-            more details.
+        - dataset_args: See the base Config class for more details.
         - n_samples: (list of) sample number(s) to generate experiment
             configs for
 
@@ -274,12 +279,14 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         metrics: list[str],
+        metric_kwargs: dict,
+        n_samples: int | list[int],
         dataset_names: str | list[str],
         dataset_args: str | list[str],
-        n_samples: int | list[int],
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
         save_dir: str | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -288,19 +295,16 @@ class TopLevelMetricConfig(TopLevelConfig):
         config_gen_dtime: str | None = None,
         inference_args: dict | None = None,
     ) -> None:
-        if dataset_args is not None and "metrics_split" not in dataset_args:
-            dataset_args["metrics_split"] = dataset_args.get("train_split", "train")
-        if dataset_args is None:
-            dataset_args = {"metrics_split": "train"}
-
         super().__init__(
             config_type,
             config_dir,
             models,
             dataset_names,
+            n_samples,
             dataset_args,
+            keep_labels,
             random_states,
-            wandb,
+            wandb_args,
             bask,
             use_bask,
             caches,
@@ -309,7 +313,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.metrics = metrics
-        self.n_samples = n_samples
+        self.metric_kwargs = metric_kwargs
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
 
@@ -328,9 +332,10 @@ class TopLevelMetricConfig(TopLevelConfig):
                     - slurm_template_path: where the slurm_template is
 
                     Can also contain "random_states", "n_samples", "caches",
-                    "dataset_args", "config_gen_dtime", "use_wandb", "wandb_args",
-                    "use_bask", and "bask" keys. If "use_wandb" is not specified, it is
-                    set to True if "wandb" is in the config dict.
+                    "metric_kwargs", "dataset_args", "config_gen_dtime",
+                    "use_wandb", "wandb_args", "use_bask", and "bask" keys. If
+                    "use_wandb" is not specified, it is set to True if "wandb"
+                    is in the config dict.
             config_type (optional): pass the config type to the class constructor
                                     explicitly. Defaults to None.
             inference_args (optional): pass inference specific arguments to the metric
@@ -348,19 +353,21 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_dir=config["config_dir"],
             models=config["models"],
             dataset_names=config["dataset_names"],
-            dataset_args=config.get("dataset_args"),
+            dataset_args=config["dataset_args"],
+            keep_labels=config["keep_labels"],
             metrics=config["metrics"],
-            save_dir=config.get("save_dir"),
-            n_samples=config.get("n_samples"),
-            random_states=config.get("random_states"),
-            wandb=config.get("wandb"),
-            bask=config.get("bask"),
-            use_bask=config.get("use_bask"),
-            caches=config.get("caches"),
-            slurm_template_path=config.get("slurm_template_path"),
-            slurm_template_name=config.get("slurm_template_name"),
-            config_gen_dtime=config.get("config_gen_dtime"),
-            inference_args=config.get("inference_args"),
+            metric_kwargs=config["metric_kwargs"],
+            n_samples=config["n_samples"],
+            save_dir=config["save_dir"],
+            random_states=config["random_states"],
+            wandb_args=config["wandb_args"],
+            bask=config["bask"],
+            use_bask=config["use_bask"],
+            caches=config["caches"],
+            slurm_template_path=config["slurm_template_path"],
+            slurm_template_name=config["slurm_template_name"],
+            config_gen_dtime=config["config_gen_dtime"],
+            inference_args=config["inference_args"],
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -388,6 +395,10 @@ class TopLevelMetricConfig(TopLevelConfig):
             sweep_dict["random_state"] = copy(self.random_states)
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
+        if isinstance(self.keep_labels, list):
+            sweep_dict["keep_labels"] = copy(self.keep_labels)
+        else:
+            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [
@@ -399,12 +410,14 @@ class TopLevelMetricConfig(TopLevelConfig):
 
         for pdict in param_sweep_dicts:
             pdict["save_dir"] = self.save_dir
-            pdict["wandb_args"] = self.wandb
+            pdict["wandb_args"] = self.wandb_args
             pdict["metrics"] = self.metrics
+            pdict["metric_kwargs"] = self.metric_kwargs
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["device"] = device
             pdict["dataset_args"] = self.dataset_args
+            pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
 
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:

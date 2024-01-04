@@ -62,14 +62,18 @@ Both kinds of config should contain:
   - `writer_batch_size`: How many images to cache in memory before writing to disk. during preprocessing (relevant if `preprocess_cache` is `disk` or `tmp`)
 - `dataset_name`: Name of the dataset on HuggingFace
 - `dataset_args`: Contains dataset split/column selection parameters:
-  - `train_split`, `val_split`: Training and validation split to use for fine-tuning
-  - `metrics_split`: Dataset split to use for computing metrics (usually should be the same as `train_split`)
+  - `train_split`, `val_split`, `test_split`: Training, validation, and test_split names. Should either already exist or they will be generated. Should NOT be the same
+  - `val_size`, `test_size`: Percentages (0.-1.) or integers denoting the size of the validation and test sets (if a percentage, as a percentage of the WHOLE dataset) to be generated. Can be `null` (`None`) if the corresponding split already exists
   - `image_field`, `label_field`: Dataset column containing the image and class label
 - `model_name`: Name of the model to be used on HuggingFace
 - `random_state`: Seed for random number generation
 - `run_name`: Name for the wandb run
 - `save_dir`: Directory in which to save results
 - `use_wandb`: Set to `true` to log results to wandb
+- `n_samples`: Main argument to control dataset size, can be `null` to use the whole dataset. Slightly different meaninig for metrics and training jobs:
+  - Metrics jobs: How many samples to compute the metrics with.
+  - Training jobs - How many samples in the training set.
+- `keep_labels`: A list of labels denoting which labels to keep - all images corresponding to other labels are dropped. Can be `null` to keep all
 
 If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
 
@@ -82,7 +86,7 @@ Metrics configs should additionally contain:
 
 - `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
-- `n_samples`: Number of images from the dataset to compute the metrics with
+- `metric_kwargs`: A list of the pattern `metric_name: kwarg_1: value` of kwargs to be passed to each metric if desired. Note that every metric used does not need to exist in this
 
 Train configs should additionally contain the following nested under `dataset_args`:
 
@@ -100,7 +104,7 @@ Along with any further `training_args`, which are all directly passed to Hugging
 - `save_strategy`: HuggingFace saving strategy
 - `use_mps_device`: Whether to use MPS
 
-Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes.
+Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes. An example is given in [example_top_config.yaml](/configs/example_top_config.yaml)
 
 The additional arguments are:
 
@@ -119,8 +123,8 @@ If `use_bask` is `True`, then you should include the following additional argume
 The changes are:
 
 - `models`: Replaces `model`, contains a list of HuggingFace model names
-- `dataset_names`: Replaces `dataset_name`, contains a list of HuggingFace dataset
 - `random_states`: Replaces `random_state`, contains a list of seeds to generate scripts over.
+- `keep_labels`: Now a list of lists to generate scripts over
 
 To generate configs from the top level config, run
 

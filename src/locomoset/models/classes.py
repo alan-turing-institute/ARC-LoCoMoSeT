@@ -35,6 +35,7 @@ class FineTuningConfig(Config):
         model_name: str,
         dataset_name: str,
         dataset_args: dict | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -47,6 +48,7 @@ class FineTuningConfig(Config):
             model_name,
             dataset_name,
             dataset_args,
+            n_samples,
             random_state,
             config_gen_dtime,
             caches,
@@ -74,6 +76,7 @@ class FineTuningConfig(Config):
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
             dataset_args=config.get("dataset_args"),
+            n_samples=config["n_samples"],
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
             training_args=config.get("training_args"),
@@ -111,6 +114,7 @@ class FineTuningConfig(Config):
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
             "dataset_args": self.dataset_args,
+            "n_samples": self.n_samples,
             "run_name": self.run_name,
             "random_state": self.random_state,
             "training_args": self.training_args,
@@ -127,7 +131,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
     Possible entries to vary over if multiple given:
         - models
-        - dataset_names
+        - dataset_name
         - random_states
 
     Args:
@@ -135,7 +139,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         - config_type: which config type to generate (metrics or train)
         - config_dir: where to save the generated configs to
         - models: (list of) model(s) to generate experiment configs for
-        - dataset_names: (list of) dataset(s) to generate experiment configs for
+        - dataset_name: (list of) dataset(s) to generate experiment configs for
         - random_states: (list of) random state(s) to generate experiment configs for
         - wandb: weights and biases arguments
         - bask: baskerville computational arguments
@@ -156,10 +160,12 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        n_samples: int | list[int],
         training_args: dict,
         dataset_args: dict | None = None,
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -172,9 +178,11 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_dir,
             models,
             dataset_names,
+            n_samples,
             dataset_args,
+            keep_labels,
             random_states,
-            wandb,
+            wandb_args,
             bask,
             use_bask,
             caches,
@@ -195,7 +203,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
                     - config_type: label for type of experiment config.
                     - config_dir: which directory to save the specific configs to.
                     - models: which model(s) to run the fine tuning on.
-                    - dataset_names: which dataset(s) to run the fine tuning on.
+                    - dataset_name: which dataset(s) to run the fine tuning on.
                     - slurm_template_path: where the slurm_template is
 
                     Can also contain "random_states", "dataset_args",
@@ -216,10 +224,12 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_type=config_type,
             config_dir=config.get("config_dir"),
             models=config.get("models"),
-            dataset_names=config.get("dataset_names"),
+            dataset_names=config["dataset_names"],
+            n_samples=config["n_samples"],
             dataset_args=config.get("dataset_args"),
+            keep_labels=config["keep_labels"],
             random_states=config.get("random_states"),
-            wandb=config.get("wandb"),
+            wandb_args=config.get("wandb_args"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
@@ -250,17 +260,26 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             sweep_dict["random_state"] = copy(self.random_states)
         else:
             sweep_dict["random_state"] = [copy(self.random_states)]
+        if isinstance(self.keep_labels, list):
+            sweep_dict["keep_labels"] = copy(self.keep_labels)
+        else:
+            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
+        if isinstance(self.n_samples, list):
+            sweep_dict["n_samples"] = copy(self.n_samples)
+        else:
+            sweep_dict["n_samples"] = [copy(self.n_samples)]
 
         sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
         param_sweep_dicts = [
             dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
         ]
         for pdict in param_sweep_dicts:
-            pdict["wandb_args"] = self.wandb
+            pdict["wandb_args"] = self.wandb_args
             pdict["config_gen_dtime"] = self.config_gen_dtime
             pdict["caches"] = self.caches
             pdict["dataset_args"] = self.dataset_args
             pdict["training_args"] = self.training_args
+            pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
         self.num_configs = len(param_sweep_dicts)
         if self.num_configs > 1001:
             warnings.warn("Slurm array jobs cannot exceed more than 1001!")
