@@ -1,0 +1,4 @@
+[default]
+entity = jack89roberts
+project = locomoset
+base_url = https://api.wandb.ai

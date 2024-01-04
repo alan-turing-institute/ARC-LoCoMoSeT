@@ -1,0 +1,3 @@
+model_name,n_gpus,epochs,samples_per_gpu_per_s
+facebook/deit-small-patch16-224,2,10.0,18.505654361645284
+microsoft/beit-large-patch16-512,1,2.8,3.515571886732859

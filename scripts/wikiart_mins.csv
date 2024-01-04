@@ -1,0 +1,17 @@
+model_name,n_gpus,samples_per_gpu_per_s
+Intel/vit-base-patch16-224-int8-static,1,24.662852873082095
+apple/mobilevit-small,1,25.67614051006823
+apple/mobilevit-xx-small,1,23.91637546183958
+facebook/deit-base-patch16-384,2,6.5524163730813685
+facebook/dinov2-base-imagenet1k-1-layer,1,19.803803795254687
+facebook/dinov2-small-imagenet1k-1-layer,1,24.999745385725124
+google/vit-base-patch16-384,2,5.924763061106095
+google/vit-large-patch16-224,1,13.712902280977735
+microsoft/beit-base-patch16-224,1,23.591531710160695
+microsoft/beit-base-patch16-224-pt22k-ft22k,1,22.478777631592035
+microsoft/beit-large-patch16-512,3,1.8766361426552478
+microsoft/cvt-13,1,24.951317603199676
+microsoft/cvt-21-384-22k,2,5.725044900208084
+microsoft/swin-base-patch4-window12-384,2,5.16751278743286
+microsoft/swin-large-patch4-window12-384-in22k,2,4.30726842703089
+microsoft/swinv2-base-patch4-window8-256,1,16.918038581983197
