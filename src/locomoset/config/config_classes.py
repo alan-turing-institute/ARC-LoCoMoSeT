@@ -58,6 +58,8 @@ class Config(ABC):
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
         if run_name is not None:
+            self.run_name = run_name
+        else:
             if len(self.dataset_name) > 64:
                 self.run_name = f"{self.dataset_name[-25:]}_{self.model_name}".replace(
                     "/", "-"
@@ -66,8 +68,6 @@ class Config(ABC):
                 self.run_name = f"{self.dataset_name}_{self.model_name}".replace(
                     "/", "-"
                 )
-        else:
-            self.run_name = run_name
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.n_samples = n_samples
         if "image_field" not in self.dataset_args:
