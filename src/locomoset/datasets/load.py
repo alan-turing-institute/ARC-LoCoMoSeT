@@ -30,8 +30,22 @@ def load_dataset(
             keep_labels was defined).
     """
     dataset = datasets.load_dataset(
-        dataset_name, split=split, cache_dir=cache_dir, keep_in_memory=keep_in_memory
+        dataset_name,
+        split=split,
+        cache_dir=cache_dir,
+        keep_in_memory=keep_in_memory,
     )
+
+    # remove corrupted file in rvl_cdip
+    if dataset_name == "aharley/rvl_cdip":
+        if split == "test":
+            dataset = dataset.select(
+                [i for i in range(len(dataset["test"])) if i != 33669]
+            )
+        else:
+            dataset["test"] = dataset["test"].select(
+                [i for i in range(len(dataset["test"])) if i != 33669]
+            )
 
     if image_field != "image":
         dataset = dataset.rename_column(image_field, "image")

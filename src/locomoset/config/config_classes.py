@@ -56,7 +56,17 @@ class Config(ABC):
         self.caches = caches
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
-        self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
+        if run_name is not None:
+            self.run_name = run_name
+        else:
+            if len(self.dataset_name) > 64:
+                self.run_name = f"{self.dataset_name[-25:]}_{self.model_name}".replace(
+                    "/", "-"
+                )
+            else:
+                self.run_name = f"{self.dataset_name}_{self.model_name}".replace(
+                    "/", "-"
+                )
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.n_samples = n_samples
         if "image_field" not in self.dataset_args:
@@ -99,9 +109,19 @@ class Config(ABC):
             wandb_config["name"] = self.run_name
         if "group" not in wandb_config:
             if self.config_gen_dtime is not None:
-                wandb_config["group"] = f"{self.dataset_name}_{self.config_gen_dtime}"
+                if len(self.dataset_name) > 64:
+                    wandb_config[
+                        "group"
+                    ] = f"{self.dataset_name[-25:]}_{self.config_gen_dtime[:8]}"
+                else:
+                    wandb_config[
+                        "group"
+                    ] = f"{self.dataset_name}_{self.config_gen_dtime[:8]}"
             else:
-                wandb_config["group"] = f"{self.dataset_name}"
+                if len(self.dataset_name) > 64:
+                    wandb_config["group"] = f"{self.dataset_name[-25:]}"
+                else:
+                    wandb_config["group"] = f"{self.dataset_name}"
         if "job_type" not in wandb_config:
             raise ValueError("No Job type given")
 
