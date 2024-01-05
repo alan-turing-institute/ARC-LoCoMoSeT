@@ -113,11 +113,11 @@ class Config(ABC):
                 if len(self.dataset_name) > 64:
                     wandb_config[
                         "group"
-                    ] = f"{self.dataset_name[-25:]}_{self.config_gen_dtime}"
+                    ] = f"{self.dataset_name[-25:]}_{self.config_gen_dtime[:8]}"
                 else:
                     wandb_config[
                         "group"
-                    ] = f"{self.dataset_name}_{self.config_gen_dtime}"
+                    ] = f"{self.dataset_name}_{self.config_gen_dtime[:8]}"
             else:
                 if len(self.dataset_name) > 64:
                     wandb_config["group"] = f"{self.dataset_name[-25:]}"
