@@ -20,7 +20,7 @@ models:
   - microsoft/cvt-13
 
 # HuggingFace Datasets or paths to local datasets
-dataset_names: aharley/rvl_cdip
+dataset_names:  huggan/wikiart
 
 # Random seeds to use
 random_states:
@@ -30,20 +30,20 @@ random_states:
 wandb_args:
   entity: turing-arc
   project: locomoset
-  log_model: end
+  log_model: 'false'
 
 # Baskerville arguments, with separate arguments available for the different experiment types
 use_bask: True
 bask:
   metrics:
     job_name: 'locomoset_metric_experiment'
-    walltime: '0-3:0:0'
+    walltime: '0-1:0:0'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
   train:
     job_name: 'locomoset_train_experiment'
-    walltime: '3-0:0:0'
+    walltime: '0-6:0:0'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
@@ -85,15 +85,11 @@ dataset_args:
   test_size: 0.25
   # Which fields in the dataset contain the images and labels
   image_field: image
-  label_field: label
+  label_field: artist
 
 # List of no. of images to compute the metrics with / the size of the training dataset (null
 # for whole dataset)
 n_samples:
-  - 500
-  - 1000
-  - 5000
-  - 10000
   - 50000
 
 # list of label keeps
