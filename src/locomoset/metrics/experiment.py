@@ -98,11 +98,19 @@ class ModelMetricsExperiment:
         # Grab train split
         self.dataset = self.dataset[config.dataset_args["train_split"]]
 
-        # Subset dataset
+        # Take subset to create whole train dataset
         self.n_samples = config.n_samples
         self.dataset = drop_images(
             self.dataset,
             keep_size=self.n_samples,
+            seed=config.random_state,
+        )
+
+        # Further subset train dataset to create metrics dataset
+        self.metrics_samples = config.metrics_samples
+        self.dataset = drop_images(
+            self.dataset,
+            keep_size=self.metrics_samples,
             seed=config.random_state,
         )
 

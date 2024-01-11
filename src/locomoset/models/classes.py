@@ -1,10 +1,8 @@
 """
-    Class for train config
+Class for train config
 """
 
-import warnings
 from copy import copy
-from itertools import product
 
 from transformers import TrainingArguments
 
@@ -246,43 +244,26 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         Returns:
             list of config dictionaries for FineTuningConfig objects.
         """
-        sweep_dict = {}
-
-        if isinstance(self.models, list):
-            sweep_dict["model_name"] = copy(self.models)
-        else:
-            sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_names, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_names)
-        else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
-        if isinstance(self.random_states, list):
-            sweep_dict["random_state"] = copy(self.random_states)
-        else:
-            sweep_dict["random_state"] = [copy(self.random_states)]
-        if isinstance(self.keep_labels, list):
-            sweep_dict["keep_labels"] = copy(self.keep_labels)
-        else:
-            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-        if isinstance(self.n_samples, list):
-            sweep_dict["n_samples"] = copy(self.n_samples)
-        else:
-            sweep_dict["n_samples"] = [copy(self.n_samples)]
-
-        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
-        param_sweep_dicts = [
-            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        sweep_args = {
+            "models": "model_name",
+            "dataset_names": "dataset_name",
+            "n_samples": "n_samples",
+            "random_states": "random_state",
+            "keep_labels": "keep_labels",
+        }
+        keep_args = [
+            "wandb_args",
+            "config_gen_dtime",
+            "caches",
+            "dataset_args",
+            "training_args",
         ]
+        param_sweep_dicts = self._gen_sweep_dicts(sweep_args, keep_args)
+
+        # Add remaining arguments not dealt with by _gen_sweep_dicts
         for pdict in param_sweep_dicts:
-            pdict["wandb_args"] = self.wandb_args
-            pdict["config_gen_dtime"] = self.config_gen_dtime
-            pdict["caches"] = self.caches
-            pdict["dataset_args"] = self.dataset_args
-            pdict["training_args"] = self.training_args
             pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
-        self.num_configs = len(param_sweep_dicts)
-        if self.num_configs > 1001:
-            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
+
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[Config]:

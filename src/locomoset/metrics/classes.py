@@ -1,10 +1,7 @@
 """
 Base metric class for unifying the method.
 """
-import warnings
 from abc import ABC, abstractmethod
-from copy import copy
-from itertools import product
 
 import numpy as np
 
@@ -128,7 +125,9 @@ class MetricConfig(Config):
             the docstring of the base Config class for details.
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
-        n_samples: How many samples to use in the metric experiments.
+        n_samples: No. samples in the whole training dataset (used to create dataset
+            splits that are consistent with training jobs).
+        metrics_samples: No. samples to compute metrics with (a subset of the train set)
         random_state: Random state to use for train/test split.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
@@ -148,6 +147,7 @@ class MetricConfig(Config):
         dataset_args: str | None = None,
         run_name: str | None = None,
         n_samples: int | None = None,
+        metrics_samples: int | None = None,
         random_state: int | None = None,
         use_wandb: bool = False,
         wandb_args: dict | None = None,
@@ -170,8 +170,10 @@ class MetricConfig(Config):
         )
         self.metrics = metrics
         self.metric_kwargs = metric_kwargs if metric_kwargs is not None else {}
+        # `or n_samples` below to default to using whole train set if metrics_samples
+        # is None
+        self.metrics_samples = metrics_samples or n_samples
         self.save_dir = save_dir
-        self.n_samples = n_samples or 50
         self.local_save = local_save
         self.wandb_args["job_type"] = "metrics"
         self.device = device
@@ -199,6 +201,7 @@ class MetricConfig(Config):
             metric_kwargs=config["metric_kwargs"],
             save_dir=config.get("save_dir"),
             n_samples=config.get("n_samples"),
+            metrics_samples=config.get("metrics_samples"),
             random_state=config.get("random_state"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
             wandb_args=config.get("wandb_args"),
@@ -222,6 +225,7 @@ class MetricConfig(Config):
             "metric_kwargs": self.metric_kwargs,
             "save_dir": self.save_dir,
             "n_samples": self.n_samples,
+            "metrics_samples": self.metrics_samples,
             "run_name": self.run_name,
             "random_state": self.random_state,
             "use_wandb": self.use_wandb,
@@ -255,8 +259,10 @@ class TopLevelMetricConfig(TopLevelConfig):
         - dataset_names: (list of) dataset(s) to generate experiment
                                            configs for
         - dataset_args: See the base Config class for more details.
-        - n_samples: (list of) sample number(s) to generate experiment
+        - n_samples: (list of) training set size(s) to generate experiment
             configs for
+        - metrics_samples: (list of) metrics dataset size(s) to generate experiment
+            configs for (subset of the train set to use for metrics computation)
 
         Can also contain:
         - random_states: (list of) random state(s) to generate
@@ -281,6 +287,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         metrics: list[str],
         metric_kwargs: dict,
         n_samples: int | list[int],
+        metrics_samples: int | list[int],
         dataset_names: str | list[str],
         dataset_args: str | list[str],
         keep_labels: list[list[str]] | list[list[int]] | None = None,
@@ -313,6 +320,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.metrics = metrics
+        self.metrics_samples = metrics_samples
         self.metric_kwargs = metric_kwargs
         self.save_dir = save_dir
         self.inference_args = inference_args or {}
@@ -358,6 +366,7 @@ class TopLevelMetricConfig(TopLevelConfig):
             metrics=config["metrics"],
             metric_kwargs=config["metric_kwargs"],
             n_samples=config["n_samples"],
+            metrics_samples=config["metrics_samples"],
             save_dir=config["save_dir"],
             random_states=config["random_states"],
             wandb_args=config["wandb_args"],
@@ -377,55 +386,39 @@ class TopLevelMetricConfig(TopLevelConfig):
         Returns:
             list of config dictionaries for FineTuningConfig objects.
         """
-        sweep_dict = {}
-
-        if isinstance(self.models, list):
-            sweep_dict["model_name"] = copy(self.models)
-        else:
-            sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_names, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_names)
-        else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
-        if isinstance(self.n_samples, list):
-            sweep_dict["n_samples"] = copy(self.n_samples)
-        else:
-            sweep_dict["n_samples"] = [copy(self.n_samples)]
-        if isinstance(self.random_states, list):
-            sweep_dict["random_state"] = copy(self.random_states)
-        else:
-            sweep_dict["random_state"] = [copy(self.random_states)]
-        if isinstance(self.keep_labels, list):
-            sweep_dict["keep_labels"] = copy(self.keep_labels)
-        else:
-            sweep_dict["keep_labels"] = [copy(self.keep_labels)]
-
-        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
-        param_sweep_dicts = [
-            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        sweep_args = {
+            "models": "model_name",
+            "dataset_names": "dataset_name",
+            "n_samples": "n_samples",
+            "metrics_samples": "metrics_samples",
+            "random_states": "random_state",
+            "keep_labels": "keep_labels",
+        }
+        keep_args = [
+            "save_dir",
+            "wandb_args",
+            "metrics",
+            "metric_kwargs",
+            "config_gen_dtime",
+            "caches",
+            "dataset_args",
         ]
+        param_sweep_dicts = self._gen_sweep_dicts(sweep_args, keep_args)
 
-        # input inference args
-        device = self.inference_args.get("device")
-
+        # Add remaining arguments not dealt with by _gen_sweep_dicts
         for pdict in param_sweep_dicts:
-            pdict["save_dir"] = self.save_dir
-            pdict["wandb_args"] = self.wandb_args
-            pdict["metrics"] = self.metrics
-            pdict["metric_kwargs"] = self.metric_kwargs
-            pdict["config_gen_dtime"] = self.config_gen_dtime
-            pdict["caches"] = self.caches
-            pdict["device"] = device
-            pdict["dataset_args"] = self.dataset_args
+            pdict["device"] = self.inference_args.get("device")
             pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
 
-        self.num_configs = len(param_sweep_dicts)
-        if self.num_configs > 1001:
-            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[Config]:
         """Generate the sub configs based on parameter_sweeps"""
         self.sub_configs = [
-            MetricConfig.from_dict(config) for config in self.parameter_sweep()
+            MetricConfig.from_dict(config)
+            for config in self.parameter_sweep()
+            # exclude configs where metrics_samples > n_samples
+            if config["metrics_samples"] is None
+            or config["n_samples"] is None
+            or config["metrics_samples"] <= config["n_samples"]
         ]

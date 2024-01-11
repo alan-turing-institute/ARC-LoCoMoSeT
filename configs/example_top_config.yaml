@@ -67,8 +67,7 @@ dataset_args:
   val_size: 0.15
   test_size: 0.15
 
-# List of no. of images to compute the metrics with / the size of the training dataset (null
-# for whole dataset)
+# The size of the training dataset (null for whole dataset)
 n_samples:
   - 50
   - 100
@@ -98,6 +97,12 @@ metrics:
   - renggli
   - n_pars
   - LogME
+
+# How many samples to use to compute metrics, will be subsetted from the training
+# set, so values here should be <= n_samples (or null to use whole train dataset)
+metrics_samples:
+  - 50
+  - 100
 
 # kwargs to metrics - if not null, nested list of metric_name: kwarg1: value
 metric_kwargs: null

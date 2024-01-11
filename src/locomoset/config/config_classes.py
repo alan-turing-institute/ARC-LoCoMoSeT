@@ -7,6 +7,7 @@ import warnings
 from abc import ABC, abstractclassmethod, abstractmethod
 from copy import copy
 from datetime import datetime
+from itertools import product
 from pathlib import Path
 
 import wandb
@@ -295,6 +296,44 @@ class TopLevelConfig(ABC):
         file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}.sh"
         with open(f"{config_path}/{file_name}", "w") as f:
             f.write(content)
+
+    def _gen_sweep_dicts(
+        self, sweep_args: dict[str, str], keep_args: list[str]
+    ) -> list[dict]:
+        """Generate a list of dictionaries to create single configs from, looping over
+         the specified arguments to sweep over.
+
+        Args:
+            sweep_args: Which arguments to sweep over, dict of {name of argument in
+                TopLeveLConfig: name of argument in MetricConfig}
+            keep_args: Arguments in TopLevelConfig to keep unchanged in generated
+                MetricsConfig
+
+        Returns:
+            List of dictionaries to create single configs from.
+        """
+        sweep_dict = {}
+        # fill sweep dict, ensuring any non-list values are converted to lists
+        for toplevel_arg, config_arg in sweep_args.items():
+            if isinstance(getattr(self, toplevel_arg), list):
+                sweep_dict[config_arg] = copy(getattr(self, toplevel_arg))
+            else:
+                sweep_dict[config_arg] = [copy(getattr(self, toplevel_arg))]
+
+        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
+        param_sweep_dicts = [
+            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        ]
+
+        # argument in TopLevelMetricsConfig to keep unchanged in MetricsConfig
+        for pdict in param_sweep_dicts:
+            for arg in keep_args:
+                pdict[arg] = getattr(self, arg)
+
+        self.num_configs = len(param_sweep_dicts)
+        if self.num_configs > 1001:
+            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
+        return param_sweep_dicts
 
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs to a top level director given by the config

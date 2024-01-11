@@ -70,9 +70,7 @@ Both kinds of config should contain:
 - `run_name`: Name for the wandb run
 - `save_dir`: Directory in which to save results
 - `use_wandb`: Set to `true` to log results to wandb
-- `n_samples`: Main argument to control dataset size, can be `null` to use the whole dataset. Slightly different meaninig for metrics and training jobs:
-  - Metrics jobs: How many samples to compute the metrics with.
-  - Training jobs - How many samples in the training set.
+- `n_samples`: The training dataset size, or `null` to use the whole train split.
 - `keep_labels`: A list of labels denoting which labels to keep - all images corresponding to other labels are dropped. Can be `null` to keep all
 
 If `use_wandb` is `true`, then under `wandb_args` the following shoud additionally be specified:
@@ -84,6 +82,8 @@ If `use_wandb` is `true`, then under `wandb_args` the following shoud additional
 
 Metrics configs should additionally contain:
 
+- `metrics_samples`: How many samples to compute the metrics with. This will be a subset of the training dataset so should be less than or equal to the
+  `n_samples` value. Or `null` to compute them with the whole train split (i.e. with `n_samples` images).
 - `local_save`: Set to `true` to locally save a copy of the results
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
 - `metric_kwargs`: A list of the pattern `metric_name: kwarg_1: value` of kwargs to be passed to each metric if desired. Note that every metric used does not need to exist in this
