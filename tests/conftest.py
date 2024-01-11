@@ -98,7 +98,7 @@ def dummy_config_gen_dtime():
 
 @pytest.fixture
 def dummy_metric_config(
-    test_seed, dummy_split, dummy_dataset_name, dummy_model_name, dummy_config_gen_dtime
+    test_seed, dummy_dataset_name, dummy_model_name, dummy_config_gen_dtime
 ):
     return {
         "caches": {
@@ -121,6 +121,7 @@ def dummy_metric_config(
         "metrics": ["renggli"],
         "metric_kwargs": None,
         "n_samples": 50,
+        "metrics_samples": 25,
         "random_state": test_seed,
         "wandb_args": {"entity": "test_entity", "project": "test_project"},
     }
@@ -249,5 +250,6 @@ def dummy_top_level_config(
         "metric_kwargs": None,
         "dataset_split": "train",
         "n_samples": test_n_samples,
+        "metrics_samples": test_n_samples,
         "inference_args": {"device": "cuda"},
     }
