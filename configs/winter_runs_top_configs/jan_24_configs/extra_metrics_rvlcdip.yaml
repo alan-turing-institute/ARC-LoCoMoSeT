@@ -52,7 +52,7 @@ use_bask: True
 bask:
   metrics:
     job_name: 'locomoset_metric_experiment'
-    walltime: '0-3:0:0'
+    walltime: '0-2:0:0'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
