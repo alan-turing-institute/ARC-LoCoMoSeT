@@ -1,6 +1,7 @@
 """
 Base metric class for unifying the method.
 """
+import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -287,7 +288,7 @@ class TopLevelMetricConfig(TopLevelConfig):
         metrics: list[str],
         metric_kwargs: dict,
         n_samples: int | list[int],
-        metrics_samples: int | list[int],
+        metrics_samples: int | list[int] | None,
         dataset_names: str | list[str],
         dataset_args: str | list[str],
         keep_labels: list[list[str]] | list[list[int]] | None = None,
@@ -356,6 +357,14 @@ class TopLevelMetricConfig(TopLevelConfig):
             config_type = config_type
         else:
             config_type = config.get("config_type")
+
+        # create metrics_samples if not specified, for compatibility with older configs
+        if "metrics_samples" not in config:
+            warnings.warn(
+                "Set metrics_samples to n_samples as it wasn't sepcified in the config"
+            )
+            config["metrics_samples"] = config["n_samples"]
+
         return cls(
             config_type=config_type,
             config_dir=config["config_dir"],
