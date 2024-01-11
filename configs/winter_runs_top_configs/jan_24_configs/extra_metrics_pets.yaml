@@ -56,12 +56,6 @@ bask:
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
-  train:
-    job_name: 'locomoset_train_experiment'
-    walltime: '3-0:0:0'
-    node_number: 1
-    gpu_number: 1
-    cpu_per_gpu': 36
 
 # Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
 # slurm_template_path: None
@@ -111,17 +105,6 @@ n_samples:
 # list of label keeps
 keep_labels:
   - null # equivalent to saying keep all labels
-
-# Training specific config -----------------------------------------------------------------
-
-# Arguments for transformers.TrainingArguments
-training_args:
-  output_dir: output
-  overwrite_output_dir: True
-  save_strategy: "no"
-  num_train_epochs: 10
-  evaluation_strategy: epoch
-  logging_strategy: epoch
 
 # Metric Experiment specific config ---------------------------------------------------------
 
