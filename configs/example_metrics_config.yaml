@@ -18,5 +18,6 @@ metrics:
 metric_kwargs: null
 model_name: facebook/deit-tiny-patch16-224
 n_samples: 500
+metrics_samples: 250
 random_state: 42
 save_dir: results/pets

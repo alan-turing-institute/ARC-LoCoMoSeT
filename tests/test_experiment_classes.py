@@ -11,7 +11,10 @@ from locomoset.models.load import get_model_without_head
 
 
 def test_model_exp_class_init(
-    dummy_metric_config, dummy_model_name, dummy_dataset_name, test_seed
+    dummy_metric_config,
+    dummy_model_name,
+    dummy_dataset_name,
+    test_seed,
 ):
     """Test the class initialisation"""
     config = MetricConfig.from_dict(dummy_metric_config)
@@ -19,6 +22,7 @@ def test_model_exp_class_init(
     assert model_experiment.model_name == dummy_model_name
     assert model_experiment.dataset_name == dummy_dataset_name
     assert model_experiment.n_samples == 50
+    assert model_experiment.metrics_samples == dummy_metric_config["metrics_samples"]
     assert model_experiment.random_state == test_seed
     assert list(model_experiment.metrics.keys()) == ["renggli"]
     assert model_experiment.inference_types == ["features"]
@@ -29,7 +33,7 @@ def test_features_inference(dummy_metric_config):
     config = MetricConfig.from_dict(dummy_metric_config)
     model_experiment = ModelMetricsExperiment(config)
     features = model_experiment.features_inference()
-    assert features.shape == (50, 5)
+    assert features.shape == (dummy_metric_config["metrics_samples"], 5)
 
 
 def test_perform_inference_task_specifc(dummy_metric_config):
@@ -37,7 +41,7 @@ def test_perform_inference_task_specifc(dummy_metric_config):
     config = MetricConfig.from_dict(dummy_metric_config)
     model_experiment = ModelMetricsExperiment(config)
     inference = model_experiment.perform_inference(model_experiment.inference_types[0])
-    assert inference[0].shape == (50, 5)
+    assert inference[0].shape == (dummy_metric_config["metrics_samples"], 5)
 
 
 def test_perform_inference_task_agnostic(dummy_metric_config):
