@@ -7,6 +7,7 @@ Model inference here is done by pipline.
 """
 import json
 import os
+import warnings
 from datetime import datetime
 from time import time
 from typing import Tuple
@@ -108,11 +109,29 @@ class ModelMetricsExperiment:
 
         # Further subset train dataset to create metrics dataset
         self.metrics_samples = config.metrics_samples
-        self.dataset = drop_images(
-            self.dataset,
-            keep_size=self.metrics_samples,
-            seed=config.random_state,
-        )
+        try:
+            self.dataset = drop_images(
+                self.dataset,
+                keep_size=self.metrics_samples,
+                seed=config.random_state,
+            )
+        except ValueError as error:
+            if str(error).startswith(
+                "The least populated class in label column has only 1 member"
+            ):
+                warnings.warn(
+                    "The train set has only one sample of some classes so can't be "
+                    "further subsetted with stratification to create the metrics set. "
+                    "A random split has been used instead."
+                )
+                self.dataset = drop_images(
+                    self.dataset,
+                    keep_size=self.metrics_samples,
+                    seed=config.random_state,
+                    stratify_by_column=None,
+                )
+            else:
+                raise error
 
         self.labels = self.dataset["label"]
 

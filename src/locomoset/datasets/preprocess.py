@@ -34,6 +34,7 @@ def _drop_images(
     dataset: Dataset,
     keep_size: float | int,
     seed: int | None = None,
+    stratify_by_column: str | None = "label",
 ) -> Dataset:
     """Randomly drops images from the dataset
 
@@ -52,7 +53,7 @@ def _drop_images(
             f"keep_size ({keep_size}) is greater than dataset size ({dataset.num_rows})"
         )
     return dataset.train_test_split(
-        train_size=keep_size, seed=seed, stratify_by_column="label"
+        train_size=keep_size, seed=seed, stratify_by_column=stratify_by_column
     )["train"]
 
 
@@ -60,6 +61,7 @@ def drop_images(
     dataset: Dataset | DatasetDict,
     keep_size: float | int | None,
     seed: int | None = None,
+    stratify_by_column: str | None = "label",
 ) -> Dataset | DatasetDict:
     """Randomly drops images
 
@@ -73,7 +75,13 @@ def drop_images(
     """
     if keep_size is None:
         return dataset
-    return _mutate_dataset(dataset, _drop_images, keep_size=keep_size, seed=seed)
+    return _mutate_dataset(
+        dataset,
+        _drop_images,
+        keep_size=keep_size,
+        seed=seed,
+        stratify_by_column=stratify_by_column,
+    )
 
 
 def _drop_images_by_labels(
