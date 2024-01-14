@@ -88,21 +88,18 @@ Metrics configs should additionally contain:
 - `metrics`: A list of metrics implemented in src/locomost/metrics to be used
 - `metric_kwargs`: A list of the pattern `metric_name: kwarg_1: value` of kwargs to be passed to each metric if desired. Note that every metric used does not need to exist in this
 
-Train configs should additionally contain the following nested under `dataset_args`:
+Train configs should additionally contain:
 
-- `train_split`: Name of the data split to train on
-- `val_split`: Name of the data split to evaluate on. If the same as `train_split`, the `train_split` will itself be randomly split for training and evaluation
-
-Along with any further `training_args`, which are all directly passed to HuggingFace `TrainingArguments`, for example:
-
-- `eval_steps`: Steps between each evaluation
-- `evaluation_strategy`: HuggingFace evaluation strategy
-- `logging_strategy`: HuggingFace logging strategy
-- `num_train_epochs`: Number of epochs to train model for
-- `output_dir`: Directory to store outputs in
-- `overwrite_output_dir`: Whether to overwrite the output directory
-- `save_strategy`: HuggingFace saving strategy
-- `use_mps_device`: Whether to use MPS
+-  `training_args`, which are all directly passed to HuggingFace `TrainingArguments`, for example:
+  - `eval_steps`: Steps between each evaluation
+  - `evaluation_strategy`: HuggingFace evaluation strategy
+  - `logging_strategy`: HuggingFace logging strategy
+  - `num_train_epochs`: Number of epochs to train model for
+  - `output_dir`: Directory to store outputs in
+  - `overwrite_output_dir`: Whether to overwrite the output directory
+  - `save_strategy`: HuggingFace saving strategy
+  - `use_mps_device`: Whether to use MPS
+- `freeze_model`: If True train only the classification head of the model.
 
 Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes. An example is given in [example_top_config.yaml](/configs/example_top_config.yaml)
 

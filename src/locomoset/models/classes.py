@@ -26,6 +26,8 @@ class FineTuningConfig(Config):
         wandb_args: Arguments to pass to wandb.init.
         config_gen_dtime: when the config object was created.
         caches: where to cache the huggingface models and datasets.
+        freeze_model: if True freeze the base model and only train the
+            classification head
     """
 
     def __init__(
@@ -41,6 +43,7 @@ class FineTuningConfig(Config):
         use_wandb: bool = False,
         run_name: str | None = None,
         training_args: dict | None = None,
+        freeze_model: bool | None = None,
     ) -> None:
         super().__init__(
             model_name,
@@ -56,6 +59,7 @@ class FineTuningConfig(Config):
         )
         self.training_args = training_args or {}
         self.wandb_args["job_type"] = "train"
+        self.freeze_model = freeze_model or False
 
     @classmethod
     def from_dict(cls, config: dict) -> "FineTuningConfig":
@@ -82,6 +86,7 @@ class FineTuningConfig(Config):
             wandb_args=config.get("wandb_args"),
             caches=config.get("caches"),
             config_gen_dtime=config.get("config_gen_dtime"),
+            freeze_model=config.get("freeze_model"),
         )
 
     def get_training_args(self) -> TrainingArguments:
@@ -117,6 +122,7 @@ class FineTuningConfig(Config):
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
+            "freeze_model": self.freeze_model,
         }
 
 
@@ -149,6 +155,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             configs
         - dataset_args: dataset arguments for training purposes
         - training_args: arguments for training
+        - freeze_model: if True freeze the base model and only train the
+            classification head
     """
 
     def __init__(
@@ -169,6 +177,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
+        freeze_model: bool | list[bool] | None = None,
     ) -> None:
         super().__init__(
             config_type,
@@ -188,6 +197,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.training_args = training_args
+        self.freeze_model = freeze_model
 
     @classmethod
     def from_dict(
@@ -205,8 +215,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
                     Can also contain "random_states", "dataset_args",
                     "config_gen_dtime", "training_args", "use_wandb", "wandb_args",
-                    "use_bask" and "bask" keys. If "use_wandb" is not specified, it is
-                    set to True if "wandb" is in the config dict.
+                    "use_bask", "bask", and "freeze_model" keys. If "use_wandb" is not
+                        specified, it is set to True if "wandb" is in the config dict.
             config_type (optional): pass the config type to the class constructor
                                     explicitly. Defaults to None.
 
@@ -234,6 +244,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),
+            freeze_model=config.get("freeze_model"),
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -249,6 +260,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             "n_samples": "n_samples",
             "random_states": "random_state",
             "keep_labels": "keep_labels",
+            "freeze_model": "freeze_model",
         }
         keep_args = [
             "wandb_args",

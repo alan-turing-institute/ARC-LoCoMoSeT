@@ -15,7 +15,12 @@ from locomoset.datasets.preprocess import (
     preprocess_dataset_splits,
 )
 from locomoset.models.classes import FineTuningConfig
-from locomoset.models.load import get_model_with_dataset_labels, get_processor
+from locomoset.models.load import (
+    freeze_model,
+    get_model_with_dataset_labels,
+    get_processor,
+    unfreeze_classifier,
+)
 
 
 def get_metrics_fn(metric_name="accuracy") -> Callable:
@@ -173,6 +178,10 @@ def run_config(config: FineTuningConfig) -> Trainer:
     model = get_model_with_dataset_labels(
         config.model_name, train_dataset, cache=config.caches["models"]
     )
+
+    if config.freeze_model:
+        freeze_model(model)
+        unfreeze_classifier(model)
 
     return train(
         model=model,

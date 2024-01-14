@@ -10,35 +10,28 @@ local_save: False
 
 # Huggingface model names or paths to local models
 models:
-  - facebook/deit-tiny-patch16-224
-  - facebook/deit-small-patch16-224
+  - facebook/dinov2-small-imagenet1k-1-layer
+  - facebook/dinov2-base-imagenet1k-1-layer
 
 # HuggingFace Datasets or paths to local datasets
-dataset_names: pcuenq/oxford-pets
+dataset_names: huggan/wikiart
 
 # Random seeds to use
 random_states:
   - 42
-  - 43
 
 # Weights and biases
 wandb_args:
   entity: turing-arc
-  project: locomoset_metrics_tests
-  log_model: "false"
+  project: locomoset-frozen
+  log_model: 'false'
 
 # Baskerville arguments, with separate arguments available for the different experiment types
-use_bask: False
+use_bask: True
 bask:
-  metrics:
-    job_name: 'locomoset_metric_experiment'
-    walltime: '0-0:30:0'
-    node_number: 1
-    gpu_number: 1
-    cpu_per_gpu': 36
   train:
     job_name: 'locomoset_train_experiment'
-    walltime: '0-0:30:0'
+    walltime: '0-6:0:0'
     node_number: 1
     gpu_number: 1
     cpu_per_gpu': 36
@@ -48,11 +41,23 @@ bask:
 slurm_template_name: 'jobscript_template.sh'
 slurm_template_path: null
 
-# Cache locations:
+# Cache locations and arguments:
 caches:
-  datasets: null
-  models: null
-  preprocess_cache: disk
+  datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
+  models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+  wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
+  # preprocess_cache: Where to cache preprocessed data (relevant for training only). Options
+  # are:
+  #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
+  #   - 'ram' - cache preprocessed data in memory
+  #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
+  preprocess_cache: tmp
+  # Sets the TMPDIR environment variable (usually only relevant if preprocess_cache is tmp, and
+  # should only be set if the default TMPDIR is not large enough)
+  tmp_dir: null
+  # How many images to cache in memory before writing to disk during preprocessing (relevant if
+  # preprocess_cache is disk or tmp)
+  writer_batch_size: 100
 
 # Dataset specific arguments ---------------------------------------------------------------
 
@@ -64,18 +69,23 @@ dataset_args:
   train_split: train
   val_split: validation
   test_split: test
-  val_size: 0.15
-  test_size: 0.15
+  val_size: 0.1
+  test_size: 0.25
+  # Which fields in the dataset contain the images and labels
+  image_field: image
+  label_field: artist
 
-# The size of the training dataset (null for whole dataset)
+# Training dataset sizes
 n_samples:
-  - 50
-  - 100
+  - 500
+  - 1000
+  - 5000
+  - 10000
+  - 50000
 
 # list of label keeps
 keep_labels:
   - null # equivalent to saying keep all labels
-  - ["British Shorthair", "Persian"] # keep these two labels
 
 # Training specific config -----------------------------------------------------------------
 
@@ -84,33 +94,9 @@ training_args:
   output_dir: output
   overwrite_output_dir: True
   save_strategy: "no"
-  num_train_epochs: 1
-  evaluation_strategy: steps
-  eval_steps: 0.25
-  logging_strategy: steps
-  logging_steps: 0.25
+  num_train_epochs: 10
+  evaluation_strategy: epoch
+  logging_strategy: epoch
+  learning_rate: 0.000005  # 5e-6, decreased from default 5e-5 for dino, see issue #74
 
-freeze_model:
-  - True
-  - False
-
-# Metric Experiment specific config ---------------------------------------------------------
-
-# Metrics to compute
-metrics:
-  - renggli
-  - n_pars
-  - LogME
-
-# How many samples to use to compute metrics, will be subsetted from the training
-# set, so values here should be <= n_samples (or null to use whole train dataset)
-metrics_samples:
-  - 50
-  - 100
-
-# kwargs to metrics - if not null, nested list of metric_name: kwarg1: value
-metric_kwargs: null
-
-# Arguments required for inference
-inference_args:
-  device: cuda
+freeze_model: True

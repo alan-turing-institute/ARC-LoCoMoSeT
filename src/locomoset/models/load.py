@@ -63,3 +63,23 @@ def get_model_with_dataset_labels(
         ignore_mismatched_sizes=True,
         cache_dir=cache,
     )
+
+
+def freeze_model(model: PreTrainedModel) -> None:
+    """Freeze all model parameters.
+
+    Args:
+        model: Model to freeze.
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+
+
+def unfreeze_classifier(model: PreTrainedModel) -> None:
+    """Unfreeze the classification head of a model.
+
+    Args:
+        model: Model to unfreeze.
+    """
+    for param in model.classifier.parameters():
+        param.requires_grad = True
