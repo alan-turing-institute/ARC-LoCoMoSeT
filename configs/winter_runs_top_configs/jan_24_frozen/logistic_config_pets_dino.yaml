@@ -90,12 +90,6 @@ keep_labels:
 
 # Arguments for transformers.TrainingArguments
 training_args:
-  output_dir: output
-  overwrite_output_dir: True
-  save_strategy: "no"
-  num_train_epochs: 10
-  evaluation_strategy: epoch
-  logging_strategy: epoch
-  learning_rate: 0.000005  # 5e-6, decreased from default 5e-5 for dino, see issue #74
+
 
 freeze_model: logistic
