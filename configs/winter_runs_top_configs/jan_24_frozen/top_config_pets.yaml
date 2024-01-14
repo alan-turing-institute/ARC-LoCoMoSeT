@@ -95,9 +95,8 @@ dataset_args:
 n_samples:
   - 500
   - 1000
-  - 5000
-  - 10000
-  - 50000
+  - 4803
+
 
 # list of label keeps
 keep_labels:
