@@ -1,12 +1,19 @@
 import os
 import tempfile
+from time import time
 from typing import Callable
 
 import evaluate
 import numpy as np
+import torch
 import wandb
 from datasets import Dataset, disable_caching
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArguments
+from transformers.image_processing_utils import BaseImageProcessor
 
 from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import (
@@ -15,9 +22,11 @@ from locomoset.datasets.preprocess import (
     preprocess_dataset_splits,
 )
 from locomoset.models.classes import FineTuningConfig
+from locomoset.models.features import get_features
 from locomoset.models.load import (
     freeze_model,
     get_model_with_dataset_labels,
+    get_model_without_head,
     get_processor,
     unfreeze_classifier,
 )
@@ -89,6 +98,79 @@ def train(
             trainer.log_metrics("test", test_metrics)
 
     return trainer
+
+
+def train_logistic(
+    model_head: PreTrainedModel,
+    processor: BaseImageProcessor,
+    train_dataset: Dataset,
+    val_dataset: Dataset,
+    test_dataset: Dataset | None = None,
+    random_state: int | None = None,
+    device: int | torch.device = "cuda",
+) -> LogisticRegression:
+    """Train and evaluate an sklearn LogisticRegression model trained on a frozen model
+    with head removed, evaluate it and save the results to wandb.
+
+    Args:
+        model: HuggingFace model with its classification head removed.
+        train_dataset: Preprocessed dataset to train on.
+        val_dataset: Preprocessed dataset to evaluate on.
+        test_dataset: Preprocessed dataset to test on.
+        random_state: Random state to use for model fitting
+        device: Device to run model_head on.
+
+    Returns:
+        Trainer object.
+    """
+    results = {}
+    t = time()
+    feats_train = get_features(
+        dataset=train_dataset, processor=processor, model_head=model_head, device=device
+    )
+    results["train/feature_extraction_time"] = time() - t
+
+    t = time()
+    clf = Pipeline(
+        (
+            ("scaler", StandardScaler()),
+            ("logistic", LogisticRegression(random_state=random_state)),
+        )
+    )
+    clf.fit(feats_train, train_dataset["label"])
+    results["train/runtime"] = time() - t
+
+    t = time()
+    pred_train = clf.predict(feats_train)
+    train_acc = accuracy_score(train_dataset["label"], pred_train)
+    results["train/accuracy"] = train_acc
+    results["train/accuracy_time"] = time() - t
+
+    t = time()
+    feats_val = get_features(
+        dataset=val_dataset, processor=processor, model_head=model_head, device=device
+    )
+    results["eval/feature_extraction_time"] = time() - t
+    t = time()
+    pred_val = clf.predict(feats_val)
+    val_acc = accuracy_score(val_dataset["label"], pred_val)
+    results["eval/accuracy"] = val_acc
+    results["eval/accuracy_time"] = time() - t
+
+    t = time()
+    feats_test = get_features(
+        dataset=test_dataset, processor=processor, model_head=model_head, device=device
+    )
+    results["test/feature_extraction_time"] = time() - t
+    t = time()
+    pred_test = clf.predict(feats_test)
+    test_acc = accuracy_score(test_dataset["label"], pred_test)
+    results["test/accuracy"] = test_acc
+    results["test/accuracy_time"] = time() - t
+
+    wandb.log(results)
+    wandb.finish()
+    return clf, results
 
 
 def run_config(config: FineTuningConfig) -> Trainer:
@@ -163,30 +245,42 @@ def run_config(config: FineTuningConfig) -> Trainer:
         seed=config.random_state,
     )
 
-    # Prepare train and test data
-    train_dataset, val_dataset, test_dataset = preprocess_dataset_splits(
-        dataset,
-        processor,
-        train_split=config.dataset_args["train_split"],
-        val_split=config.dataset_args["val_split"],
-        test_split=config.dataset_args["test_split"],
-        keep_in_memory=keep_in_memory,
-        writer_batch_size=config.caches.get("writer_batch_size", 1000),
-    )
-    del dataset
+    if config.freeze_model == "logistic":
+        model_head = get_model_without_head(config.model_name, config.caches["models"])
+        return train_logistic(
+            model_head=model_head,
+            processor=processor,
+            train_dataset=dataset[config.dataset_args["train_split"]],
+            val_dataset=dataset[config.dataset_args["val_split"]],
+            test_dataset=dataset[config.dataset_args["test_split"]],
+            random_state=config.random_state,
+        )
 
-    model = get_model_with_dataset_labels(
-        config.model_name, train_dataset, cache=config.caches["models"]
-    )
+    else:
+        # Prepare train and test data
+        train_dataset, val_dataset, test_dataset = preprocess_dataset_splits(
+            dataset,
+            processor,
+            train_split=config.dataset_args["train_split"],
+            val_split=config.dataset_args["val_split"],
+            test_split=config.dataset_args["test_split"],
+            keep_in_memory=keep_in_memory,
+            writer_batch_size=config.caches.get("writer_batch_size", 1000),
+        )
+        del dataset
 
-    if config.freeze_model:
-        freeze_model(model)
-        unfreeze_classifier(model)
+        model = get_model_with_dataset_labels(
+            config.model_name, train_dataset, cache=config.caches["models"]
+        )
 
-    return train(
-        model=model,
-        train_dataset=train_dataset,
-        val_dataset=val_dataset,
-        training_args=config.get_training_args(),
-        test_dataset=test_dataset,
-    )
+        if config.freeze_model:
+            freeze_model(model)
+            unfreeze_classifier(model)
+
+        return train(
+            model=model,
+            train_dataset=train_dataset,
+            val_dataset=val_dataset,
+            training_args=config.get_training_args(),
+            test_dataset=test_dataset,
+        )

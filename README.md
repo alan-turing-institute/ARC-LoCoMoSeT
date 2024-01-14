@@ -99,7 +99,7 @@ Train configs should additionally contain:
   - `overwrite_output_dir`: Whether to overwrite the output directory
   - `save_strategy`: HuggingFace saving strategy
   - `use_mps_device`: Whether to use MPS
-- `freeze_model`: If True train only the classification head of the model.
+- `freeze_model`: If True train only the classification head of the model, if "logistic" train an sklearn LogisticRegression model on the features from a frozen model.
 
 Since in practice you will likely wish to run many jobs together, LoCoMoSeT provides support for top-level configs from which you can generate many lower-level configs. Top-level configs can contain parameters for metrics scans, model training, or both. Broadly, this should contain the arguments laid out above, with some additional arguments and changes. An example is given in [example_top_config.yaml](/configs/example_top_config.yaml)
 

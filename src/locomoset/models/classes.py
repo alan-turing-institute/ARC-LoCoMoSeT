@@ -27,7 +27,8 @@ class FineTuningConfig(Config):
         config_gen_dtime: when the config object was created.
         caches: where to cache the huggingface models and datasets.
         freeze_model: if True freeze the base model and only train the
-            classification head
+            classification head. If logistic train a sklearn logistic regression model
+            on the extracted features rather than using the HuggingFace Trainer.
     """
 
     def __init__(
@@ -43,7 +44,7 @@ class FineTuningConfig(Config):
         use_wandb: bool = False,
         run_name: str | None = None,
         training_args: dict | None = None,
-        freeze_model: bool | None = None,
+        freeze_model: bool | str | None = None,
     ) -> None:
         super().__init__(
             model_name,
@@ -156,7 +157,8 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         - dataset_args: dataset arguments for training purposes
         - training_args: arguments for training
         - freeze_model: if True freeze the base model and only train the
-            classification head
+            classification head. If logistic train a sklearn logistic regression model
+            on the extracted features rather than using the HuggingFace Trainer.
     """
 
     def __init__(
@@ -177,7 +179,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
-        freeze_model: bool | list[bool] | None = None,
+        freeze_model: bool | str | list[str] | list[bool] | None = None,
     ) -> None:
         super().__init__(
             config_type,
