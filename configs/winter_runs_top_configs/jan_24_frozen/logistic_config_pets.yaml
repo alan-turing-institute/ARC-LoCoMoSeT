@@ -106,11 +106,6 @@ keep_labels:
 
 # Arguments for transformers.TrainingArguments
 training_args:
-  output_dir: output
-  overwrite_output_dir: True
-  save_strategy: "no"
-  num_train_epochs: 10
-  evaluation_strategy: epoch
-  logging_strategy: epoch
+
 
 freeze_model: logistic
