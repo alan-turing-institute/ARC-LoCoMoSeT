@@ -65,16 +65,16 @@ def pull_metric_and_train_data(group_name: str) -> Tuple(dict, dict):
     train_res = {}
 
     for _, row in train_df.iterrows():
-        if row.summary.get("eval/accuracy") is not None:
+        if row.summary.get("test/accuracy") is not None:
             if train_res.get(row.config["locomoset"]["n_samples"]) is not None:
                 train_res[row.config["locomoset"]["n_samples"]][
                     row.config["locomoset"].get("model_name")
-                ] = row.summary.get("eval/accuracy")
+                ] = row.summary.get("test/accuracy")
             else:
                 train_res[row.config["locomoset"]["n_samples"]] = {}
                 train_res[row.config["locomoset"]["n_samples"]][
                     row.config["locomoset"].get("model_name")
-                ] = row.summary.get("eval/accuracy")
+                ] = row.summary.get("test/accuracy")
 
     metric_runs = api.runs(
         path="turing-arc/locomoset",
