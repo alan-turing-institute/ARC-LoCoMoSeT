@@ -69,9 +69,13 @@ def test_compute_metric_score(dummy_metric_config):
 
 def test_init_metric_config(dummy_metric_config, dummy_dataset_name, dummy_model_name):
     config = MetricConfig.from_dict(dummy_metric_config)
-    assert config.run_name == f"{dummy_dataset_name}_{dummy_model_name}".replace(
-        "/", "-"
-    )
+    if len(dummy_dataset_name) > 64:
+        test_run_name = f"{dummy_dataset_name[-25:]}_{dummy_model_name}".replace(
+            "/", "-"
+        )
+    else:
+        test_run_name = f"{dummy_dataset_name}_{dummy_model_name}".replace("/", "-")
+    assert config.run_name == test_run_name
     assert config.use_wandb is True
 
 
