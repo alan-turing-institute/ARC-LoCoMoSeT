@@ -41,6 +41,7 @@ class FineTuningConfig(Config):
         use_wandb: bool = False,
         run_name: str | None = None,
         training_args: dict | None = None,
+        preproc_only: bool = False,
     ) -> None:
         super().__init__(
             model_name,
@@ -55,7 +56,8 @@ class FineTuningConfig(Config):
             run_name,
         )
         self.training_args = training_args or {}
-        self.wandb_args["job_type"] = "train"
+        self.preproc_only = preproc_only
+        self.wandb_args["job_type"] = "train" if not preproc_only else "preproc"
 
     @classmethod
     def from_dict(cls, config: dict) -> "FineTuningConfig":
@@ -82,6 +84,7 @@ class FineTuningConfig(Config):
             wandb_args=config.get("wandb_args"),
             caches=config.get("caches"),
             config_gen_dtime=config.get("config_gen_dtime"),
+            preproc_only=config.get("preproc_only", False),
         )
 
     def get_training_args(self) -> TrainingArguments:
@@ -117,6 +120,7 @@ class FineTuningConfig(Config):
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
+            "preproc_only": self.preproc_only,
         }
 
 
@@ -169,6 +173,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
+        preproc_only: bool = False,
     ) -> None:
         super().__init__(
             config_type,
@@ -188,6 +193,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.training_args = training_args
+        self.preproc_only = preproc_only
 
     @classmethod
     def from_dict(
@@ -234,6 +240,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),
+            preproc_only=config.get("preproc_only", False),
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -256,6 +263,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             "caches",
             "dataset_args",
             "training_args",
+            "preproc_only",
         ]
         param_sweep_dicts = self._gen_sweep_dicts(sweep_args, keep_args)
 

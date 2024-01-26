@@ -1,5 +1,6 @@
 import os
 import tempfile
+from time import time
 from typing import Callable
 
 import evaluate
@@ -12,6 +13,7 @@ from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import (
     create_data_splits,
     drop_images,
+    preprocess,
     preprocess_dataset_splits,
 )
 from locomoset.models.classes import FineTuningConfig
@@ -181,3 +183,89 @@ def run_config(config: FineTuningConfig) -> Trainer:
         training_args=config.get_training_args(),
         test_dataset=test_dataset,
     )
+
+
+def run_preproc(config: FineTuningConfig) -> None:
+    """Run preprocessing for the training set only for a fine-tuning job (used to aid
+    time analysis only).
+
+    Args:
+        config: A FineTuningConfig object.
+
+    """
+    if config.use_wandb:
+        config.init_wandb()
+
+    if config.caches.get("preprocess_cache") == "tmp":
+        disable_caching()
+
+    if "tmp_dir" in config.caches and config.caches["tmp_dir"] is not None:
+        # This is a workaround for overwriting the default path for tmp dirs,
+        # see https://github.com/alan-turing-institute/ARC-LoCoMoSeT/issues/93
+        os.environ["TMPDIR"] = config.caches["tmp_dir"]
+        tempfile.tempdir = config.caches["tmp_dir"]
+
+    times = {}
+    start = time()
+
+    t = time()
+    processor = get_processor(config.model_name, cache=config.caches["datasets"])
+    times["load_processor"] = time() - t
+
+    keep_in_memory = config.caches.get("preprocess_cache") == "ram"
+
+    # Load Dataset
+    t = time()
+    dataset = load_dataset(
+        config.dataset_name,
+        cache_dir=config.caches["datasets"],
+        keep_in_memory=keep_in_memory,
+        image_field=config.dataset_args["image_field"],
+        label_field=config.dataset_args["label_field"],
+        keep_labels=config.dataset_args["keep_labels"],
+    )
+
+    # Prepare splits
+    dataset = create_data_splits(
+        dataset,
+        train_split=config.dataset_args["train_split"],
+        val_split=config.dataset_args["val_split"],
+        test_split=config.dataset_args["test_split"],
+        random_state=config.random_state,
+        val_size=config.dataset_args["val_size"],
+        test_size=config.dataset_args["test_size"],
+    )
+
+    # Subset datasets:
+    # train: down to requested n_samples
+    dataset[config.dataset_args["train_split"]] = drop_images(
+        dataset[config.dataset_args["train_split"]],
+        keep_size=config.n_samples,
+        seed=config.random_state,
+    )
+    if config.n_samples is None:
+        config.n_samples = dataset[config.dataset_args["train_split"]].num_rows
+
+    times["load_split_dataset"] = time() - t
+
+    # Prepare train data
+    t = time()
+    train_dataset = preprocess(
+        dataset[config.dataset_args["train_split"]],
+        processor,
+        keep_in_memory=keep_in_memory,
+        writer_batch_size=config.caches.get("writer_batch_size", 1000),
+    )
+    times["preprocess_train"] = time() - t
+
+    del dataset
+
+    t = time()
+    get_model_with_dataset_labels(
+        config.model_name, train_dataset, cache=config.caches["models"]
+    )
+
+    times["load_model"] = time() - t
+    times["total"] = time() - start
+
+    wandb.log({"times": times})
