@@ -7,9 +7,9 @@ This project aims to contrast and compare multiple low-cost metrics for selectin
 This project is a work in progress under active development. The work packages are:
 
 - WP1: Implement one metric and sanity check it on ImageNet ✅
-- WP2: Implement further metrics and tune metric hyperparameters ⏳
-- WP3: Fine-tune models and test the metrics on other datasets
-- WP4: Write a report
+- WP2: Implement further metrics and tune metric hyperparameters ✅
+- WP3: Fine-tune models and test the metrics on other datasets ✅
+- WP4: Analyse the results and write the report ⏳
 
 ## Links
 
