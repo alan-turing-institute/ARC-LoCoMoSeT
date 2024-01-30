@@ -181,3 +181,6 @@ results/*
 
 # Ignore binary exploration notebook
 coco_binay.ipynb
+
+# Ignore binary datasets
+binary_datasets/*
