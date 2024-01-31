@@ -253,3 +253,17 @@ def dummy_top_level_config(
         "metrics_samples": test_n_samples,
         "inference_args": {"device": "cuda"},
     }
+
+
+@pytest.fixture
+def dummy_label():
+    return 1
+
+
+@pytest.fixture
+def select_label(sample, label):
+    if sample["label"] == label:
+        sample["label"] == 1
+    else:
+        sample["label"] == 0
+    return sample

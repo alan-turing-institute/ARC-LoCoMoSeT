@@ -15,6 +15,26 @@ import yaml
 from jinja2 import Environment, FileSystemLoader
 
 
+def create_wandb_names(dataset_name: str, additional_name: str | None = None) -> str:
+    """Generates a weights and biases name for a run or group that is not too long.
+
+    Args:
+        dataset_name: name of the dataset
+        additional_name: either the model name, config_gen_dtime or None to append to
+                         the dataset name. Defaults to None.
+
+    Returns:
+        wandb run or group name with few enough characters.
+    """
+    if len(dataset_name) > 64:
+        dataset_name = dataset_name[-25:]
+
+    if additional_name is not None:
+        return f"{dataset_name}_{additional_name}".replace("/", "-")
+    else:
+        return dataset_name
+
+
 class Config(ABC):
 
     """Base class for config objects
@@ -57,7 +77,10 @@ class Config(ABC):
         self.caches = caches
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
-        self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
+        if run_name is not None:
+            self.run_name = run_name
+        else:
+            self.run_name = create_wandb_names(self.dataset_name, self.model_name)
         self.dataset_args = dataset_args or {"train_split": "train"}
         self.n_samples = n_samples
         if "image_field" not in self.dataset_args:
@@ -100,9 +123,11 @@ class Config(ABC):
             wandb_config["name"] = self.run_name
         if "group" not in wandb_config:
             if self.config_gen_dtime is not None:
-                wandb_config["group"] = f"{self.dataset_name}_{self.config_gen_dtime}"
+                wandb_config["group"] = create_wandb_names(
+                    self.dataset_name, self.config_gen_dtime[-8]
+                )
             else:
-                wandb_config["group"] = f"{self.dataset_name}"
+                wandb_config["group"] = create_wandb_names(self.dataset_name)
         if "job_type" not in wandb_config:
             raise ValueError("No Job type given")
 
