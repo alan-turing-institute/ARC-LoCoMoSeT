@@ -4,11 +4,8 @@
 
 from transformers import TrainingArguments
 
-from locomoset.models.classes import (
-    FineTuningConfig,
-    TopLevelFineTuningConfig,
-    create_wandb_names,
-)
+from locomoset.config.config_classes import create_wandb_names
+from locomoset.models.classes import FineTuningConfig, TopLevelFineTuningConfig
 
 
 def test_init_fine_tuning_config(

@@ -5,11 +5,8 @@
 
 from transformers import PreTrainedModel
 
-from locomoset.metrics.classes import (
-    MetricConfig,
-    TopLevelMetricConfig,
-    create_wandb_names,
-)
+from locomoset.config.config_classes import create_wandb_names
+from locomoset.metrics.classes import MetricConfig, TopLevelMetricConfig
 from locomoset.metrics.experiment import ModelMetricsExperiment
 from locomoset.models.load import get_model_without_head
 
