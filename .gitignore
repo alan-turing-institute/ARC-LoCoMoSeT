@@ -184,3 +184,6 @@ coco_binay.ipynb
 
 # Ignore binary datasets
 binary_datasets/*
+
+# Ignore conda activation script
+activate_condaenv.sh
