@@ -443,4 +443,4 @@ def add_augmentation(dataset: Dataset) -> Dataset:
         ]
         return examples
 
-    return dataset.with_transforms(transforms)
+    return dataset.with_transform(transforms)
