@@ -10,6 +10,7 @@ from transformers import EvalPrediction, PreTrainedModel, Trainer, TrainingArgum
 
 from locomoset.datasets.load import load_dataset
 from locomoset.datasets.preprocess import (
+    add_augmentation,
     create_data_splits,
     drop_images,
     preprocess_dataset_splits,
@@ -171,7 +172,7 @@ def run_config(config: FineTuningConfig) -> Trainer:
     del dataset
 
     if config.augment:
-        train_dataset = config.augment(train_dataset)
+        train_dataset = add_augmentation(train_dataset)
 
     model = get_model_with_dataset_labels(
         config.model_name, train_dataset, cache=config.caches["models"]
