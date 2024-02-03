@@ -10,7 +10,6 @@ from locomoset.config.config_classes import Config, TopLevelConfig
 
 
 class FineTuningConfig(Config):
-
     """Fine-tuning configuration class.
 
     Attributes:
@@ -26,6 +25,7 @@ class FineTuningConfig(Config):
         wandb_args: Arguments to pass to wandb.init.
         config_gen_dtime: when the config object was created.
         caches: where to cache the huggingface models and datasets.
+        augment: whether to use data augmentation on the training set.
     """
 
     def __init__(
@@ -41,6 +41,7 @@ class FineTuningConfig(Config):
         use_wandb: bool = False,
         run_name: str | None = None,
         training_args: dict | None = None,
+        augment: bool = False,
     ) -> None:
         super().__init__(
             model_name,
@@ -56,6 +57,7 @@ class FineTuningConfig(Config):
         )
         self.training_args = training_args or {}
         self.wandb_args["job_type"] = "train"
+        self.augment = augment
 
     @classmethod
     def from_dict(cls, config: dict) -> "FineTuningConfig":
@@ -82,6 +84,7 @@ class FineTuningConfig(Config):
             wandb_args=config.get("wandb_args"),
             caches=config.get("caches"),
             config_gen_dtime=config.get("config_gen_dtime"),
+            augment=config.get("augment", False),
         )
 
     def get_training_args(self) -> TrainingArguments:
@@ -117,11 +120,11 @@ class FineTuningConfig(Config):
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
+            "augment": self.augment,
         }
 
 
 class TopLevelFineTuningConfig(TopLevelConfig):
-
     """Takes a YAML file or dictionary with a top level config class containing all
     items to vary over for fine tuning experiments, optionally producing and saving
     individual configs for each variant.
@@ -149,6 +152,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             configs
         - dataset_args: dataset arguments for training purposes
         - training_args: arguments for training
+        - augment: whether to use data augmentation on the training set
     """
 
     def __init__(
@@ -169,6 +173,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
+        augment: bool = False,
     ) -> None:
         super().__init__(
             config_type,
@@ -188,6 +193,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_gen_dtime,
         )
         self.training_args = training_args
+        self.augment = augment
 
     @classmethod
     def from_dict(
@@ -234,6 +240,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),
+            augment=config.get("augment", False),
         )
 
     def parameter_sweep(self) -> list[dict]:
@@ -256,6 +263,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             "caches",
             "dataset_args",
             "training_args",
+            "augment",
         ]
         param_sweep_dicts = self._gen_sweep_dicts(sweep_args, keep_args)
 

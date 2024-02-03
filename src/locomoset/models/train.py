@@ -170,6 +170,9 @@ def run_config(config: FineTuningConfig) -> Trainer:
     )
     del dataset
 
+    if config.augment:
+        train_dataset = config.augment(train_dataset)
+
     model = get_model_with_dataset_labels(
         config.model_name, train_dataset, cache=config.caches["models"]
     )

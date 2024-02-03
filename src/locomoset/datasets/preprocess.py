@@ -1,7 +1,10 @@
 """
 Helper functions for preprocessing datasets.
 """
+
+import torch
 from datasets import ClassLabel, Dataset, DatasetDict
+from torchvision.transforms.v2 import AutoAugment
 from transformers.image_processing_utils import BaseImageProcessor
 from transformers.image_utils import load_image
 
@@ -421,3 +424,23 @@ def preprocess_dataset_splits(
         dataset_dict[test_split], processor, keep_in_memory=keep_in_memory
     )
     return train_dataset, val_dataset, test_dataset
+
+
+def add_augmentation(dataset: Dataset) -> Dataset:
+    """Applies AutoAugment to a dataset
+
+    Args:
+        dataset: HuggingFace Dataset to apply augmentation to
+
+    Returns:
+        Dataset with AutoAugment applied
+    """
+    augment = AutoAugment()
+
+    def transforms(examples):
+        examples["pixel_values"] = [
+            augment(torch.tensor(e)) for e in examples["pixel_values"]
+        ]
+        return examples
+
+    return dataset.with_transforms(transforms)
