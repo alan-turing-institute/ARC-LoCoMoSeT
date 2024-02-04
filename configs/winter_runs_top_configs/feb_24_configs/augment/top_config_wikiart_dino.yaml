@@ -23,7 +23,7 @@ random_states:
 # Weights and biases
 wandb_args:
   entity: turing-arc
-  project: locomoset
+  project: locomoset-augment
   log_model: end
 
 # Baskerville arguments, with separate arguments available for the different experiment types
