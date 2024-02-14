@@ -173,9 +173,8 @@ configs/2*
 # Ignore output folder on baskerville
 output/*
 
-
-# Ignore local analysis
+# Ignore local analysis dir
 local_analysis/*
 
-# Ignore results
+# Ignore local results
 results/*

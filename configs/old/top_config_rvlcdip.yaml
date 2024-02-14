@@ -1,0 +1,130 @@
+# Top Level Config Template for both the training and metric experiments
+
+# Config type, this can either edited or given as an argument in the gen_configs script
+config_type: both
+
+# Where to put the subconfigs
+config_dir: configs
+
+# Where (and if) to save results locally
+save_dir: results
+local_save: False
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+
+# Huggingface model names or paths to local models
+models:
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+  - facebook/deit-base-patch16-224
+  - apple/mobilevit-small
+  - apple/mobilevit-xx-small
+  - google/vit-base-patch16-384
+  - google/vit-large-patch16-224
+  - microsoft/cvt-13
+  - microsoft/cvt-21-384-22k
+  - facebook/deit-base-patch16-384
+  - microsoft/beit-large-patch16-512
+  - microsoft/beit-base-patch16-224
+  - microsoft/beit-base-patch16-224-pt22k-ft22k
+  - microsoft/swin-large-patch4-window12-384-in22k
+  - facebook/dinov2-small-imagenet1k-1-layer
+  - facebook/dinov2-base-imagenet1k-1-layer
+  - microsoft/swin-base-patch4-window12-384
+  - Intel/vit-base-patch16-224-int8-static
+  - microsoft/swinv2-base-patch4-window8-256
+
+# HuggingFace Datasets or paths to local datasets
+dataset_names:
+  aharley/rvl_cdip
+
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train and evaluate on. If both are the same or val_split is
+  # not specified, the train_split will be randomly split into train and val splits.
+  train_split: train
+  val_split: validation
+  # Split to use for calculating metrics
+  metrics_split: train
+  # Which fields in the dataset contain the images and labels
+  image_field: image
+  label_field: label
+
+# Random seeds to use
+random_states:
+  - 42
+
+# Weights and biases
+wandb:
+  entity: turing-arc
+  project: locomoset
+  log_model: end
+
+# Baskerville arguments, with separate arguments available for the different experiment types
+use_bask: True
+bask:
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-12:0:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+  train:
+    job_name: 'locomoset_train_experiment'
+    walltime: '3-0:0:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+
+# Cache locations and arguments:
+caches:
+  datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
+  models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+  wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
+  # preprocess_cache: Where to cache preprocessed data (relevant for training only). Options
+  # are:
+  #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
+  #   - 'ram' - cache preprocessed data in memory
+  #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
+  preprocess_cache: tmp
+  # Sets the TMPDIR environment variable (usually only relevant if preprocess_cache is tmp, and
+  # should only be set if the default TMPDIR is not large enough)
+  tmp_dir: /scratch-global/slurm-jobs/vjgo8416-locomoset
+  # How many images to cache in memory before writing to disk during preprocessing (relevant if
+  # preprocess_cache is disk or tmp)
+  writer_batch_size: 100
+
+# Training specific config -----------------------------------------------------------------
+
+# Arguments for transformers.TrainingArguments
+training_args:
+  output_dir: output
+  overwrite_output_dir: True
+  save_strategy: "no"
+  num_train_epochs: 10
+  evaluation_strategy: steps
+  eval_steps: 0.02
+  logging_strategy: steps
+  logging_steps: 0.02
+
+# Metric Experiment specific config ---------------------------------------------------------
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+# No. of images to compute the metrics with
+n_samples:
+  - 500
+  - 1000
+  - 10000
+  - 30000
+  - 300000
+
+# Arguments required for inference
+inference_args:
+  device: cuda

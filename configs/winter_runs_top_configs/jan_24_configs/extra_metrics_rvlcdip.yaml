@@ -1,0 +1,129 @@
+# Top Level Config Template for both the training and metric experiments
+
+# Where to put the subconfigs
+config_dir: configs
+config_gen_dtime: null
+
+# Where (and if) to save results locally
+save_dir: results
+local_save: False
+
+# Huggingface model names or paths to local models
+models:
+  - apple/mobilevit-xx-small
+  - apple/mobilevit-small
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+  - facebook/deit-base-patch16-224
+  - facebook/deit-base-patch16-384
+  - google/vit-base-patch16-384
+  - google/vit-large-patch16-224
+  - microsoft/beit-base-patch16-224
+  - microsoft/beit-base-patch16-384
+  - microsoft/beit-large-patch16-512
+  - microsoft/cvt-13
+  - microsoft/cvt-21-384
+  - microsoft/swin-base-patch4-window12-384
+  - microsoft/swin-large-patch4-window12-384-in22k
+  - microsoft/swinv2-base-patch4-window8-256
+  - microsoft/swinv2-large-patch4-window12to16-192to256-22kto1k-ft
+  - Zetatech/pvt-large-224
+  - facebook/dinov2-small-imagenet1k-1-layer
+  - facebook/dinov2-base-imagenet1k-1-layer
+
+# HuggingFace Datasets or paths to local datasets
+dataset_names: aharley/rvl_cdip
+
+# Random seeds to use
+random_states:
+  - 42
+
+# Weights and biases
+wandb_args:
+  entity: turing-arc
+  project: locomoset
+  log_model: 'false'
+
+# Baskerville arguments, with separate arguments available for the different experiment types
+use_bask: True
+bask:
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-2:0:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+slurm_template_path: null
+
+# Cache locations and arguments:
+caches:
+  datasets: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/datasets
+  models: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/huggingface/models
+  wandb: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/.cache/wandb
+  # preprocess_cache: Where to cache preprocessed data (relevant for training only). Options
+  # are:
+  #   - 'disk' (default) - cache preprocessed to the datasets cache dir specified above
+  #   - 'ram' - cache preprocessed data in memory
+  #   - 'tmp' - cache preprocessed data to a temporary directory (deleted after job completion)
+  preprocess_cache: tmp
+  # Sets the TMPDIR environment variable (usually only relevant if preprocess_cache is tmp, and
+  # should only be set if the default TMPDIR is not large enough)
+  tmp_dir: null
+  # How many images to cache in memory before writing to disk during preprocessing (relevant if
+  # preprocess_cache is disk or tmp)
+  writer_batch_size: 100
+
+# Dataset specific arguments ---------------------------------------------------------------
+
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train, evaluate, and test on. If one or both of val and test do
+  # not exist, they will be created from the train set, using val_size and test_size. val_size
+  # and test_size are ignored if they do exist (and can also be set to null)
+  train_split: train
+  val_split: validation
+  test_split: test
+  val_size: 0.1
+  test_size: 0.25
+  # Which fields in the dataset contain the images and labels
+  image_field: image
+  label_field: label
+
+# Training dataset sizes
+n_samples:
+  - 500
+  - 1000
+  - 5000
+  - 10000
+  - 50000
+
+# list of label keeps
+keep_labels:
+  - null # equivalent to saying keep all labels
+
+# Metric Experiment specific config ---------------------------------------------------------
+
+# Samples to compute metrics with (subset of training set)
+metrics_samples:
+  - 500
+  - 1000
+  - 5000
+  - 10000
+  - 50000
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+# kwargs to metrics - if not null, nested list of metric_name: kwarg1: value
+metric_kwargs: null
+
+# Arguments required for inference
+inference_args:
+  device: cuda

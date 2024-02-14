@@ -1,0 +1,112 @@
+# Top Level Config Template for both the training and metric experiments
+
+# Where to put the subconfigs
+config_dir: configs
+config_gen_dtime: null
+
+# Where (and if) to save results locally
+save_dir: results
+local_save: False
+
+# Huggingface model names or paths to local models
+models:
+  - facebook/deit-tiny-patch16-224
+  - facebook/deit-small-patch16-224
+
+# HuggingFace Datasets or paths to local datasets
+dataset_names: pcuenq/oxford-pets
+
+# Random seeds to use
+random_states:
+  - 42
+  - 43
+
+# Weights and biases
+wandb_args:
+  entity: turing-arc
+  project: locomoset_metrics_tests
+  log_model: "false"
+
+# Baskerville arguments, with separate arguments available for the different experiment types
+use_bask: False
+bask:
+  metrics:
+    job_name: 'locomoset_metric_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+  train:
+    job_name: 'locomoset_train_experiment'
+    walltime: '0-0:30:0'
+    node_number: 1
+    gpu_number: 1
+    cpu_per_gpu': 36
+
+# Where to find the slurm template, if set to None will pick up jobscript from src/locomoset/config
+# slurm_template_path: None
+slurm_template_name: 'jobscript_template.sh'
+slurm_template_path: null
+
+# Cache locations:
+caches:
+  datasets: null
+  models: null
+  preprocess_cache: disk
+
+# Dataset specific arguments ---------------------------------------------------------------
+
+# dataset arguments
+dataset_args:
+  # Name of dataset splits to train, evaluate, and test on. If one or both of val and test do
+  # not exist, they will be created from the train set, using val_size and test_size. val_size
+  # and test_size are ignored if they do exist (and can also be set to null)
+  train_split: train
+  val_split: validation
+  test_split: test
+  val_size: 0.15
+  test_size: 0.15
+
+# The size of the training dataset (null for whole dataset)
+n_samples:
+  - 50
+  - 100
+
+# list of label keeps
+keep_labels:
+  - null # equivalent to saying keep all labels
+  - ["British Shorthair", "Persian"] # keep these two labels
+
+# Training specific config -----------------------------------------------------------------
+
+# Arguments for transformers.TrainingArguments
+training_args:
+  output_dir: output
+  overwrite_output_dir: True
+  save_strategy: "no"
+  num_train_epochs: 1
+  evaluation_strategy: steps
+  eval_steps: 0.25
+  logging_strategy: steps
+  logging_steps: 0.25
+
+# Metric Experiment specific config ---------------------------------------------------------
+
+# Metrics to compute
+metrics:
+  - renggli
+  - n_pars
+  - LogME
+
+# How many samples to use to compute metrics, will be subsetted from the training
+# set, so values here should be <= n_samples (or null to use whole train dataset)
+metrics_samples:
+  - 50
+  - 100
+
+# kwargs to metrics - if not null, nested list of metric_name: kwarg1: value
+metric_kwargs: null
+
+# Arguments required for inference
+inference_args:
+  device: cuda

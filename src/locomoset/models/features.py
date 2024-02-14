@@ -15,7 +15,7 @@ def get_features(
     dataset: Dataset | IterableDataset,
     processor: BaseImageProcessor,
     model_head: PreTrainedModel,
-    batch_size: int = 4,
+    batch_size: int = 8,
     n_images: int | None = None,
     device: int | torch.device = None,
 ) -> torch.tensor:

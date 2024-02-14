@@ -1,10 +1,8 @@
 """
-    Class for train config
+Class for train config
 """
 
-import warnings
 from copy import copy
-from itertools import product
 
 from transformers import TrainingArguments
 
@@ -21,8 +19,8 @@ class FineTuningConfig(Config):
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
         random_state: Random state to use for train/test split and training.
-        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
-            to {"train_split": "train"}.
+        dataset_args: Dict defining dataset splits and columns, see the docstring of the
+            base Config class.
         training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
         wandb_args: Arguments to pass to wandb.init.
@@ -34,18 +32,21 @@ class FineTuningConfig(Config):
         self,
         model_name: str,
         dataset_name: str,
+        dataset_args: dict | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
         wandb_args: dict | None = None,
         use_wandb: bool = False,
         run_name: str | None = None,
-        dataset_args: dict | None = None,
         training_args: dict | None = None,
     ) -> None:
         super().__init__(
             model_name,
             dataset_name,
+            dataset_args,
+            n_samples,
             random_state,
             config_gen_dtime,
             caches,
@@ -53,7 +54,6 @@ class FineTuningConfig(Config):
             use_wandb,
             run_name,
         )
-        self.dataset_args = dataset_args or {"train_split": "train"}
         self.training_args = training_args or {}
         self.wandb_args["job_type"] = "train"
 
@@ -73,9 +73,10 @@ class FineTuningConfig(Config):
         return cls(
             model_name=config["model_name"],
             dataset_name=config["dataset_name"],
+            dataset_args=config.get("dataset_args"),
+            n_samples=config["n_samples"],
             run_name=config.get("run_name"),
             random_state=config.get("random_state"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_wandb=config.get("use_wandb", "wandb_args" in config),
             wandb_args=config.get("wandb_args"),
@@ -110,9 +111,10 @@ class FineTuningConfig(Config):
             "config_gen_dtime": self.config_gen_dtime,
             "model_name": self.model_name,
             "dataset_name": self.dataset_name,
+            "dataset_args": self.dataset_args,
+            "n_samples": self.n_samples,
             "run_name": self.run_name,
             "random_state": self.random_state,
-            "dataset_args": self.dataset_args,
             "training_args": self.training_args,
             "use_wandb": self.use_wandb,
             "wandb_args": self.wandb_args,
@@ -127,30 +129,27 @@ class TopLevelFineTuningConfig(TopLevelConfig):
 
     Possible entries to vary over if multiple given:
         - models
-        - dataset_names
+        - dataset_name
         - random_states
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
-                                    for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
-                                           configs for
-        - random_states (int | list[int]): (list of) random state(s) to generate
-                                           experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models and datasets
-        - slurm_template_path (str | None): path for setting jinja environment to look
-                                            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-                                                    keeping track of generated configs
-        - dataset_args (dict | None) (optional): dataset arguments for training purposes
-        - training_args (dict | None) (optional): arguments for training
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - models: (list of) model(s) to generate experiment configs for
+        - dataset_name: (list of) dataset(s) to generate experiment configs for
+        - random_states: (list of) random state(s) to generate experiment configs for
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models and datasets
+        - slurm_template_path: path for setting jinja environment to look
+            for jobscript template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
+        - dataset_args: dataset arguments for training purposes
+        - training_args: arguments for training
     """
 
     def __init__(
@@ -159,24 +158,29 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        n_samples: int | list[int],
         training_args: dict,
+        dataset_args: dict | None = None,
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
         slurm_template_path: str | None = None,
         slurm_template_name: str | None = None,
         config_gen_dtime: str | None = None,
-        dataset_args: dict | None = None,
     ) -> None:
         super().__init__(
             config_type,
             config_dir,
             models,
             dataset_names,
+            n_samples,
+            dataset_args,
+            keep_labels,
             random_states,
-            wandb,
+            wandb_args,
             bask,
             use_bask,
             caches,
@@ -184,7 +188,6 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             slurm_template_name,
             config_gen_dtime,
         )
-        self.dataset_args = dataset_args
         self.training_args = training_args
 
     @classmethod
@@ -198,7 +201,7 @@ class TopLevelFineTuningConfig(TopLevelConfig):
                     - config_type: label for type of experiment config.
                     - config_dir: which directory to save the specific configs to.
                     - models: which model(s) to run the fine tuning on.
-                    - dataset_names: which dataset(s) to run the fine tuning on.
+                    - dataset_name: which dataset(s) to run the fine tuning on.
                     - slurm_template_path: where the slurm_template is
 
                     Can also contain "random_states", "dataset_args",
@@ -219,14 +222,16 @@ class TopLevelFineTuningConfig(TopLevelConfig):
             config_type=config_type,
             config_dir=config.get("config_dir"),
             models=config.get("models"),
-            dataset_names=config.get("dataset_names"),
+            dataset_names=config["dataset_names"],
+            n_samples=config["n_samples"],
+            dataset_args=config.get("dataset_args"),
+            keep_labels=config["keep_labels"],
             random_states=config.get("random_states"),
-            wandb=config.get("wandb"),
+            wandb_args=config.get("wandb_args"),
             config_gen_dtime=config.get("config_gen_dtime"),
             caches=config.get("caches"),
             slurm_template_path=config.get("slurm_template_path"),
             slurm_template_name=config.get("slurm_template_name"),
-            dataset_args=config.get("dataset_args"),
             training_args=config.get("training_args"),
             use_bask=config.get("use_bask"),
             bask=config.get("bask"),
@@ -239,34 +244,26 @@ class TopLevelFineTuningConfig(TopLevelConfig):
         Returns:
             list of config dictionaries for FineTuningConfig objects.
         """
-        sweep_dict = {}
-
-        if isinstance(self.models, list):
-            sweep_dict["model_name"] = copy(self.models)
-        else:
-            sweep_dict["model_name"] = [copy(self.models)]
-        if isinstance(self.dataset_names, list):
-            sweep_dict["dataset_name"] = copy(self.dataset_names)
-        else:
-            sweep_dict["dataset_name"] = [copy(self.dataset_names)]
-        if isinstance(self.random_states, list):
-            sweep_dict["random_state"] = copy(self.random_states)
-        else:
-            sweep_dict["random_state"] = [copy(self.random_states)]
-
-        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
-        param_sweep_dicts = [
-            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        sweep_args = {
+            "models": "model_name",
+            "dataset_names": "dataset_name",
+            "n_samples": "n_samples",
+            "random_states": "random_state",
+            "keep_labels": "keep_labels",
+        }
+        keep_args = [
+            "wandb_args",
+            "config_gen_dtime",
+            "caches",
+            "dataset_args",
+            "training_args",
         ]
+        param_sweep_dicts = self._gen_sweep_dicts(sweep_args, keep_args)
+
+        # Add remaining arguments not dealt with by _gen_sweep_dicts
         for pdict in param_sweep_dicts:
-            pdict["wandb_args"] = self.wandb
-            pdict["config_gen_dtime"] = self.config_gen_dtime
-            pdict["caches"] = self.caches
-            pdict["dataset_args"] = self.dataset_args
-            pdict["training_args"] = self.training_args
-        self.num_configs = len(param_sweep_dicts)
-        if self.num_configs > 1001:
-            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
+            pdict["dataset_args"]["keep_labels"] = pdict["keep_labels"]
+
         return param_sweep_dicts
 
     def generate_sub_configs(self) -> list[Config]:

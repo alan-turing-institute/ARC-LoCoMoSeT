@@ -7,6 +7,7 @@ import warnings
 from abc import ABC, abstractclassmethod, abstractmethod
 from copy import copy
 from datetime import datetime
+from itertools import product
 from pathlib import Path
 
 import wandb
@@ -23,18 +24,24 @@ class Config(ABC):
         dataset_name: Name of the HuggingFace dataset to use for fine-tuning.
         run_name: Name of the run (used for wandb/local save location), defaults to
             {dataset_name}_{model_name}.
+        dataset_args: Dict defining the splits and columns of the dataset to use,
+            optionally including the keys "train_split" (default: "train"),
+            "val_split" (default: None, in which case the validation set will be created
+            from the training split), "image_field" (default: "image"), and
+            "label_field" (default: "label").
         random_state: Random state to use for train/test split and training.
-        dataset_args: Dict defining "train_split" and "val_split" (optional), defaults
-            to {"train_split": "train"}.
-        training_args: Dict of arguments to pass to TrainingArguments.
         use_wandb: Whether to use wandb for logging.
-        wandb_args: Arguments to pass to wandb.init.
+        wandb_args: Arguments passed to wandb.init, as well as optionally a "log_model"
+            value which will be used to set the WANDB_LOG_MODEL environment variable
+            which controls the model artifact saving behaviour.
     """
 
     def __init__(
         self,
         model_name: str,
         dataset_name: str,
+        dataset_args: dict | None = None,
+        n_samples: int | None = None,
         random_state: int | None = None,
         config_gen_dtime: str | None = None,
         caches: dict | None = None,
@@ -51,6 +58,12 @@ class Config(ABC):
         self.use_wandb = use_wandb
         self.wandb_args = wandb_args or {}
         self.run_name = run_name or f"{dataset_name}_{model_name}".replace("/", "-")
+        self.dataset_args = dataset_args or {"train_split": "train"}
+        self.n_samples = n_samples
+        if "image_field" not in self.dataset_args:
+            self.dataset_args["image_field"] = "image"
+        if "label_field" not in self.dataset_args:
+            self.dataset_args["label_field"] = "label"
 
     def init_wandb(self) -> None:
         """Initialise a wandb run if the config specifies to use wandb and a run has not
@@ -71,6 +84,7 @@ class Config(ABC):
         if "wandb" in self.caches:
             # where wandb artifacts will be cached
             os.environ["WANDB_CACHE_DIR"] = self.caches["wandb"]
+            os.environ["WANDB_DATA_DIR"] = self.caches["wandb"]
 
         wandb.login()
         wandb_config = copy(self.wandb_args)
@@ -140,32 +154,33 @@ class TopLevelConfig(ABC):
 
     Possible entries to vary over if multiple given:
         - models
-        - dataset_names
+        - dataset_name
         - n_samples
         - random_states
 
     Args:
         Must contain:
-        - config_type (str): which config type to generate (metrics or train)
-        - config_dir (str): where to save the generated configs to
-        - models (str | list[str]): (list of) model(s) to generate experiment configs
+        - config_type: which config type to generate (metrics or train)
+        - config_dir: where to save the generated configs to
+        - models: (list of) model(s) to generate experiment configs
             for
-        - dataset_names (str | list[str]): (list of) dataset(s) to generate experiment
+        - dataset_name: (list of) dataset(s) to generate experiment
             configs for
 
         Can also contain:
-        - random_states (int | list[int]): (list of) random state(s) to generate
+        - dataset_args: Dict defining the splits and columns of the dataset to use, see
+            the docstring of the Config class for details.
+        - random_states: (list of) random state(s) to generate
             experiment configs for
-        - wandb (dict | None) (optional): weights and biases arguments
-        - bask (dict | None) (optional): baskerville computational arguments
-        - use_bask (bool) (optional): flag for using and generating baskerville run
-        - caches (dict | None) (optional): caching directories for models, datasets,
-            and wandb
-        - slurm_template_path (str | None): path for setting jinja environment to look
-            for jobscript template
-        - slurm_template_name (str | None) (optional): path for jobscript template
-        - config_gen_dtime (str | None) (optional): config generation date-time for
-            keeping track of generated configs
+        - wandb: weights and biases arguments
+        - bask: baskerville computational arguments
+        - use_bask: flag for using and generating baskerville run
+        - caches: caching directories for models, datasets, and wandb
+        - slurm_template_path: path for setting jinja environment to look for jobscript
+            template
+        - slurm_template_name: path for jobscript template
+        - config_gen_dtime: config generation date-time for keeping track of generated
+            configs
     """
 
     def __init__(
@@ -174,8 +189,11 @@ class TopLevelConfig(ABC):
         config_dir: str,
         models: str | list[str],
         dataset_names: str | list[str],
+        n_samples: int | list[int],
+        dataset_args: dict | None = None,
+        keep_labels: list[list[str]] | list[list[int]] | None = None,
         random_states: int | list[int] | None = None,
-        wandb: dict | None = None,
+        wandb_args: dict | None = None,
         bask: dict | None = None,
         use_bask: bool = False,
         caches: dict | None = None,
@@ -190,8 +208,11 @@ class TopLevelConfig(ABC):
         self.config_dir = config_dir
         self.models = models
         self.dataset_names = dataset_names
+        self.dataset_args = dataset_args
+        self.keep_labels = keep_labels
+        self.n_samples = n_samples
         self.random_states = random_states
-        self.wandb = wandb
+        self.wandb_args = wandb_args
         self.sub_configs = []
         self.num_configs = 0
         self.bask = bask
@@ -275,6 +296,44 @@ class TopLevelConfig(ABC):
         file_name = f"{self.config_type}_jobscript_{self.config_gen_dtime}.sh"
         with open(f"{config_path}/{file_name}", "w") as f:
             f.write(content)
+
+    def _gen_sweep_dicts(
+        self, sweep_args: dict[str, str], keep_args: list[str]
+    ) -> list[dict]:
+        """Generate a list of dictionaries to create single configs from, looping over
+         the specified arguments to sweep over.
+
+        Args:
+            sweep_args: Which arguments to sweep over, dict of {name of argument in
+                TopLeveLConfig: name of argument in MetricConfig}
+            keep_args: Arguments in TopLevelConfig to keep unchanged in generated
+                MetricsConfig
+
+        Returns:
+            List of dictionaries to create single configs from.
+        """
+        sweep_dict = {}
+        # fill sweep dict, ensuring any non-list values are converted to lists
+        for toplevel_arg, config_arg in sweep_args.items():
+            if isinstance(getattr(self, toplevel_arg), list):
+                sweep_dict[config_arg] = copy(getattr(self, toplevel_arg))
+            else:
+                sweep_dict[config_arg] = [copy(getattr(self, toplevel_arg))]
+
+        sweep_dict_keys, sweep_dict_vals = zip(*sweep_dict.items())
+        param_sweep_dicts = [
+            dict(zip(sweep_dict_keys, v)) for v in product(*list(sweep_dict_vals))
+        ]
+
+        # argument in TopLevelMetricsConfig to keep unchanged in MetricsConfig
+        for pdict in param_sweep_dicts:
+            for arg in keep_args:
+                pdict[arg] = getattr(self, arg)
+
+        self.num_configs = len(param_sweep_dicts)
+        if self.num_configs > 1001:
+            warnings.warn("Slurm array jobs cannot exceed more than 1001!")
+        return param_sweep_dicts
 
     def save_sub_configs(self) -> None:
         """Save the generated subconfigs to a top level director given by the config

@@ -7,16 +7,19 @@ Model inference here is done by pipline.
 """
 import json
 import os
+import warnings
 from datetime import datetime
 from time import time
 from typing import Tuple
 
+import datasets
 import torch
 import wandb
-from datasets import load_dataset
 from numpy.typing import ArrayLike
 from transformers.modeling_utils import PreTrainedModel
 
+from locomoset.datasets.load import load_dataset
+from locomoset.datasets.preprocess import create_data_splits, drop_images
 from locomoset.metrics.classes import Metric, MetricConfig
 from locomoset.metrics.library import METRICS
 from locomoset.models.features import get_features
@@ -28,14 +31,15 @@ class ModelMetricsExperiment:
     which takes arguments: (model_input, dataset_input).
     """
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: MetricConfig) -> None:
         """Initialise model experiment class.
 
         Args:
             config: Dictionary containing the following:
                 - model_name: name of model to be computed (str)
                 - dataset_name: name of dataset to be scored by (str)
-                - dataset_split: dataset split (str)
+                - dataset_args: Dataset selection/filtering parameters, see the
+                    docstring of the base Config class.
                 - n_samples: number of samples for a metric experiment (int)
                 - random_state: random seed for variation of experiments (int)
                 - metrics: list of metrics to score (list(str))
@@ -45,51 +49,98 @@ class ModelMetricsExperiment:
                 - (Optional) device: which device to use for inference
         """
         # Parse model/seed config
-        self.model_name = config["model_name"]
-        self.random_state = config["random_state"]
+        self.model_name = config.model_name
+        self.random_state = config.random_state
 
         # Initialise metrics
-        metric_kwargs_dict = config.get("metric_kwargs", {})
+        metric_kwargs_dict = config.metric_kwargs
         self.metrics = {
             metric: METRICS[metric](
                 random_state=self.random_state, **metric_kwargs_dict.get(metric, {})
             )
-            for metric in config["metrics"]
+            for metric in config.metrics
         }
         self.inference_types = list(
             set(metric.inference_type for metric in self.metrics.values())
         )
 
         # Caches
-        if config["caches"] is not None:
-            self.dataset_cache = config["caches"]["datasets"]
-            self.model_cache = config["caches"]["models"]
+        if config.caches is not None:
+            self.dataset_cache = config.caches["datasets"]
+            self.model_cache = config.caches["models"]
 
         # Set up device
-        self.device = config.get("device")
+        self.device = config.device
         if self.device == "cuda":
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load/generate dataset
         print("Generating data sample...")
-        self.dataset_name = config["dataset_name"]
+        self.dataset_name = config.dataset_name
         self.dataset = load_dataset(
             self.dataset_name,
-            split=config["dataset_split"],
+            image_field=config.dataset_args["image_field"],
+            label_field=config.dataset_args["label_field"],
             cache_dir=self.dataset_cache,
+            keep_labels=config.dataset_args["keep_labels"],
         )
-        self.n_samples = config["n_samples"]
-        if self.n_samples < self.dataset.num_rows:
-            self.dataset = self.dataset.train_test_split(
-                train_size=self.n_samples, shuffle=True, seed=self.random_state
-            )["train"]
+
+        # Prepare splits
+        self.dataset = create_data_splits(
+            self.dataset,
+            train_split=config.dataset_args["train_split"],
+            val_split=config.dataset_args["val_split"],
+            test_split=config.dataset_args["test_split"],
+            random_state=config.random_state,
+            val_size=config.dataset_args["val_size"],
+            test_size=config.dataset_args["test_size"],
+        )
+
+        # Grab train split
+        self.dataset = self.dataset[config.dataset_args["train_split"]]
+
+        # Take subset to create whole train dataset
+        self.n_samples = config.n_samples
+        self.dataset = drop_images(
+            self.dataset,
+            keep_size=self.n_samples,
+            seed=config.random_state,
+        )
+
+        # Further subset train dataset to create metrics dataset
+        self.metrics_samples = config.metrics_samples
+        try:
+            self.dataset = drop_images(
+                self.dataset,
+                keep_size=self.metrics_samples,
+                seed=config.random_state,
+            )
+        except ValueError as error:
+            if str(error).startswith(
+                "The least populated class in label column has only 1 member"
+            ):
+                warnings.warn(
+                    "The train set has only one sample of some classes so can't be "
+                    "further subsetted with stratification to create the metrics set. "
+                    "A random split has been used instead."
+                )
+                self.dataset = drop_images(
+                    self.dataset,
+                    keep_size=self.metrics_samples,
+                    seed=config.random_state,
+                    stratify_by_column=None,
+                )
+            else:
+                raise error
+
         self.labels = self.dataset["label"]
 
         # Initialise results dict
-        self.results = config
+        self.results = config.to_dict()
         self.results["inference_times"] = {}
         self.results["metric_scores"] = {}
-        self.save_dir = config.get("save_dir", "results")
+
+        self.save_dir = config.save_dir
         os.makedirs(self.save_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         self.save_path = f"{self.save_dir}/results_{date_str}.json"
@@ -230,7 +281,10 @@ def run_config(config: MetricConfig):
     if config.use_wandb:
         config.init_wandb()
 
-    model_experiment = ModelMetricsExperiment(config.to_dict())
+    if config.caches.get("preprocess_cache") == "tmp":
+        datasets.disable_caching()
+
+    model_experiment = ModelMetricsExperiment(config)
     model_experiment.run_experiment()
 
     if config.local_save:
