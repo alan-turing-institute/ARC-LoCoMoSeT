@@ -4,6 +4,7 @@
 
 from transformers import TrainingArguments
 
+from locomoset.config.config_classes import create_wandb_names
 from locomoset.models.classes import FineTuningConfig, TopLevelFineTuningConfig
 
 
@@ -11,10 +12,8 @@ def test_init_fine_tuning_config(
     dummy_fine_tuning_config, dummy_dataset_name, dummy_model_name
 ):
     config = FineTuningConfig.from_dict(dummy_fine_tuning_config)
-    assert config.run_name == f"{dummy_dataset_name}_{dummy_model_name}".replace(
-        "/", "-"
-    )
-
+    test_run_name = create_wandb_names(dummy_dataset_name, dummy_model_name)
+    assert config.run_name == test_run_name
     assert isinstance(config.get_training_args(), TrainingArguments)
     assert config.use_wandb is True
 

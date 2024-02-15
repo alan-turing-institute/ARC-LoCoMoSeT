@@ -173,8 +173,17 @@ configs/2*
 # Ignore output folder on baskerville
 output/*
 
-# Ignore local analysis dir
+# Ignore local analysis
 local_analysis/*
 
 # Ignore local results
 results/*
+
+# Ignore binary exploration notebook
+coco_binay.ipynb
+
+# Ignore binary datasets
+binary_datasets/*
+
+# Ignore conda activation script
+activate_condaenv.sh

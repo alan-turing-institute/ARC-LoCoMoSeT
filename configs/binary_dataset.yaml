@@ -1,0 +1,28 @@
+### Binary datasets yaml ###
+
+# currently the only dataset this works for visual genome
+obj_detect_dataset: 'visual_genome'
+
+# objects list
+objects:
+  - tree
+  - watch
+  - faucet
+
+# dataset size, sticking with 1000 for now
+dataset_size:
+
+# seeds
+seeds:
+  - 42
+  - 43
+  - 44
+
+# save/cache path for datasets
+save_path: /bask/projects/v/vjgo8416-locomoset/ARC-LoCoMoSeT/binary_datasets
+
+# config template path and name
+config_template_path: configs/top_config_binary_template.yaml
+
+# config save path
+config_save_path: configs/bin_datasets
