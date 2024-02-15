@@ -2,144 +2,129 @@
     A collection of helper functions for analysis.
 """
 
-from typing import Tuple
-
+import constants
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import wandb
-from scipy.stats import spearmanr
+from scipy.stats import bootstrap, spearmanr
+
+# 1) Fns for pulling data --------------------------------------------------------------
 
 
-def pull_metric_and_train_data(group_name: str) -> Tuple(dict, dict):
-    """Pull metric and train data from weights and biases, turning it into the requisite
-    dict structure:
+def define_dataset_combinations(dataset_name):
+    m = constants.MAX_SIZES[dataset_name]
+    sample_list = [s for s in constants.SAMPLES if s < m]
+    sample_list.append(m)
+    return sample_list
 
-    train_results = {
-        n_samples: {
-            model_name: validation_score
-        }
+
+def _pull_runs(
+    api: wandb.Api,
+    job_type: str,
+    dataset_name: str,
+    n_samples: int,
+    n_metric_samples: int | None,
+) -> wandb.Api.runs:
+    filters = {
+        "jobType": job_type,
+        "created_at": {"$gt": "2024-01-01"},
+        "State": "finished",
+        "config.locomoset.dataset_name": dataset_name,
+        "config.locomoset.n_samples": n_samples,
     }
+    if n_metric_samples is not None:
+        filters["config.locomoset.metrics_samples"] = n_metric_samples
+    return api.runs(
+        "turing-arc/locomoset",
+        filters=filters,
+    )
 
-    metric_results = {
-        metric: {
-            n_samples: {
-                mode_name: metric_score
-            }
-        }
-            OR IF METRIC = n_pars,
-        n_pars: {
-            model_name: metric score
-        }
+
+def pull_runs(
+    api: wandb.Api,
+    job_type: str,
+    dataset_name: str,
+    n_samples: int,
+    n_metric_samples: None,
+) -> list[wandb.Api.run]:
+    runs = _pull_runs(api, job_type, dataset_name, n_samples, n_metric_samples)
+    runs = [run for run in runs if len(run.summary.keys()) > 0]
+    if job_type == "metrics":
+        runs = [run for run in runs if ("metrics_samples" in run.summary.keys())]
+    return runs
+
+
+def _unpack_run(
+    run: wandb.Api.run,
+    type: str,
+) -> dict:
+    run_dict = {
+        # "run_name": run.name,
+        # "group": run.group,
+        "dataset_name": run.config["locomoset"]["dataset_name"],
+        "model_name": run.config["locomoset"]["model_name"],
+        "n_samples": run.config["locomoset"]["n_samples"],
     }
+    if type == "train":
+        run_dict = {
+            **run_dict,
+            "test_accuracy": run.summary["test/accuracy"],
+            "train_runtime": run.summary["train/train_runtime"],
+        }
+    if type == "metrics":
+        run_dict = {
+            **run_dict,
+            "n_metric_samples": run.summary["metrics_samples"],
+            **run.summary["metric_scores"],
+        }
+    return run_dict
 
-    """
 
-    api = wandb.Api()
+def unpack_runs(
+    runs: list[wandb.Api.run],
+    type: str,
+) -> pd.DataFrame:
+    df = pd.DataFrame([_unpack_run(run, type) for run in runs])
+    col_list = ["dataset_name", "model_name", "n_samples"]
+    if type == "metrics":
+        col_list.append("n_metric_samples")
+    df = df.loc[df[col_list].duplicated() is False]
+    return df
 
-    # Project is specified by <entity/project-name>
-    train_runs = api.runs(
-        path="turing-arc/locomoset",
-        filters={"group": group_name, "jobType": "train"},
-    )
 
-    summary_train, config_train, name_train = [], [], []
-    for run in train_runs:
-        # .summary contains the output keys/values for metrics like accuracy.
-        #  We call ._json_dict to omit large files
-        summary_train.append(run.summary._json_dict)
+def get_data(api, job_type, datasets):
+    runs = []
+    for d in datasets:
+        samples = define_dataset_combinations(d)
+        for s in samples:
+            if job_type == "train":
+                runs = runs + pull_runs(api, job_type, d, s, None)
+            if job_type == "metrics":
+                for ms in samples:
+                    runs = runs + pull_runs(api, job_type, d, s, ms)
+    data = unpack_runs(runs, job_type)
+    return data
 
-        # .config contains the hyperparameters.
-        #  We remove special values that start with _.
-        config_train.append(
-            {k: v for k, v in run.config.items() if not k.startswith("_")}
-        )
 
-        # .name is the human-readable name of the run.
-        name_train.append(run.name)
+# 2) Fns for making correlations -------------------------------------------------------
 
-    train_df = pd.DataFrame(
-        {"summary": summary_train, "config": config_train, "name": name_train}
-    )
 
-    train_res = {}
+def bootstrap_corr(x, y, corr_fn):
+    def get_corr_coef(x, y):
+        return corr_fn(x, y)[0]
 
-    for _, row in train_df.iterrows():
-        if row.summary.get("test/accuracy") is not None:
-            if train_res.get(row.config["locomoset"]["n_samples"]) is not None:
-                train_res[row.config["locomoset"]["n_samples"]][
-                    row.config["locomoset"].get("model_name")
-                ] = row.summary.get("test/accuracy")
-            else:
-                train_res[row.config["locomoset"]["n_samples"]] = {}
-                train_res[row.config["locomoset"]["n_samples"]][
-                    row.config["locomoset"].get("model_name")
-                ] = row.summary.get("test/accuracy")
+    mean, p = corr_fn(x, y)
+    ci = bootstrap(
+        (x, y), get_corr_coef, vectorized=False, paired=True
+    ).confidence_interval
+    return mean, p, ci
 
-    metric_runs = api.runs(
-        path="turing-arc/locomoset",
-        filters={
-            "group": group_name,
-            "jobType": "metrics",
-        },
-    )
 
-    summary_metrics, config_metrics, name_metrics = [], [], []
-    for run in metric_runs:
-        # .summary contains the output keys/values for metrics like accuracy.
-        #  We call ._json_dict to omit large files
-        summary_metrics.append(run.summary._json_dict)
+# 3) Fns for outputting tables ---------------------------------------------------------
 
-        # .config contains the hyperparameters.
-        #  We remove special values that start with _.
-        config_metrics.append(
-            {k: v for k, v in run.config.items() if not k.startswith("_")}
-        )
 
-        # .name is the human-readable name of the run.
-        name_metrics.append(run.name)
-
-    metrics_df = pd.DataFrame(
-        {"summary": summary_metrics, "config": config_metrics, "name": name_metrics}
-    )
-
-    metric_results = {}
-
-    for _, row in metrics_df.iterrows():
-        for met in row.summary["metric_scores"].keys():
-            if metric_results.get(met) is not None:
-                if met == "n_pars":
-                    metric_results[met][row.summary["model_name"]] = row.summary[
-                        "metric_scores"
-                    ][met]["score"]
-                else:
-                    if metric_results[met].get(row.summary["n_samples"]) is not None:
-                        metric_results[met][row.summary["n_samples"]][
-                            row.summary["model_name"]
-                        ] = row.summary["metric_scores"][met]["score"]
-                    else:
-                        metric_results[met][row.summary["n_samples"]] = {}
-                        metric_results[met][row.summary["n_samples"]][
-                            row.summary["model_name"]
-                        ] = row.summary["metric_scores"][met]["score"]
-            else:
-                metric_results[met] = {}
-                if met == "n_pars":
-                    metric_results[met][row.summary["model_name"]] = row.summary[
-                        "metric_scores"
-                    ][met]["score"]
-                else:
-                    if metric_results[met].get(row.summary["n_samples"]) is not None:
-                        metric_results[met][row.summary["n_samples"]][
-                            row.summary["model_name"]
-                        ] = row.summary["metric_scores"][met]["score"]
-                    else:
-                        metric_results[met][row.summary["n_samples"]] = {}
-                        metric_results[met][row.summary["n_samples"]][
-                            row.summary["model_name"]
-                        ] = row.summary["metric_scores"][met]["score"]
-
-    return train_res, metric_results
+# 4) Fns for outputting plots ----------------------------------------------------------
 
 
 def plotter(
