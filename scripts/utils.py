@@ -89,7 +89,7 @@ def unpack_runs(
     col_list = ["dataset_name", "model_name", "n_samples"]
     if type == "metrics":
         col_list.append("n_metric_samples")
-    df = df.loc[df[col_list].duplicated() is False]
+    df = df.loc[df[col_list].duplicated() == False]  # noqa: E712
     return df
 
 
