@@ -73,6 +73,7 @@ def _unpack_run(
             **run_dict,
             "test_accuracy": run.summary["test/accuracy"],
             "train_runtime": run.summary["train/train_runtime"],
+            "eval_runtime": run.summary["eval/runtime"],
         }
     if type == "metrics":
         run_dict = {
