@@ -19,3 +19,5 @@ DATASET_NAMES = {
 }
 
 SAMPLES = [500, 1000, 5000, 10000]
+
+METRIC_NAMES = ["n_pars", "renggli", "LogME", "imagenet-validation"]

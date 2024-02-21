@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Mean Metric Combination Performance According to Metric}
+\label{tab:mean-combo-results}
+\setlength\tabcolsep{1.5pt}
+\begin{tabular}{c|cccc}
+\textbf{Metric} & \textbf{Renggli} & \textbf{LogME} & \textbf{N. Params} & \textbf{ImageNet Acc.} \\
+\hline
+Kendall's Tau & \makecell{\textbf{0.60} \\[0pt] (0.56, 0.56)} & \makecell{0.35 \\[0pt] (0.27, 0.27)} & \makecell{0.37 \\[0pt] (0.23, 0.23)} & \makecell{0.58 \\[0pt] (0.54, 0.54)} \\
+\hline
+Regret & \makecell{1.79 \\[0pt] (1.10, 1.10)} & \makecell{\textbf{1.60} \\[0pt] (0.82, 0.82)} & \makecell{2.47 \\[0pt] (1.57, 1.57)} & \makecell{1.79 \\[0pt] (1.10, 1.10)} \\
+\end{tabular}
+\caption*{\\\textit{Values presented with 95\% confidence intervals.\\
+Largest value for each row presented in bold.}}
+\end{table}
