@@ -83,8 +83,12 @@ def compute_combinations_correlation(
 ):
     scaled_data = extract_metric_scores_and_scale(data, scaling_fn)
     x = np.zeros_like(scaled_data[metric_combination[0]].values)
+    if metric == "LogME":
+        print(name, x)
     for met in metric_combination:
         x += scaled_data[met].values
+    if metric == "LogME":
+        print(name, x)
     y = scaled_data["test_accuracy"].values
 
     mean, _, ci = utils.bootstrap_corr(x, y, kendalltau)
@@ -234,7 +238,7 @@ def main():
     corr_tables = []
     for metric in metric_names.keys():
         new_tab = get_correlations(
-            group_data, metric, metric_names[metric], scale_by_max
+            group_data, metric, metric_names[metric], zscore_scale
         )
         # pprint.pprint(new_tab)
         corr_tables.append(new_tab)
@@ -347,7 +351,11 @@ def main():
     def make_mean_plus_ci(x):
         m = np.mean(x)
         se = np.std(x) / np.sqrt(len(x))
-        return {"mean": m, "lower": m - 2 * se, "upper": m + 2 * se}
+        return {
+            "mean": np.around(m, 2),
+            "lower": np.around(m - 2 * se, 2),
+            "upper": np.around(m + 2 * se, 2),
+        }
 
     a = (
         c_all[c_all.columns[1:]]

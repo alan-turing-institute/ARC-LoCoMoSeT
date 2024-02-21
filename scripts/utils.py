@@ -79,7 +79,10 @@ def _unpack_run(
             **run_dict,
             "n_metric_samples": run.summary["metrics_samples"],
             **run.summary["metric_scores"],
+            "inference_times": run.summary["inference_times"]["features"],
         }
+    if type == "preproc":
+        run_dict = {**run_dict, "preproc_times": run.summary["times"]["total"]}
     return run_dict
 
 
@@ -101,6 +104,8 @@ def get_data(api, job_type, datasets):
         samples = define_dataset_combinations(d)
         for s in samples:
             if job_type == "train":
+                runs = runs + pull_runs(api, job_type, d, s, None)
+            if job_type == "preproc":
                 runs = runs + pull_runs(api, job_type, d, s, None)
             if job_type == "metrics":
                 for ms in samples:

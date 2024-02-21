@@ -193,3 +193,6 @@ scripts/time_analysis.ipynb
 
 # Ignore analysis tables
 tables/*
+
+# Ignore combing metrics analysis notebook
+scripts/combing_metrics.ipynb
