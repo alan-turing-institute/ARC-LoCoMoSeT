@@ -2,6 +2,8 @@
     A collection of helper functions for analysis.
 """
 
+import os
+
 import constants
 import matplotlib.pyplot as plt
 import numpy as np
@@ -124,7 +126,215 @@ def bootstrap_corr(x, y, corr_fn):
 # 3) Fns for outputting tables ---------------------------------------------------------
 
 
-# 4) Fns for outputting plots ----------------------------------------------------------
+def select_main_results(
+    table: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Function used for selecting main best case scenario results: largest dataset
+    size, use full dataset for metric
+
+    Args:
+        table: _description_
+    """
+    return table.loc[
+        table["n_metric_samples"].isin(set(constants.MAX_SIZES.values())), :
+    ]
+
+
+def select_sample_results(table, dataset_name):
+    """
+    Function used for selecting second set of results
+
+    Args:
+        table: _description_
+    """
+    return table.loc[
+        (table["n_samples"] == table["n_metric_samples"])
+        & (table["dataset"] == dataset_name),
+        :,
+    ]
+
+
+# 4) Fns for LaTeX Tables --------------------------------------------------------------
+
+
+def mean_pick_fn(x):
+    if x.iloc[0] == "Kendall's Tau":
+        return (
+            np.argmax(
+                [
+                    x.iloc[1]["mean"],
+                    x.iloc[2]["mean"],
+                    x.iloc[3]["mean"],
+                    x.iloc[4]["mean"],
+                ]
+            )
+            + 1
+        )
+    else:
+        return (
+            np.argmin(
+                [
+                    x.iloc[1]["mean"],
+                    x.iloc[2]["mean"],
+                    x.iloc[3]["mean"],
+                    x.iloc[4]["mean"],
+                ]
+            )
+            + 1
+        )
+
+
+def latexify(
+    table: pd.DataFrame,
+    labels: list[str],
+    t_name: str,
+    t_label: str,
+    type: str,
+):
+    # Dimensions of table
+    rows, cols = table.shape
+    columns = table.columns
+
+    # Obtain best metric list for highlighting in bold
+    if type == "corr":
+        best_metric = (
+            table.apply(
+                lambda x: np.argmax(
+                    [x.iloc[1][0], x.iloc[2][0], x.iloc[3][0], x.iloc[4][0]]
+                ),
+                axis=1,
+            ).values
+            + 1
+        )
+    if type == "regret":
+        best_value = table.apply(
+            lambda x: np.min([x.iloc[1], x.iloc[2], x.iloc[3], x.iloc[4]]), axis=1
+        ).values
+        best_metric = [
+            np.where(table.iloc[x] == val) for x, val in enumerate(best_value)
+        ]
+    if type == "mean":
+        best_metric = table.apply(lambda x: mean_pick_fn(x), axis=1).values
+
+    # Make first part of table
+    t_head = (
+        "\\begin{table}[H]\n"
+        "\\centering\n"
+        f"\\caption{{{t_name}}}\n"
+        f"\\label{{tab:{t_label}}}\n"
+        "\\setlength\\tabcolsep{1.5pt}\n"
+        f"\\begin{{tabular}}{{c|{''.join(['c' for _ in range(1,cols)])}}}\n"
+    )
+
+    # Add column headings
+    for i in range(cols):
+        if i != (cols - 1):
+            t_head = t_head + f"\\textbf{{{labels[i]}}}" + " & "
+        if i == (cols - 1):
+            t_head = t_head + f"\\textbf{{{labels[i]}}}" + " \\\\\n\\hline\n"
+
+    # Table content
+    t_content = ""
+    for i in range(rows):
+        for j in range(cols):
+            # Append value
+            if j == 0:
+                if not isinstance(table.loc[i, columns[j]], str):
+                    val = str(table.loc[i, columns[j]])
+                else:
+                    val = table.loc[i, columns[j]]
+                t_content = t_content + val
+            if j > 0:
+                val = table.loc[i, columns[j]]
+                if type == "corr":
+                    if best_metric[i] == j:
+                        t_content = (
+                            t_content
+                            + "\\makecell{"
+                            + f"\\textbf{{{round(val[0], 2):.2f}}} \\\\[0pt] "
+                            + f"({round(val[1][0], 2):.2f}, {round(val[1][1], 2):.2f})"
+                            + "}"
+                        )
+                    else:
+                        t_content = (
+                            t_content
+                            + "\\makecell{"
+                            + f"{round(val[0], 2):.2f} \\\\[0pt] "
+                            + f"({round(val[1][0], 2):.2f}, {round(val[1][1], 2):.2f})"
+                            + "}"
+                        )
+                if type == "regret":
+                    if np.isin(j, best_metric[i]):
+                        t_content = (
+                            t_content
+                            + "\\makecell{"
+                            + f"\\textbf{{{round(val, 2):.2f}}}"
+                            + "}"
+                        )
+                    else:
+                        t_content = (
+                            t_content + "\\makecell{" + f"{round(val, 2):.2f}" + "}"
+                        )
+                if type == "mean":
+                    if best_metric[i] == j:
+                        t_content = (
+                            t_content
+                            + "\\makecell{"
+                            + f"\\textbf{{{round(val['mean'], 2):.2f}}} \\\\[0pt] "
+                            + f"({round(val['lower'], 2):.2f}, "
+                            + f"{round(val['lower'], 2):.2f})"
+                            + "}"
+                        )
+                    else:
+                        t_content = (
+                            t_content
+                            + "\\makecell{"
+                            + f"{round(val['mean'], 2):.2f} \\\\[0pt] "
+                            + f"({round(val['lower'], 2):.2f}, "
+                            + f"{round(val['lower'], 2):.2f})"
+                            + "}"
+                        )
+
+            # Append either & or \\ for next line
+            if j != (cols - 1):
+                t_content = t_content + " & "
+            if j == (cols - 1):
+                t_content = t_content + " \\\\\n"
+                if i < (rows - 1):
+                    t_content = t_content + "\\hline\n"
+
+    # Table tail
+    if type == "corr":
+        t_tail = (
+            "\\end{tabular}\n"
+            "\\caption*{\\\\\\textit{Values presented with bootstrapped 95\\% "
+            "confidence intervals.\\\\\nLargest value for each row presented in bold.}}"
+            "\n\\end{table}"
+        )
+    if type == "regret":
+        t_tail = (
+            "\\end{tabular}\n"
+            "\\caption*{\\\\\\textit{Largest value for each row presented in bold.}}"
+            "\n\\end{table}"
+        )
+    if type == "mean":
+        t_tail = (
+            "\\end{tabular}\n"
+            "\\caption*{\\\\\\textit{Values presented with 95\\% confidence "
+            "intervals.\\\\\nLargest value for each row presented in bold.}}"
+            "\n\\end{table}"
+        )
+
+    # Make table
+    tex_table = t_head + t_content + t_tail
+
+    # Save
+    with open(os.path.join("tables", t_label + ".tex"), "w") as f:
+        f.write(tex_table)
+
+
+# 5) Fns for outputting plots ----------------------------------------------------------
 
 
 def plotter(

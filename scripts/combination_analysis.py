@@ -17,7 +17,6 @@ import pprint
 from itertools import combinations
 from typing import Callable
 
-import analysis
 import numpy as np
 import pandas as pd
 import utils
@@ -242,7 +241,7 @@ def main():
 
     # Top level correlation results ---------------------
     main_results = select_results(
-        analysis.select_main_results, "dataset", list(metric_names.keys()), *corr_tables
+        utils.select_main_results, "dataset", list(metric_names.keys()), *corr_tables
     )
 
     # pivot and relabel for presentation
@@ -256,7 +255,7 @@ def main():
     pprint.pprint(main_results)
 
     # Create Latex File (some by hand edits in overleaf necessary)
-    analysis.latexify(
+    utils.latexify(
         table=main_results,
         labels=[
             "Metric Combinations",
@@ -278,12 +277,12 @@ def main():
     regret_tables = []
     for metric in metric_names.keys():
         regret_tables.append(
-            get_regrets(group_data, metric, metric_names[metric], 1, scale_by_max)
+            get_regrets(group_data, metric, metric_names[metric], 1, zscore_scale)
         )
 
     # Top level regret results
     regret_results = select_results(
-        analysis.select_main_results,
+        utils.select_main_results,
         "dataset",
         list(metric_names.keys()),
         *regret_tables,
@@ -300,7 +299,7 @@ def main():
     pprint.pprint(regret_results)
 
     # Create latex File
-    analysis.latexify(
+    utils.latexify(
         table=regret_results,
         labels=[
             "Metric Combinations",
@@ -322,7 +321,7 @@ def main():
     c_all = pd.concat(
         [
             select_results(
-                analysis.select_sample_results,
+                utils.select_sample_results,
                 "n_samples",
                 list(metric_names.keys()),
                 *corr_tables,
@@ -335,7 +334,7 @@ def main():
     r_all = pd.concat(
         [
             select_results(
-                analysis.select_sample_results,
+                utils.select_sample_results,
                 "n_samples",
                 list(metric_names.keys()),
                 *regret_tables,
@@ -362,9 +361,26 @@ def main():
         [pd.DataFrame([{"Metric": "Kendall's Tau"}, {"Metric": "Regret"}]), c], axis=1
     )
 
-    analysis.latexify(
+    # pivot and relable for presentation
+    d = d.T
+    d.columns = d.iloc[0]
+    d = d[1:]
+    d = d.reset_index()
+    d = d.rename(columns={"index": "metric_combos"})
+
+    d.to_csv("./tables/mean-combo-results.csv")
+
+    utils.latexify(
         table=d,
-        labels=["Metric", "Renggli", "LogME", "N. Params", "ImageNet Acc."],
+        labels=[
+            "Metric Combinations",
+            "VG Faucet",
+            "VG Tree",
+            "VG Watch",
+            "RVL-CDIP",
+            "WikiART",
+            "Oxford Pets",
+        ],
         t_name="Mean Metric Combination Performance According to Metric",
         t_label="mean-combo-results",
         type="mean",
