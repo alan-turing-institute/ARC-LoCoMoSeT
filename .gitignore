@@ -193,6 +193,3 @@ tables/*
 
 # Ignore combining metrics analysis notebook
 scripts/combing_metrics.ipynb
-
-# Ignore metric subsets analysis notebook
-scripts/metric_subsets.ipynb
