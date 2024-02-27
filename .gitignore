@@ -188,11 +188,11 @@ binary_datasets/*
 # Ignore conda activation script
 activate_condaenv.sh
 
-# Ignore timings analysis notebook
-scripts/time_analysis.ipynb
-
 # Ignore analysis tables
 tables/*
 
-# Ignore combing metrics analysis notebook
+# Ignore combining metrics analysis notebook
 scripts/combing_metrics.ipynb
+
+# Ignore metric subsets analysis notebook
+scripts/metric_subsets.ipynb
