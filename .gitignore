@@ -187,3 +187,9 @@ binary_datasets/*
 
 # Ignore conda activation script
 activate_condaenv.sh
+
+# Ignore analysis tables
+tables/*
+
+# Ignore combining metrics analysis notebook
+scripts/combing_metrics.ipynb

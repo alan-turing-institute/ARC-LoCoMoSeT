@@ -1,6 +1,7 @@
 """
 Helper functions for preprocessing datasets.
 """
+
 from datasets import ClassLabel, Dataset, DatasetDict
 from transformers.image_processing_utils import BaseImageProcessor
 from transformers.image_utils import load_image
@@ -384,7 +385,7 @@ def preprocess_dataset_splits(
     test_split: str | None = None,
     keep_in_memory: bool | None = None,
     writer_batch_size: int | None = 1000,
-) -> (Dataset, Dataset):
+) -> tuple[Dataset, Dataset]:
     """Preprocesses a dataset and splits it into train, validation, and test sets.
 
     Args:
